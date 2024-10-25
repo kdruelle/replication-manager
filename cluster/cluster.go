@@ -127,6 +127,7 @@ type Cluster struct {
 	LogSlack                      *log.Logger          `json:"-"`
 	JobResults                    *config.TasksMap     `json:"jobResults"`
 	Grants                        map[string]string    `json:"-"`
+	Roles                         map[string]string    `json:"-"`
 	tlog                          *s18log.TermLog      `json:"-"`
 	htlog                         *s18log.HttpLog      `json:"-"`
 	SQLGeneralLog                 s18log.HttpLog       `json:"sqlGeneralLog"`
@@ -371,6 +372,7 @@ func (cluster *Cluster) InitFromConf() {
 	cluster.DiskType = cluster.Conf.GetDiskType()
 	cluster.VMType = cluster.Conf.GetVMType()
 	cluster.Grants = cluster.Conf.GetGrantType()
+	cluster.Roles = cluster.Conf.GetRoleType()
 
 	cluster.QueryRules = make(map[uint32]config.QueryRule)
 	cluster.Schedule = make(map[string]cron.Entry)

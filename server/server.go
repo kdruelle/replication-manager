@@ -93,6 +93,7 @@ type ReplicationManager struct {
 	ServicePlans                                     []config.ServicePlan        `json:"servicePlans"`
 	ServiceOrchestrators                             []config.ConfigVariableType `json:"serviceOrchestrators"`
 	ServiceAcl                                       []config.Grant              `json:"serviceAcl"`
+	ServiceRoles                                     []config.Role               `json:"serviceRoles"`
 	ServiceRepos                                     []config.DockerRepo         `json:"serviceRepos"`
 	ServiceTarballs                                  []config.Tarball            `json:"serviceTarballs"`
 	ServiceFS                                        map[string]bool             `json:"serviceFS"`
@@ -1755,6 +1756,7 @@ func (repman *ReplicationManager) Run() error {
 	repman.InitServicePlans()
 	repman.ServiceOrchestrators = repman.Conf.GetOrchestratorsProv()
 	repman.InitGrants()
+	repman.InitRoles()
 	repman.ServiceRepos, err = repman.Conf.GetDockerRepos(repman.Conf.ShareDir+"/repo/repos.json", repman.Conf.Test)
 	if err != nil {
 		repman.Logrus.WithError(err).Errorf("Initialization docker repo failed: %s %s", repman.Conf.ShareDir+"/repo/repos.json", err)
@@ -2292,10 +2294,14 @@ func (a GrantSorter) Len() int           { return len(a) }
 func (a GrantSorter) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a GrantSorter) Less(i, j int) bool { return a[i].Grant < a[j].Grant }
 
+type RoleSorter []config.Role
+
+func (a RoleSorter) Len() int           { return len(a) }
+func (a RoleSorter) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a RoleSorter) Less(i, j int) bool { return a[i].Role < a[j].Role }
+
 func (repman *ReplicationManager) InitGrants() error {
-
 	acls := []config.Grant{}
-
 	for _, value := range repman.Conf.GetGrantType() {
 		var acl config.Grant
 		acl.Grant = value
@@ -2303,6 +2309,18 @@ func (repman *ReplicationManager) InitGrants() error {
 	}
 	repman.ServiceAcl = acls
 	sort.Sort(GrantSorter(repman.ServiceAcl))
+	return nil
+}
+
+func (repman *ReplicationManager) InitRoles() error {
+	roles := []config.Role{}
+	for _, value := range repman.Conf.GetRoleType() {
+		var acl config.Role
+		acl.Role = value
+		roles = append(roles, acl)
+	}
+	repman.ServiceRoles = roles
+	sort.Sort(RoleSorter(repman.ServiceRoles))
 	return nil
 }
 

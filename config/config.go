@@ -878,6 +878,20 @@ type Grant struct {
 	Enable bool   `json:"enable"`
 }
 
+type Role struct {
+	Role   string `json:"role"`
+	Enable bool   `json:"enable"`
+}
+
+const (
+	RoleSysOps    string = "sysops"
+	RoleDBOps     string = "dbops"
+	RoleExtSysOps string = "extsysops"
+	RoleExtDBOps  string = "extdbops"
+	RoleSponsor   string = "sponsor"
+	RoleVisitor   string = "visitor"
+)
+
 const (
 	GrantDBStart                   string = "db-start"
 	GrantDBStop                    string = "db-stop"
@@ -1886,6 +1900,17 @@ func (conf *Config) GetGrantType() map[string]string {
 		GrantProvProxyUnprovision:      GrantProvProxyUnprovision,
 		GrantGlobalGrant:               GrantGlobalGrant,
 		GrantGlobalSettings:            GrantGlobalSettings,
+	}
+}
+
+func (conf *Config) GetRoleType() map[string]string {
+	return map[string]string{
+		RoleSysOps:    RoleSysOps,
+		RoleDBOps:     RoleDBOps,
+		RoleExtSysOps: RoleExtSysOps,
+		RoleExtDBOps:  RoleExtDBOps,
+		RoleSponsor:   RoleSponsor,
+		RoleVisitor:   RoleVisitor,
 	}
 }
 

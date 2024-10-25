@@ -562,6 +562,7 @@ app.controller('DashboardController', function (
             $scope.refreshInterval = $scope.settings.config.httpRefreshInterval;
           }
           $scope.newUserAcls = JSON.parse(JSON.stringify($scope.settings.serviceAcl));
+          $scope.newUserRoles = JSON.parse(JSON.stringify($scope.settings.serviceRoles));
           if ((data.logs) && (data.logs.buffer)) $scope.logs = data.logs.buffer;
 
         }
@@ -2058,11 +2059,12 @@ app.controller('DashboardController', function (
       parent: angular.element(document.body),
     });
   };
-  $scope.closeNewUserDialog = function (username, acls) {
+  $scope.closeNewUserDialog = function (username, acls, roles) {
     $mdDialog.hide({ contentElement: '#myNewUserDialog', });
     selectedAcls = acls.filter(item => item.enable).map(item => `${item.grant}`).join(' ')
-    if (confirm("Confirm Creating Cluster User '" + username + "' with ACL: [" + selectedAcls + "]")) {
-      $http.post(getClusterUrl() + "/users/add", { "username": username, "grants": selectedAcls }).then(function (res) {
+    selectedRoles = roles.filter(item => item.enable).map(item => `${item.role}`).join(' ')
+    if (confirm("Confirm Creating Cluster User '" + username + "' roles: ["+ selectedRoles +"] with ACL: [" + selectedAcls + "]")) {
+      $http.post(getClusterUrl() + "/users/add", { "username": username, "grants": selectedAcls, "roles":selectedRoles }).then(function (res) {
         if (res.status == 200) {
           alert("User '" + username + "' added for cluster " + $scope.selectedClusterName)
         } else {
