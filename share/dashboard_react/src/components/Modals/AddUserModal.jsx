@@ -142,7 +142,6 @@ function AddUserModal({ clusterName, isOpen, closeModal }) {
       return
     }
 
-
     const selectedRoles = roles.filter((x) => x.selected).map((x) => x.role)
     if (selectedRoles.length === 0) {
       setRolesError('Please select atleast one role')
@@ -155,7 +154,7 @@ function AddUserModal({ clusterName, isOpen, closeModal }) {
       return
     }
 
-    dispatch(addUser({ clusterName, username: userName, password, grants: selectedGrants.join(' '), roles: selectedRoles.join(' ') }))
+    dispatch(addUser({ clusterName, username: userName, grants: selectedGrants.join(' '), roles: selectedRoles.join(' ') }))
     closeModal()
   }
   return (
@@ -184,7 +183,7 @@ function AddUserModal({ clusterName, isOpen, closeModal }) {
             </FormControl> */}
             <Message message={rolesError} />
             <VStack className={parentStyles.roleContainer}>
-              <Input id='search' type='search' onChange={handleSearchRoles} placeholder='Search ROLE' />
+              <Input id='searchRole' type='search' onChange={handleSearchRoles} placeholder='Search ROLE' />
               <List className={parentStyles.roleList}>
                 {roles.length > 0 &&
                   roles.map((role) => (
@@ -201,7 +200,7 @@ function AddUserModal({ clusterName, isOpen, closeModal }) {
             </VStack>
             <Message message={grantsError} />
             <VStack className={parentStyles.aclContainer}>
-              <Input id='search' type='search' onChange={handleSearch} placeholder='Search ACL' />
+              <Input id='searchAcl' type='search' onChange={handleSearch} placeholder='Search ACL' />
               <List className={parentStyles.aclList}>
                 {acls.length > 0 &&
                   acls.map((acl) => (

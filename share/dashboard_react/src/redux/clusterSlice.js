@@ -895,9 +895,9 @@ export const toggleDatabaseActions = createAsyncThunk(
 
 export const addUser = createAsyncThunk(
   'cluster/addUser',
-  async ({ clusterName, username, password, grants }, thunkAPI) => {
+  async ({ clusterName, username, grants, roles }, thunkAPI) => {
     try {
-      const { data, status } = await clusterService.addUser(clusterName, username, password, grants)
+      const { data, status } = await clusterService.addUser(clusterName, username, grants, roles)
       showSuccessBanner(`User is added successful!`, status, thunkAPI)
       return { data, status }
     } catch (error) {

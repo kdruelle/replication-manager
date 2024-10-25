@@ -26,7 +26,7 @@ type APIUser struct {
 	Grants   map[string]bool `json:"grants"`
 }
 
-func (cluster *Cluster) SetUserGrants(u *APIUser, grant string) {
+func (cluster *Cluster) SetNewUserGrants(u *APIUser, grant string) {
 	acls := strings.Split(grant, " ")
 	for key, value := range cluster.Grants {
 		found := false
@@ -40,7 +40,7 @@ func (cluster *Cluster) SetUserGrants(u *APIUser, grant string) {
 	}
 }
 
-func (cluster *Cluster) SetUserRoles(u *APIUser, roles string) {
+func (cluster *Cluster) SetNewUserRoles(u *APIUser, roles string) {
 	list := strings.Split(roles, " ")
 
 	if u.Grants[config.GrantGlobalGrant] && roles == "" {
@@ -156,8 +156,8 @@ func (cluster *Cluster) LoadAPIUsers() error {
 
 			// For compatibility allow empty cluster list ACL
 			if useracl == newapiuser.User && (listcluster == "" || slices.Contains(cluster_acls, cluster.Name)) {
-				cluster.SetUserGrants(&newapiuser, listacls)
-				cluster.SetUserRoles(&newapiuser, listroles)
+				cluster.SetNewUserGrants(&newapiuser, listacls)
+				cluster.SetNewUserRoles(&newapiuser, listroles)
 			}
 		}
 
