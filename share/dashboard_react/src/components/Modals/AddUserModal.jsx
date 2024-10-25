@@ -142,11 +142,6 @@ function AddUserModal({ clusterName, isOpen, closeModal }) {
       return
     }
 
-    const selectedGrants = acls.filter((x) => x.selected).map((x) => x.grant)
-    if (selectedGrants.length === 0) {
-      setGrantsError('Please select atleast one grant')
-      return
-    }
 
     const selectedRoles = roles.filter((x) => x.selected).map((x) => x.role)
     if (selectedRoles.length === 0) {
@@ -154,6 +149,12 @@ function AddUserModal({ clusterName, isOpen, closeModal }) {
       return
     }
     
+    const selectedGrants = acls.filter((x) => x.selected).map((x) => x.grant)
+    if (selectedGrants.length === 0) {
+      setGrantsError('Please select atleast one grant')
+      return
+    }
+
     dispatch(addUser({ clusterName, username: userName, password, grants: selectedGrants.join(' '), roles: selectedRoles.join(' ') }))
     closeModal()
   }
