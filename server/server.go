@@ -814,6 +814,15 @@ func (repman *ReplicationManager) AddFlags(flags *pflag.FlagSet, conf *config.Co
 	flags.StringVar(&conf.OnPremiseSSHStopProxyScript, "onpremise-ssh-stop-proxy-script", "", "Run via ssh a custom script to stop Proxy")
 	flags.StringVar(&conf.OnPremiseSSHDbJobScript, "onpremise-ssh-db-job-script", "", "Run via ssh a custom script to execute database jobs")
 
+	flags.BoolVar(&conf.Cloud18, "cloud18", false, "Enable Cloud 18 DBAAS")
+	flags.StringVar(&conf.Cloud18Domain, "cloud18-domain", "signal18", "DNS sub domain per organisation")
+	flags.StringVar(&conf.Cloud18SubDomain, "cloud18-sub-domain", "ovh-1", "DNS sub domain per replication-manger instance")
+	flags.StringVar(&conf.Cloud18SubDomainZone, "cloud18-sub-domain-zone", "fr", "DNS sub domain per replication-manger instance")
+	flags.BoolVar(&conf.Cloud18Shared, "cloud18-shared", false, "Enable cluster sharing for Cloud 18 DBAAS")
+	flags.StringVar(&conf.Cloud18GitUser, "cloud18-gitlab-user", "", "Cloud 18 GitLab user")
+	flags.StringVar(&conf.Cloud18GitPassword, "cloud18-gitlab-password", "", "Cloud 18 GitLab password")
+	flags.StringVar(&conf.Cloud18PlatformDescription, "cloud18-platform-description", "", "Marketing banner display on the cloud18 portal describing the infrastucture")
+
 	if WithProvisioning == "ON" {
 		flags.StringVar(&conf.ProvDatadirVersion, "prov-db-datadir-version", "10.2", "Empty datadir to deploy for localtest")
 		flags.StringVar(&conf.ProvDiskSystemSize, "prov-db-disk-system-size", "2", "Disk in g for micro service VM")
@@ -876,15 +885,6 @@ func (repman *ReplicationManager) AddFlags(flags *pflag.FlagSet, conf *config.Co
 		flags.BoolVar(&conf.ProvDockerDaemonPrivate, "prov-docker-daemon-private", true, "Use global or private registry per service")
 		flags.StringVar(&conf.ProvDBCompliance, "prov-db-compliance", "", "Path of compliance file for DB configuration")
 		flags.StringVar(&conf.ProvProxyCompliance, "prov-proxy-compliance", "", "Path of compliance file for Proxy configuration")
-
-		flags.BoolVar(&conf.Cloud18, "cloud18", false, "Enable Cloud 18 DBAAS")
-		flags.StringVar(&conf.Cloud18Domain, "cloud18-domain", "signal18", "DNS sub domain per organisation")
-		flags.StringVar(&conf.Cloud18SubDomain, "cloud18-sub-domain", "ovh-1", "DNS sub domain per replication-manger instance")
-		flags.StringVar(&conf.Cloud18SubDomainZone, "cloud18-sub-domain-zone", "fr", "DNS sub domain per replication-manger instance")
-		flags.BoolVar(&conf.Cloud18Shared, "cloud18-shared", false, "Enable cluster sharing for Cloud 18 DBAAS")
-		flags.StringVar(&conf.Cloud18GitUser, "cloud18-gitlab-user", "", "Cloud 18 GitLab user")
-		flags.StringVar(&conf.Cloud18GitPassword, "cloud18-gitlab-password", "", "Cloud 18 GitLab password")
-		flags.StringVar(&conf.Cloud18PlatformDescription, "cloud18-platform-description", "", "Marketing banner display on the cloud18 portal describing the infrastucture")
 
 		if WithOpenSVC == "ON" {
 
