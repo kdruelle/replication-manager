@@ -16,6 +16,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"runtime/debug"
 	"strings"
 	"time"
 
@@ -570,5 +571,16 @@ func (cluster *Cluster) provCopyLogs(r io.Reader, module int, level string, name
 		} else {
 			cluster.LogModulePrintf(cluster.Conf.Verbose, module, level, "[%s] %s", name, s.Text())
 		}
+	}
+}
+
+func (cluster *Cluster) LogPanicToFile(task string) {
+	if r := recover(); r != nil {
+		cluster.Logrus.WithFields(log.Fields{
+			"cluster":    cluster.Name,
+			"task":       task,
+			"panic":      r,
+			"stacktrace": string(debug.Stack()),
+		}).Error("Application terminated unexpectedly")
 	}
 }
