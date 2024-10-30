@@ -426,7 +426,7 @@ func (proxy *ProxySQLProxy) Refresh() error {
 					cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModProxySQL, config.LvlErr, "ProxySQL could not add reader %s (%s)", s.URL, err)
 				}
 				updated = true
-			} else if s.IsSlaveOrSync() && isBackendWriter {
+			} else if s.IsSlaveOrSync() && s != s.ClusterGroup.GetMaster() && isBackendWriter {
 				// Drop slave from writer HG if exists
 				cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModProxySQL, config.LvlDbg, "Monitor ProxySQL drop slave in writer group from %s", s.URL)
 				err = psql.DropWriter(misc.Unbracket(s.Host), s.Port)
