@@ -1670,11 +1670,7 @@ func (repman *ReplicationManager) Run() error {
 	var err error
 
 	// Defer to recover and log panics
-	defer func() {
-		if r := recover(); r != nil {
-			repman.LogPanicToFile(r)
-		}
-	}()
+	defer repman.LogPanicToFile()
 
 	repman.Version = Version
 	repman.Fullversion = FullVersion
