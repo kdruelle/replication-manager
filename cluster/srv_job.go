@@ -659,6 +659,8 @@ func (server *ServerMonitor) JobReseedLogicalBackup(backtype string) error {
 	cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTask, config.LvlInfo, "Receive reseed logical backup %s request for server: %s", backtype, server.URL)
 	if backtype == config.ConstBackupLogicalTypeMysqldump {
 		go func() {
+			defer cluster.LogPanicToFile(task)
+
 			useMaster := true
 			file := "mysqldump.sql.gz"
 			backupfile := cluster.master.GetMyBackupDirectory() + file
@@ -695,6 +697,8 @@ func (server *ServerMonitor) JobReseedLogicalBackup(backtype string) error {
 		}()
 	} else if backtype == config.ConstBackupLogicalTypeMydumper {
 		go func() {
+			defer cluster.LogPanicToFile(task)
+
 			useMaster := true
 			dir := "mydumper"
 			backupdir := cluster.master.GetMyBackupDirectory() + dir
@@ -847,6 +851,8 @@ func (server *ServerMonitor) JobFlashbackLogicalBackup() error {
 		go server.JobReseedBackupScript()
 	} else if cluster.Conf.BackupLogicalType == config.ConstBackupLogicalTypeMysqldump {
 		go func() {
+			defer cluster.LogPanicToFile(task)
+
 			useSelfBackup := true
 			file := "mysqldump.sql.gz"
 			backupfile := server.GetMyBackupDirectory() + file
@@ -882,6 +888,8 @@ func (server *ServerMonitor) JobFlashbackLogicalBackup() error {
 		}()
 	} else if cluster.Conf.BackupLogicalType == config.ConstBackupLogicalTypeMydumper {
 		go func() {
+			defer cluster.LogPanicToFile(task)
+
 			useSelfBackup := true
 			dir := "mydumper"
 			backupdir := server.GetMyBackupDirectory() + dir

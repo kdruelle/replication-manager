@@ -94,11 +94,14 @@ func (repman *ReplicationManager) LogModulePrintf(forcingLog bool, module int, l
 	return line
 }
 
-func (repman *ReplicationManager) LogPanicToFile(r interface{}) {
-	repman.Logrus.WithFields(logrus.Fields{
-		"panic":      r,
-		"stacktrace": string(debug.Stack()),
-	}).Error("Application terminated unexpectedly")
+func (repman *ReplicationManager) LogPanicToFile() {
+	if r := recover(); r != nil {
+		repman.Logrus.WithFields(logrus.Fields{
+			"cluster":    "none",
+			"panic":      r,
+			"stacktrace": string(debug.Stack()),
+		}).Error("Application terminated unexpectedly")
+	}
 }
 
 // Function to update the log level for the RotateFileHook
