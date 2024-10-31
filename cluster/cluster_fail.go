@@ -223,7 +223,7 @@ func (cluster *Cluster) MasterFailover(fail bool) bool {
 	// Phase 3: Prepare new master
 	if !cluster.Conf.MultiMaster && !cluster.Conf.MultiMasterGrouprep {
 		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlInfo, "Stopping slave threads on new master")
-		if cluster.master.DBVersion.IsMariaDB() || (cluster.master.DBVersion.IsMariaDB() == false && cluster.master.DBVersion.Minor < 7) {
+		if cluster.master.DBVersion.IsMariaDB() || cluster.master.DBVersion.Minor < 7 {
 			logs, err := cluster.master.StopSlave()
 			cluster.LogSQL(logs, err, cluster.master.URL, "MasterFailover", config.LvlErr, "Failed stopping slave on new master %s %s", cluster.master.URL, err)
 		}
