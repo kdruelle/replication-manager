@@ -387,7 +387,7 @@ func (cluster *Cluster) MasterFailover(fail bool) bool {
 	cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlInfo, "Switching other slaves to the new master")
 	for _, sl := range cluster.slaves {
 		// Don't switch if slave was the old master or is in a multiple master setup or with relay server.
-		if sl.URL == cluster.oldMaster.URL || sl.State == stateMaster || (sl.IsRelay == false && cluster.Conf.MxsBinlogOn == true) {
+		if (!cluster.Conf.MultiMaster && !cluster.Conf.MultiMasterGrouprep) || sl.URL == cluster.oldMaster.URL || sl.State == stateMaster || (sl.IsRelay == false && cluster.Conf.MxsBinlogOn == true) {
 			continue
 		}
 		// maxscale is in the list of slave
