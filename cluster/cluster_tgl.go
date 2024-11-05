@@ -627,6 +627,10 @@ func (cluster *Cluster) SwitchMultiMasterRingUnsafe() {
 	cluster.Conf.MultiMasterRingUnsafe = !cluster.Conf.MultiMasterRingUnsafe
 }
 
+func (cluster *Cluster) SwitchMultiMasterConcurrentWrite() {
+	cluster.Conf.MultiMasterConcurrentWrite = !cluster.Conf.MultiMasterConcurrentWrite
+}
+
 func (cluster *Cluster) SwitchDynamicTopology() {
 	cluster.Conf.DynamicTopology = !cluster.Conf.DynamicTopology
 }

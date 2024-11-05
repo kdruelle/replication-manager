@@ -356,10 +356,12 @@ func (cluster *Cluster) MasterFailover(fail bool) bool {
 				logs, err = cluster.oldMaster.SetReadWrite()
 				cluster.LogSQL(logs, err, cluster.oldMaster.URL, "MasterFailover", config.LvlErr, "Could not set old master as read-write, %s", err)
 			*/
-		} else if cluster.Conf.MultiMaster {
+		} else if cluster.Conf.MultiMaster && cluster.Conf.MultiMasterConcurrentWrite {
 			cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlInfo, "topology multi-master, remove read_only on old master")
 			err = cluster.oldMaster.SetReadWrite()
-			cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlErr, "Could not set old master as read-write, %s", err)
+			if err != nil {
+				cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlErr, "Could not set old master as read-write, %s", err)
+			}
 		}
 
 		if cluster.Conf.SwitchDecreaseMaxConn {

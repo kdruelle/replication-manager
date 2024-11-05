@@ -172,6 +172,7 @@ type Config struct {
 	MultiMasterWsrepSSTMethod                 string                 `mapstructure:"replication-multi-master-wsrep-sst-method" toml:"replication-multi-master-wsrep-sst-method" json:"replicationMultiMasterWsrepSSTMethod"`
 	MultiMasterWsrepPort                      int                    `mapstructure:"replication-multi-master-wsrep-port" toml:"replication-multi-master-wsrep-port" json:"replicationMultiMasterWsrepPort"`
 	MultiMaster                               bool                   `mapstructure:"replication-multi-master" toml:"replication-multi-master" json:"replicationMultiMaster"`
+	MultiMasterConcurrentWrite                bool                   `mapstructure:"replication-multi-master-concurrent-write" toml:"replication-multi-master-concurrent-write" json:"replicationMultiMasterConcurrentWrite"`
 	MultiTierSlave                            bool                   `mapstructure:"replication-multi-tier-slave" toml:"replication-multi-tier-slave" json:"replicationMultiTierSlave"`
 	MasterSlavePgStream                       bool                   `mapstructure:"replication-master-slave-pg-stream" toml:"replication-master-slave-pg-stream" json:"replicationMasterSlavePgStream"`
 	MasterSlavePgLogical                      bool                   `mapstructure:"replication-master-slave-pg-logical" toml:"replication-master-slave-pg-logical" json:"replicationMasterSlavePgLogical"`

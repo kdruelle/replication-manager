@@ -399,6 +399,7 @@ func (repman *ReplicationManager) AddFlags(flags *pflag.FlagSet, conf *config.Co
 	flags.BoolVar(&conf.ReplicationSSL, "replication-use-ssl", false, "Replication use SSL encryption to replicate from master")
 	flags.BoolVar(&conf.ActivePassive, "replication-active-passive", false, "Active Passive topology")
 	flags.BoolVar(&conf.MultiMaster, "replication-multi-master", false, "Multi-master topology")
+	flags.BoolVar(&conf.MultiMasterConcurrentWrite, "replication-multi-master-concurrent-write", false, "Enable concurrent write on multi-master topology")
 	flags.BoolVar(&conf.MultiMasterGrouprep, "replication-multi-master-grouprep", false, "Enable mysql group replication multi-master")
 	flags.IntVar(&conf.MultiMasterGrouprepPort, "replication-multi-master-grouprep-port", 33061, "Group replication network port")
 	flags.BoolVar(&conf.MultiMasterWsrep, "replication-multi-master-wsrep", false, "Enable Galera wsrep multi-master")
