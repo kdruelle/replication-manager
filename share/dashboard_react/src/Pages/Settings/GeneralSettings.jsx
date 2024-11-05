@@ -17,6 +17,7 @@ function GeneralSettings({ selectedCluster, user }) {
       failoverLoading,
       targetTopologyLoading,
       allowUnsafeClusterLoading,
+      allowMultiMasterConcurrentWriteLoading,
       allowMultitierSlaveLoading,
       testLoading
     }
@@ -58,6 +59,20 @@ function GeneralSettings({ selectedCluster, user }) {
           />
           {targetTopologyLoading && <Spinner />}
         </Flex>
+      )
+    },
+    {
+      key: 'Allow concurrent write on multi-master topology',
+      value: (
+        <RMSwitch
+          isChecked={selectedCluster?.config?.replicationMultiMasterConcurrentWrite}
+          isDisabled={user?.grants['cluster-settings'] == false}
+          loading={allowMultiMasterConcurrentWriteLoading}
+          confirmTitle={'Confirm switch settings for multi-master-concurrent-write?'}
+          onChange={() =>
+            dispatch(switchSetting({ clusterName: selectedCluster?.name, setting: 'multi-master-concurrent-write' }))
+          }
+        />
       )
     },
     {
