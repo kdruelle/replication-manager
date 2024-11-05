@@ -98,8 +98,9 @@ type Config struct {
 	MonitoringCloseStateScript                string                 `mapstructure:"monitoring-close-state-script" toml:"monitoring-close-state-script" json:"monitoringCloseStateScript"`
 	Interactive                               bool                   `mapstructure:"interactive" toml:"-" json:"interactive"`
 	Verbose                                   bool                   `mapstructure:"verbose" toml:"verbose" json:"verbose"`
-	LogFile                                   string                 `mapstructure:"log-file" toml:"log-file" json:"logFile"`
-	LogSyslog                                 bool                   `mapstructure:"log-syslog" toml:"log-syslog" json:"logSyslog"`
+	LogFile                                   string                 `scope:"server" mapstructure:"log-file" toml:"log-file" json:"logFile"`
+	LogFileLevel                              int                    `scope:"server" mapstructure:"log-file-level" toml:"log-file-level" json:"logFileLevel"`
+	LogSyslog                                 bool                   `scope:"server" mapstructure:"log-syslog" toml:"log-syslog" json:"logSyslog"`
 	LogLevel                                  int                    `mapstructure:"log-level" toml:"log-level" json:"logLevel"`
 	LogRotateMaxSize                          int                    `mapstructure:"log-rotate-max-size" toml:"log-rotate-max-size" json:"logRotateMaxSize"`
 	LogRotateMaxBackup                        int                    `mapstructure:"log-rotate-max-backup" toml:"log-rotate-max-backup" json:"logRotateMaxBackup"`
@@ -171,6 +172,7 @@ type Config struct {
 	MultiMasterWsrepSSTMethod                 string                 `mapstructure:"replication-multi-master-wsrep-sst-method" toml:"replication-multi-master-wsrep-sst-method" json:"replicationMultiMasterWsrepSSTMethod"`
 	MultiMasterWsrepPort                      int                    `mapstructure:"replication-multi-master-wsrep-port" toml:"replication-multi-master-wsrep-port" json:"replicationMultiMasterWsrepPort"`
 	MultiMaster                               bool                   `mapstructure:"replication-multi-master" toml:"replication-multi-master" json:"replicationMultiMaster"`
+	MultiMasterConcurrentWrite                bool                   `mapstructure:"replication-multi-master-concurrent-write" toml:"replication-multi-master-concurrent-write" json:"replicationMultiMasterConcurrentWrite"`
 	MultiTierSlave                            bool                   `mapstructure:"replication-multi-tier-slave" toml:"replication-multi-tier-slave" json:"replicationMultiTierSlave"`
 	MasterSlavePgStream                       bool                   `mapstructure:"replication-master-slave-pg-stream" toml:"replication-master-slave-pg-stream" json:"replicationMasterSlavePgStream"`
 	MasterSlavePgLogical                      bool                   `mapstructure:"replication-master-slave-pg-logical" toml:"replication-master-slave-pg-logical" json:"replicationMasterSlavePgLogical"`
@@ -621,7 +623,7 @@ type Config struct {
 	BackupKeepYearly                          int                    `mapstructure:"backup-keep-yearly" toml:"backup-keep-yearly" json:"backupKeepYearly"`
 	BackupRestic                              bool                   `mapstructure:"backup-restic" toml:"backup-restic" json:"backupRestic"`
 	BackupResticBinaryPath                    string                 `mapstructure:"backup-restic-binary-path" toml:"backup-restic-binary-path" json:"backupResticBinaryPath"`
-	BackupResticAwsAccessKeyId                string                 `mapstructure:"backup-restic-aws-access-key-id" toml:"backup-restic-aws-access-key-id" json:"-"`
+	BackupResticAwsAccessKeyId                string                 `mapstructure:"backup-restic-aws-access-key-id" toml:"backup-restic-aws-access-key-id" json:"backupResticAwsAccessKeyId"`
 	BackupResticAwsAccessSecret               string                 `mapstructure:"backup-restic-aws-access-secret"  toml:"backup-restic-aws-access-secret" json:"-"`
 	BackupResticRepository                    string                 `mapstructure:"backup-restic-repository" toml:"backup-restic-repository" json:"backupResticRepository"`
 	BackupResticPassword                      string                 `mapstructure:"backup-restic-password"  toml:"backup-restic-password" json:"-"`
@@ -637,7 +639,7 @@ type Config struct {
 	BackupMysqldumpOptions                    string                 `mapstructure:"backup-mysqldump-options" toml:"backup-mysqldump-options" json:"backupMysqldumpOptions"`
 	BackupMyDumperPath                        string                 `mapstructure:"backup-mydumper-path" toml:"backup-mydumper-path" json:"backupMydumperPath"`
 	BackupMyLoaderPath                        string                 `mapstructure:"backup-myloader-path" toml:"backup-myloader-path" json:"backupMyloaderPath"`
-	BackupMyLoaderOptions                     string                 `mapstructure:"backup-myloader-options" toml:"backup-myloader-options" json:"backupMyloaderOptions"`
+	BackupMyLoaderOptions                     string                 `mapstructure:"backup-myloader-options" toml:"backup-myloader-options" json:"backupMyLoaderOptions"`
 	BackupMyDumperOptions                     string                 `mapstructure:"backup-mydumper-options" toml:"backup-mydumper-options" json:"backupMyDumperOptions"`
 	BackupMysqlbinlogPath                     string                 `mapstructure:"backup-mysqlbinlog-path" toml:"backup-mysqlbinlog-path" json:"backupMysqlbinlogPath"`
 	BackupMysqlclientPath                     string                 `mapstructure:"backup-mysqlclient-path" toml:"backup-mysqlclient-path" json:"backupMysqlclientgPath"`
@@ -876,6 +878,20 @@ type Grant struct {
 	Grant  string `json:"grant"`
 	Enable bool   `json:"enable"`
 }
+
+type Role struct {
+	Role   string `json:"role"`
+	Enable bool   `json:"enable"`
+}
+
+const (
+	RoleSysOps    string = "sysops"
+	RoleDBOps     string = "dbops"
+	RoleExtSysOps string = "extsysops"
+	RoleExtDBOps  string = "extdbops"
+	RoleSponsor   string = "sponsor"
+	RoleVisitor   string = "visitor"
+)
 
 const (
 	GrantDBStart                   string = "db-start"
@@ -1241,7 +1257,7 @@ func (conf *Config) GetDecryptedPassword(key string, value string) string {
 		value = strings.TrimPrefix(value, "hash_")
 		p := crypto.Password{Key: conf.SecretKey}
 		if conf.LogConfigLoad {
-			log.WithFields(log.Fields{"cluster": "none", "type": "log", "module": "config"}).Infof("GetDecryptedPassword: key(%s) value(%s) %s", key, value, conf.SecretKey)
+			log.WithFields(log.Fields{"cluster": "none", "type": "log", "module": "config"}).Infof("GetDecryptedPassword: decrypting key `%s`: %s", key, value)
 		}
 
 		if value != "" {
@@ -1888,6 +1904,17 @@ func (conf *Config) GetGrantType() map[string]string {
 	}
 }
 
+func (conf *Config) GetRoleType() map[string]string {
+	return map[string]string{
+		RoleSysOps:    RoleSysOps,
+		RoleDBOps:     RoleDBOps,
+		RoleExtSysOps: RoleExtSysOps,
+		RoleExtDBOps:  RoleExtDBOps,
+		RoleSponsor:   RoleSponsor,
+		RoleVisitor:   RoleVisitor,
+	}
+}
+
 func (conf *Config) GetDockerRepos(file string, is_not_embed bool) ([]DockerRepo, error) {
 	var repos DockerRepos
 	var byteValue []byte
@@ -2255,7 +2282,7 @@ func (conf *Config) SetLogOutput(out io.Writer) {
 	log.SetOutput(out)
 }
 
-func (conf *Config) ToLogrusLevel(l int) log.Level {
+func ToLogrusLevel(l int) log.Level {
 	switch l {
 	case 2:
 		return log.WarnLevel

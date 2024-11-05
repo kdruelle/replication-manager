@@ -39,6 +39,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/signal18/replication-manager/cert"
 	"github.com/signal18/replication-manager/cluster"
+	"github.com/signal18/replication-manager/config"
 	"github.com/signal18/replication-manager/regtest"
 	"github.com/signal18/replication-manager/share"
 	"github.com/signal18/replication-manager/utils/githelper"
@@ -358,6 +359,31 @@ func (repman *ReplicationManager) IsValidClusterACL(r *http.Request, cluster *cl
 		return cluster.IsValidACL(meuser, mepwd, r.URL.Path, "password"), meuser
 	}
 	return false, ""
+}
+
+func (repman *ReplicationManager) GetUserFromRequest(r *http.Request) string {
+
+	token, err := request.ParseFromRequest(r, request.AuthorizationHeaderExtractor, func(token *jwt.Token) (interface{}, error) {
+		vk, _ := jwt.ParseRSAPublicKeyFromPEM(verificationKey)
+		return vk, nil
+	})
+
+	if err == nil {
+		claims := token.Claims.(jwt.MapClaims)
+		userinfo := claims["CustomUserInfo"]
+		mycutinfo := userinfo.(map[string]interface{})
+		meuser := mycutinfo["Name"].(string)
+		_, ok := mycutinfo["profile"]
+
+		if ok {
+			if strings.Contains(mycutinfo["profile"].(string), repman.Conf.OAuthProvider) /*&& strings.Contains(mycutinfo["email_verified"]*/ {
+				return mycutinfo["email"].(string)
+			}
+		}
+		return meuser
+	}
+
+	return ""
 }
 
 func (repman *ReplicationManager) loginHandler(w http.ResponseWriter, r *http.Request) {
@@ -753,8 +779,33 @@ func (repman *ReplicationManager) jsonResponse(apiresponse interface{}, w http.R
 func (repman *ReplicationManager) handlerMuxClusterAdd(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
-	repman.AddCluster(vars["clusterName"], "")
 
+	username := repman.GetUserFromRequest(r)
+	if username == "" {
+		http.Error(w, "User is not valid", http.StatusInternalServerError)
+		return
+	}
+
+	repman.AddCluster(vars["clusterName"], "")
+	// Create user and grant for new cluster
+	cl := repman.getClusterByName(vars["clusterName"])
+	if cl != nil {
+		if u, ok := cl.APIUsers[username]; !ok {
+			// Create user and grant for new cluster
+			userform := cluster.UserForm{
+				Username: username,
+				Roles:    strings.Join(([]string{config.RoleSponsor, config.RoleDBOps, config.RoleSysOps}), " "),
+				Grants:   "cluster db proxy prov",
+			}
+
+			cl.AddUser(userform)
+		} else {
+			// Update grant for new cluster
+			cl.SetNewUserGrants(&u, "cluster db proxy prov")
+			cl.SetNewUserRoles(&u, strings.Join(([]string{config.RoleSponsor, config.RoleDBOps, config.RoleSysOps}), " "))
+			cl.APIUsers[u.User] = u
+		}
+	}
 }
 
 func (repman *ReplicationManager) handlerMuxClusterDelete(w http.ResponseWriter, r *http.Request) {

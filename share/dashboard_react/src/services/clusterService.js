@@ -383,8 +383,8 @@ function runRegressionTests(clusterName, testName) {
 //#endregion cluster>run tests
 
 //#region cluster> add user
-function addUser(clusterName, username, password, grants) {
-  return postRequest(`clusters/${clusterName}/users/add`, { username, password, grants })
+function addUser(clusterName, username, grants, roles) {
+  return postRequest(`clusters/${clusterName}/users/add`, { username, grants, roles })
 }
 
 //#endregion cluster>add user

@@ -299,6 +299,10 @@ func (cluster *Cluster) GetMaxFail() int {
 func (cluster *Cluster) GetLogLevel() int {
 	return cluster.Conf.LogLevel
 }
+
+func (cluster *Cluster) GetLogFileLevel() int {
+	return cluster.Conf.LogFileLevel
+}
 func (cluster *Cluster) GetSwitchSync() bool {
 	return cluster.Conf.SwitchSync
 }
@@ -730,6 +734,11 @@ func (cluster *Cluster) GetTopologyFromConf() string {
 			cluster.Conf.Topology = topoMasterSlave
 		}
 	}
+
+	if cluster.Conf.TopologyTarget == "" || cluster.Conf.TopologyTarget == topoUnknown {
+		cluster.Conf.TopologyTarget = cluster.Conf.Topology
+	}
+
 	return cluster.Conf.Topology
 }
 
@@ -1284,4 +1293,8 @@ func (cluster *Cluster) GetVaultToken() {
 		cluster.Conf.DynamicFlagMap["vault-token"] = authInfo.Auth.ClientToken
 		//cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGeneral,LvlInfo, "COUCOU test %s", authInfo.Auth.ClientToken)
 	}
+}
+
+func (cluster *Cluster) GetResticLocalDir() string {
+	return cluster.Conf.WorkingDir + "/" + config.ConstStreamingSubDir + "/archive/" + cluster.Name
 }

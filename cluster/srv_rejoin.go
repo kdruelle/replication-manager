@@ -542,7 +542,7 @@ func (server *ServerMonitor) rejoinSlave(ss dbhelper.SlaveStatus) error {
 		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlErr, "No master found from replication")
 		return errors.New("No master found from replication")
 	}
-	if cluster.master != nil && mycurrentmaster != nil {
+	if cluster.master != nil && cluster.master.Id != server.Id && mycurrentmaster != nil {
 		if cluster.master.URL == mycurrentmaster.URL {
 			cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGeneral, "INFO", "Cancel rejoin, found same leader already from replication %s	", mycurrentmaster.URL)
 			return errors.New("Same master found from replication")
@@ -765,8 +765,8 @@ func (cluster *Cluster) RejoinClone(source *ServerMonitor, dest *ServerMonitor) 
 			cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlInfo, "Installing Clone plugin")
 			dest.InstallPlugin("CLONE")
 		}
-		dest.ExecQueryNoBinLog("set global clone_valid_donor_list = '" + source.Host + ":" + source.Port + "'")
-		dest.ExecQueryNoBinLog("CLONE INSTANCE FROM " + dest.User + "@" + source.Host + ":" + source.Port + " identified by '" + dest.Pass + "'")
+		dest.ExecQueryNoBinLog("set global clone_valid_donor_list = '"+source.Host+":"+source.Port+"'", 5*time.Second)
+		dest.ExecQueryNoBinLog("CLONE INSTANCE FROM "+dest.User+"@"+source.Host+":"+source.Port+" identified by '"+dest.Pass+"'", 5*time.Second)
 		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlInfo, "Start slave after dump")
 		dest.SetReplicationGTIDSlavePosFromServer(source)
 		dest.StartSlave()

@@ -7,6 +7,7 @@
 package server
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -24,6 +25,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/signal18/replication-manager/cluster"
 	"github.com/signal18/replication-manager/config"
+	"github.com/signal18/replication-manager/utils/s18log"
 )
 
 func (repman *ReplicationManager) apiClusterUnprotectedHandler(router *mux.Router) {
@@ -93,21 +95,21 @@ func (repman *ReplicationManager) apiClusterProtectedHandler(router *mux.Router)
 		negroni.HandlerFunc(repman.validateTokenMiddleware),
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxSettingsReload)),
 	))
-	router.Handle("/api/clusters/{clusterName}/settings/actions/switch/{settingName}", negroni.New(
-		negroni.HandlerFunc(repman.validateTokenMiddleware),
-		negroni.Wrap(http.HandlerFunc(repman.handlerMuxSwitchSettings)),
-	))
 	router.Handle("/api/clusters/settings/actions/switch/{settingName}", negroni.New(
 		negroni.HandlerFunc(repman.validateTokenMiddleware),
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxSwitchGlobalSettings)),
 	))
-	router.Handle("/api/clusters/{clusterName}/settings/actions/set/{settingName}/{settingValue}", negroni.New(
+	router.Handle("/api/clusters/{clusterName}/settings/actions/switch/{settingName}", negroni.New(
 		negroni.HandlerFunc(repman.validateTokenMiddleware),
-		negroni.Wrap(http.HandlerFunc(repman.handlerMuxSetSettings)),
+		negroni.Wrap(http.HandlerFunc(repman.handlerMuxSwitchSettings)),
 	))
 	router.Handle("/api/clusters/settings/actions/set/{settingName}/{settingValue}", negroni.New(
 		negroni.HandlerFunc(repman.validateTokenMiddleware),
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxSetGlobalSettings)),
+	))
+	router.Handle("/api/clusters/{clusterName}/settings/actions/set/{settingName}/{settingValue}", negroni.New(
+		negroni.HandlerFunc(repman.validateTokenMiddleware),
+		negroni.Wrap(http.HandlerFunc(repman.handlerMuxSetSettings)),
 	))
 	router.Handle("/api/clusters/{clusterName}/settings/actions/set-cron/{settingName}/{settingValue:.*}", negroni.New(
 		negroni.HandlerFunc(repman.validateTokenMiddleware),
@@ -721,7 +723,10 @@ func (repman *ReplicationManager) bootstrapTopology(mycluster *cluster.Cluster, 
 		mycluster.SetMultiMasterRing(false)
 		mycluster.SetMultiMasterWsrep(true)
 		mycluster.Topology = config.TopoMultiMasterWsrep
+	default:
+		return
 	}
+	mycluster.Conf.TopologyTarget = mycluster.Topology
 }
 
 func (repman *ReplicationManager) handlerMuxServicesBootstrap(w http.ResponseWriter, r *http.Request) {
@@ -1361,6 +1366,8 @@ func (repman *ReplicationManager) switchClusterSettings(mycluster *cluster.Clust
 		mycluster.SwitchForceBinlogPurgeOnRestore()
 	case "force-binlog-purge-replicas":
 		mycluster.SwitchForceBinlogPurgeReplicas()
+	case "multi-master-concurrent-write":
+		mycluster.SwitchMultiMasterConcurrentWrite()
 	case "multi-master-ring-unsafe":
 		mycluster.SwitchMultiMasterRingUnsafe()
 	case "dynamic-topology":
@@ -1388,7 +1395,6 @@ func (repman *ReplicationManager) handlerMuxSetSettings(w http.ResponseWriter, r
 	// Should be handled with global settings
 	serverScope := config.IsScope(setting, "server")
 	if serverScope {
-		r.URL.Path = strings.Replace(r.URL.Path, "/api/clusters/"+vars["clusterName"], "/api/clusters/", 1)
 		repman.handlerMuxSetGlobalSettings(w, r)
 		return
 	}
@@ -1423,8 +1429,10 @@ func (repman *ReplicationManager) handlerMuxSetGlobalSettings(w http.ResponseWri
 	}
 
 	var mycluster *cluster.Cluster
+	// path := r.URL.Path
 	if cName, ok := vars["clusterName"]; ok {
 		mycluster = repman.getClusterByName(cName)
+		r.URL.Path = strings.Replace(r.URL.Path, "/api/clusters/"+vars["clusterName"], "/api/clusters", 1)
 	} else {
 		for _, v := range repman.Clusters {
 			if v != nil {
@@ -1437,11 +1445,12 @@ func (repman *ReplicationManager) handlerMuxSetGlobalSettings(w http.ResponseWri
 	if mycluster != nil {
 		valid, user := repman.IsValidClusterACL(r, mycluster)
 		if valid {
+			// || (user != "" && mycluster.IsURLPassACL(user, path, false)) {
 			//Set server scope
 			mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, "INFO", "Option '%s' is a shared values between clusters", setting)
 			repman.setServerSetting(user, r.URL.Path, setting, vars["settingValue"])
 		} else {
-			http.Error(w, fmt.Sprintf("User doesn't have required ACL for global setting: %s", setting), 403)
+			http.Error(w, fmt.Sprintf("User doesn't have required ACL for global setting: %s. path: %s", setting, r.URL.Path), 403)
 			return
 		}
 	} else {
@@ -1736,6 +1745,55 @@ func (repman *ReplicationManager) setClusterSetting(mycluster *cluster.Cluster, 
 		mycluster.Conf.Cloud18GitPassword = value
 	case "cloud18-platform-description":
 		mycluster.Conf.Cloud18PlatformDescription = value
+	case "log-file-level":
+		val, _ := strconv.Atoi(value)
+		mycluster.Conf.LogFileLevel = val
+	case "backup-restic-repository":
+		val, err := base64.StdEncoding.DecodeString(value)
+		if err != nil {
+			return errors.New("Unable to decode")
+		}
+		mycluster.Conf.BackupResticRepository = string(val)
+	case "backup-restic-aws-access-key-id":
+		mycluster.Conf.BackupResticAwsAccessKeyId = value
+	case "backup-restic-aws-access-secret":
+		val, err := base64.StdEncoding.DecodeString(value)
+		if err != nil {
+			return errors.New("Unable to decode")
+		}
+		mycluster.Conf.BackupResticAwsAccessSecret = string(val)
+		var new_secret config.Secret
+		new_secret.Value = mycluster.Conf.BackupResticAwsAccessSecret
+		new_secret.OldValue = mycluster.Conf.GetDecryptedValue("backup-restic-aws-access-secret")
+		mycluster.Conf.Secrets["backup-restic-aws-access-secret"] = new_secret
+	case "backup-restic-password":
+		val, err := base64.StdEncoding.DecodeString(value)
+		if err != nil {
+			return errors.New("Unable to decode")
+		}
+		mycluster.Conf.BackupResticPassword = string(val)
+		var new_secret config.Secret
+		new_secret.Value = mycluster.Conf.BackupResticPassword
+		new_secret.OldValue = mycluster.Conf.GetDecryptedValue("backup-restic-password")
+		mycluster.Conf.Secrets["backup-restic-password"] = new_secret
+	case "backup-mydumper-options":
+		val, err := base64.StdEncoding.DecodeString(value)
+		if err != nil {
+			return errors.New("Unable to decode")
+		}
+		mycluster.Conf.BackupMyDumperOptions = string(val)
+	case "backup-myloader-options":
+		val, err := base64.StdEncoding.DecodeString(value)
+		if err != nil {
+			return errors.New("Unable to decode")
+		}
+		mycluster.Conf.BackupMyLoaderOptions = string(val)
+	case "backup-mysqldump-options":
+		val, err := base64.StdEncoding.DecodeString(value)
+		if err != nil {
+			return errors.New("Unable to decode")
+		}
+		mycluster.Conf.BackupMysqldumpOptions = string(val)
 	default:
 		return errors.New("Setting not found")
 	}
@@ -1848,6 +1906,10 @@ func (repman *ReplicationManager) setRepmanSetting(name string, value string) er
 		repman.Conf.HaproxyBinaryPath = value
 	case "maxscale-binary-pat":
 		repman.Conf.MxsBinaryPath = value
+	case "log-file-level":
+		val, _ := strconv.Atoi(value)
+		repman.Conf.LogFileLevel = val
+		repman.UpdateFileHookLogLevel(repman.fileHook.(*s18log.RotateFileHook), val)
 	default:
 		return errors.New("Setting not found")
 	}

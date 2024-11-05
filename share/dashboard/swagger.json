@@ -974,7 +974,7 @@
         },
         "backupResticRepository": {
           "type": "string",
-          "x-go-name": "BackupResticRepository"
+          "x-go-name": "backupResticRepository"
         },
         "backupStreaming": {
           "type": "boolean",

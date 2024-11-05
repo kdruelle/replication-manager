@@ -223,7 +223,7 @@ func (cluster *Cluster) MasterFailover(fail bool) bool {
 	// Phase 3: Prepare new master
 	if !cluster.Conf.MultiMaster && !cluster.Conf.MultiMasterGrouprep {
 		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlInfo, "Stopping slave threads on new master")
-		if cluster.master.DBVersion.IsMariaDB() || (cluster.master.DBVersion.IsMariaDB() == false && cluster.master.DBVersion.Minor < 7) {
+		if cluster.master.DBVersion.IsMariaDB() || cluster.master.DBVersion.Minor < 7 {
 			logs, err := cluster.master.StopSlave()
 			cluster.LogSQL(logs, err, cluster.master.URL, "MasterFailover", config.LvlErr, "Failed stopping slave on new master %s %s", cluster.master.URL, err)
 		}
@@ -356,7 +356,14 @@ func (cluster *Cluster) MasterFailover(fail bool) bool {
 				logs, err = cluster.oldMaster.SetReadWrite()
 				cluster.LogSQL(logs, err, cluster.oldMaster.URL, "MasterFailover", config.LvlErr, "Could not set old master as read-write, %s", err)
 			*/
+		} else if cluster.Conf.MultiMaster && cluster.Conf.MultiMasterConcurrentWrite {
+			cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlInfo, "topology multi-master, remove read_only on old master")
+			err = cluster.oldMaster.SetReadWrite()
+			if err != nil {
+				cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlErr, "Could not set old master as read-write, %s", err)
+			}
 		}
+
 		if cluster.Conf.SwitchDecreaseMaxConn {
 
 			logs, err := dbhelper.SetMaxConnections(cluster.oldMaster.Conn, cluster.oldMaster.maxConn, cluster.oldMaster.DBVersion)
@@ -382,7 +389,7 @@ func (cluster *Cluster) MasterFailover(fail bool) bool {
 	cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlInfo, "Switching other slaves to the new master")
 	for _, sl := range cluster.slaves {
 		// Don't switch if slave was the old master or is in a multiple master setup or with relay server.
-		if sl.URL == cluster.oldMaster.URL || sl.State == stateMaster || (sl.IsRelay == false && cluster.Conf.MxsBinlogOn == true) {
+		if (!cluster.Conf.MultiMaster && !cluster.Conf.MultiMasterGrouprep) || sl.URL == cluster.oldMaster.URL || sl.State == stateMaster || (sl.IsRelay == false && cluster.Conf.MxsBinlogOn == true) {
 			continue
 		}
 		// maxscale is in the list of slave

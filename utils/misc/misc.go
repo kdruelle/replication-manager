@@ -63,6 +63,23 @@ func SplitPair(s string) (string, string) {
 	return items[0], items[1]
 }
 
+func SplitAcls(s string) (string, string, string, string) {
+	items := strings.Split(s, ":")
+	if len(items) == 1 {
+		return items[0], "", "", ""
+	}
+	if len(items) == 2 {
+		return items[0], items[1], "", ""
+	}
+	if len(items) == 3 {
+		return items[0], items[1], items[2], ""
+	}
+	if len(items) > 4 {
+		return items[0], items[1], items[2], strings.Join(items[3:], ":")
+	}
+	return items[0], items[1], items[2], items[3]
+}
+
 /* Validate server host and port */
 func ValidateHostPort(h string, p string) bool {
 	if net.ParseIP(h) == nil {

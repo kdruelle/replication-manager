@@ -158,49 +158,36 @@ func (cluster *Cluster) AddSeededProxy(prx string, srv string, port string, user
 type UserForm struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
+	Roles    string `json:"roles"`
 	Grants   string `json:"grants"`
 }
 
 func (cluster *Cluster) AddUser(userform UserForm) error {
 	user := userform.Username
+	roles := userform.Roles
 	grants := userform.Grants
 	pass, _ := cluster.GeneratePassword()
 	if _, ok := cluster.APIUsers[user]; ok {
 		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlErr, "User %s already exist ", user)
 	} else {
 		if cluster.Conf.GetDecryptedValue("api-credentials-external") == "" {
-			cluster.Conf.APIUsersExternal = user + ":" + pass
-
+			cluster.Conf.APIUsersExternal = user + ":" + pass + ":" + roles
 		} else {
-			cluster.Conf.APIUsersExternal = cluster.Conf.GetDecryptedValue("api-credentials-external") + "," + user + ":" + pass
+			cluster.Conf.APIUsersExternal = cluster.Conf.GetDecryptedValue("api-credentials-external") + "," + user + ":" + pass + ":" + roles
 		}
 		var new_secret config.Secret
 		new_secret.Value = cluster.Conf.APIUsersExternal
 		new_secret.OldValue = cluster.Conf.GetDecryptedValue("api-credentials-external")
 		cluster.Conf.Secrets["api-credentials-external"] = new_secret
+
+		// Assign ACL before reloading
+		cluster.Conf.APIUsersACLAllow = cluster.Conf.APIUsersACLAllow + "," + user + ":" + grants + ":" + roles + ":" + cluster.Name
+
 		cluster.LoadAPIUsers()
-		cluster.AddUserGrants(user, grants)
 		cluster.Save()
 	}
 
 	return nil
-}
-
-func (cluster *Cluster) AddUserGrants(user string, grants string) {
-
-	acls := strings.Split(grants, " ")
-	for key, value := range cluster.Grants {
-		found := false
-		for _, acl := range acls {
-			if strings.HasPrefix(key, acl) && acl != "" {
-				found = true
-				break
-			}
-		}
-		cluster.APIUsers[user].Grants[value] = found
-	}
-
-	cluster.SaveAcls()
 }
 
 func (cluster *Cluster) AddShardingHostGroup(proxy *MariadbShardProxy) error {

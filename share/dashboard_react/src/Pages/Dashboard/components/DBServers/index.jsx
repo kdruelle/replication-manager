@@ -43,7 +43,7 @@ function DBServers({ selectedCluster, user }) {
         })
       )
     }
-  }, [clusterServers])
+  }, [clusterServers, clusterMaster?.id])
 
   const showGridView = () => {
     setViewType('grid')
@@ -114,7 +114,7 @@ function DBServers({ selectedCluster, user }) {
         }
       ),
 
-      columnHelper.accessor((row) => <ServerStatus state={row.state} isBlinking={true} />, {
+      columnHelper.accessor((row) => <ServerStatus state={row?.state} isBlinking={true} />, {
         cell: (info) => info.getValue(),
         header: 'Status',
         id: 'status'
@@ -237,7 +237,8 @@ function DBServers({ selectedCluster, user }) {
       hasMysqlGtid,
       selectedCluster?.name,
       selectedCluster?.config?.backupPhysicalType,
-      selectedCluster?.config?.backupLogicalType
+      selectedCluster?.config?.backupLogicalType,
+      clusterMaster?.id
     ]
   )
 

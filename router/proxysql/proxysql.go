@@ -226,6 +226,12 @@ func (psql *ProxySQL) DropReader(host string, port string) error {
 	return err
 }
 
+func (psql *ProxySQL) DropWriter(host string, port string) error {
+	sql := fmt.Sprintf("DELETE FROM mysql_servers WHERE  hostgroup_id='%s' AND hostname='%s' AND port='%s' ", psql.WriterHG, host, port)
+	_, err := psql.Connection.Exec(sql)
+	return err
+}
+
 func (psql *ProxySQL) Truncate() error {
 	_, err := psql.Connection.Exec("DELETE FROM mysql_servers WHERE hostgroup_id in ('%s','%s')", psql.ReaderHG, psql.WriterHG)
 	return err
@@ -243,24 +249,20 @@ func (psql *ProxySQL) CopyReaderToWriter(host string, port string) error {
 }
 
 func (psql *ProxySQL) ReplaceWriter(host string, port string, oldhost string, oldport string, masterasreader bool) error {
-
+    var err error
 	if masterasreader {
-		err := psql.DeleteAllWriters()
-		if err != nil {
+		if err = psql.DeleteAllWriters(); err != nil {
 			return err
 		}
 		err = psql.CopyReaderToWriter(host, port)
-		return err
 	} else {
-		err := psql.SetReader(oldhost, oldport)
-		if err != nil {
+		if err := psql.SetReader(oldhost, oldport); err != nil {
 			return err
 		}
 		err = psql.SetWriter(host, port)
-		return err
 	}
 	//sql := fmt.Sprintf("UPDATE mysql_servers SET status='ONLINE' ,  hostgroup_id='%s', hostname='%s',  port='%s' WHERE  hostname='%s' and  port='%s' ", psql.WriterHG, host, port, oldhost, oldport)
-	return nil
+	return err
 }
 
 func (psql *ProxySQL) GetStatsForHostRead(host string, port string) (string, string, int, int, int, int, error) {
@@ -272,7 +274,7 @@ func (psql *ProxySQL) GetStatsForHostRead(host string, port string) (string, str
 		bytein    int
 		latency   int
 	)
-	sql := fmt.Sprintf("SELECT hostgroup, status, ConnUsed, Bytes_data_sent , Bytes_data_recv , Latency_us FROM stats.stats_mysql_connection_pool INNER JOIN mysql_replication_hostgroups ON mysql_replication_hostgroups.reader_hostgroup=hostgroup  WHERE srv_host='%s' AND srv_port='%s'", host, port)
+	sql := fmt.Sprintf("SELECT hostgroup, status, ConnUsed, Bytes_data_sent , Bytes_data_recv , Latency_us FROM stats.stats_mysql_connection_pool WHERE hostgroup='%s' AND srv_host='%s' AND srv_port='%s'", psql.ReaderHG, host, port)
 	row := psql.Connection.QueryRow(sql)
 	err := row.Scan(&hostgroup, &status, &connused, &byteout, &bytein, &latency)
 	return hostgroup, status, connused, byteout, bytein, latency, err
@@ -287,7 +289,7 @@ func (psql *ProxySQL) GetStatsForHostWrite(host string, port string) (string, st
 		bytein    int
 		latency   int
 	)
-	sql := fmt.Sprintf("SELECT hostgroup, status, ConnUsed, Bytes_data_sent , Bytes_data_recv , Latency_us FROM stats.stats_mysql_connection_pool INNER JOIN mysql_replication_hostgroups ON mysql_replication_hostgroups.writer_hostgroup=hostgroup  WHERE srv_host='%s' AND srv_port='%s'", host, port)
+	sql := fmt.Sprintf("SELECT hostgroup, status, ConnUsed, Bytes_data_sent , Bytes_data_recv , Latency_us FROM stats.stats_mysql_connection_pool WHERE hostgroup='%s' AND srv_host='%s' AND srv_port='%s'", psql.WriterHG, host, port)
 	row := psql.Connection.QueryRow(sql)
 	err := row.Scan(&hostgroup, &status, &connused, &byteout, &bytein, &latency)
 	return hostgroup, status, connused, byteout, bytein, latency, err
@@ -430,5 +432,14 @@ func (psql *ProxySQL) LoadProxiesToRuntime() error {
 
 func (psql *ProxySQL) SaveProxiesToDisk() error {
 	_, err := psql.Connection.Exec("SAVE PROXYSQL SERVERS TO DISK")
+	return err
+}
+
+func (psql *ProxySQL) SetMonitorIsAlsoWriter(v bool) error {
+	var val int
+	if v {
+		val = 1
+	}
+	_, err := psql.Connection.Exec("SET mysql-monitor_writer_is_also_reader = %d", val)
 	return err
 }

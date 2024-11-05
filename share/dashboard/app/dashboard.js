@@ -66,6 +66,21 @@ app.controller('DashboardController', function (
   $scope.missingProxyTags = [];
   $scope.promise = undefined;
   $scope.processlist = {};
+  
+  $scope.isEditing = {};
+  $scope.editableData = {};
+
+  // Start editing by setting the item id in isEditing and initializing editableData
+  $scope.startEditing = function(key, value) {
+    $scope.isEditing[key] = true;
+    $scope.editableData[key] = value;  // Store the initial value in editableData
+  };
+
+  // Cancel editing by removing the item from editableData and resetting isEditing
+  $scope.cancelEditing = function(itemId) {
+    $scope.isEditing[itemId] = false;        // Reset editing state for this item
+    delete $scope.editableData[itemId];      // Discard changes by deleting from editableData
+};
 
   $scope.UpdateProcessList = function (newData) {
     // Iterate over each key in the new data
@@ -547,6 +562,7 @@ app.controller('DashboardController', function (
             $scope.refreshInterval = $scope.settings.config.httpRefreshInterval;
           }
           $scope.newUserAcls = JSON.parse(JSON.stringify($scope.settings.serviceAcl));
+          $scope.newUserRoles = JSON.parse(JSON.stringify($scope.settings.serviceRoles));
           if ((data.logs) && (data.logs.buffer)) $scope.logs = data.logs.buffer;
 
         }
@@ -1893,6 +1909,10 @@ app.controller('DashboardController', function (
     if (confirm("Confirm change '" + setting.toString() + "' to: " + value.toString())) httpGetWithoutResponse(getClusterUrl() + '/settings/actions/set/' + setting + '/' + value);
   };
 
+  $scope.setSettingsEncode = function (setting, value) {
+    if (confirm("Confirm change '" + setting.toString() + "' to: " + value.toString())) httpGetWithoutResponse(getClusterUrl() + '/settings/actions/set/' + setting + '/' + btoa(value));
+  };
+
   $scope.setsettingsnullable = function (setting, value) {
     if (value.length == 0) {
       value = "{undefined}"
@@ -2039,13 +2059,21 @@ app.controller('DashboardController', function (
       parent: angular.element(document.body),
     });
   };
-  $scope.closeNewUserDialog = function () {
+  $scope.closeNewUserDialog = function (username, acls, roles) {
     $mdDialog.hide({ contentElement: '#myNewUserDialog', });
-    if (confirm("Confirm Creating Cluster " + $scope.dlgAddUserName)) {
-      angular.forEach($scope.newUserAcls, function (value, index) {
-        //   console.log(value);
-        alert(value.grant + ':' + value.enable);
-      });
+    selectedAcls = acls.filter(item => item.enable).map(item => `${item.grant}`).join(' ')
+    selectedRoles = roles.filter(item => item.enable).map(item => `${item.role}`).join(' ')
+    if (confirm("Confirm Creating Cluster User '" + username + "' roles: ["+ selectedRoles +"] with ACL: [" + selectedAcls + "]")) {
+      $http.post(getClusterUrl() + "/users/add", { "username": username, "grants": selectedAcls, "roles":selectedRoles }).then(function (res) {
+        if (res.status == 200) {
+          alert("User '" + username + "' added for cluster " + $scope.selectedClusterName)
+        } else {
+          alert("Failed to add '" + username + "' to cluster " + $scope.selectedClusterName + ": " + res)
+        }
+      },
+        function (err) {
+          alert("Error while creating user: "+err)
+        });
     };
 
     $mdSidenav('right').close();
