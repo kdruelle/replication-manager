@@ -58,6 +58,7 @@ import (
 	"github.com/signal18/replication-manager/opensvc"
 	"github.com/signal18/replication-manager/regtest"
 	"github.com/signal18/replication-manager/repmanv3"
+	"github.com/signal18/replication-manager/utils/cron"
 	"github.com/signal18/replication-manager/utils/githelper"
 	"github.com/signal18/replication-manager/utils/misc"
 	"github.com/signal18/replication-manager/utils/s18log"
@@ -126,6 +127,7 @@ type ReplicationManager struct {
 	v3Config                                         Repmanv3Config                 `json:"-"`
 	cloud18CheckSum                                  hash.Hash                      `json:"-"`
 	clog                                             *clog.Logger                   `json:"-"`
+	cApiLog                                          *clog.Logger                   `json:"-"`
 	Logrus                                           *log.Logger                    `json:"-"`
 	IsSavingConfig                                   bool                           `json:"isSavingConfig"`
 	HasSavingConfigQueue                             bool                           `json:"hasSavingConfigQueue"`
@@ -133,6 +135,7 @@ type ReplicationManager struct {
 	CanConnectVault                                  bool                           `json:"canConnectVault"`
 	IsExportPush                                     bool                           `json:"-"`
 	errorConnectVault                                error                          `json:"-"`
+	globalScheduler                                  *cron.Cron                     `json:"-"`
 	CheckSumConfig                                   map[string]hash.Hash           `json:"-"`
 	fileHook                                         log.Hook
 	repmanv3.UnimplementedClusterPublicServiceServer `json:"-"`
@@ -1675,6 +1678,7 @@ func (repman *ReplicationManager) Run() error {
 
 	// Defer to recover and log panics
 	defer repman.LogPanicToFile()
+	repman.globalScheduler = cron.New()
 
 	ExpectedUser := repman.OsUser
 
@@ -1691,6 +1695,7 @@ func (repman *ReplicationManager) Run() error {
 	repman.Os = GoOS
 	repman.MemProfile = memprofile
 	repman.CpuProfile = cpuprofile
+	repman.cApiLog = clog.New()
 	repman.clog = clog.New()
 	repman.CheckSumConfig = make(map[string]hash.Hash)
 
@@ -1833,6 +1838,8 @@ func (repman *ReplicationManager) Run() error {
 		}).Info("Carbon server started")
 		time.Sleep(2 * time.Second)
 
+		graphite.LogApi = repman.cApiLog
+
 		carbonApiLog := &lumberjack.Logger{
 			Filename:   repman.Conf.WorkingDir + "/carbonapi.log", // Log file name
 			MaxSize:    repman.Conf.LogRotateMaxSize,
@@ -1840,7 +1847,6 @@ func (repman *ReplicationManager) Run() error {
 			MaxAge:     repman.Conf.LogRotateMaxAge,
 			Compress:   true, // Compress rotated log files
 		}
-
 		// Set Logrus to write only to the log file
 		graphite.LogApi.SetOutput(carbonApiLog)
 
@@ -1850,6 +1856,11 @@ func (repman *ReplicationManager) Run() error {
 			DisableColors:   true,
 			TimestampFormat: "2006-01-02 15:04:05",
 			FullTimestamp:   true,
+		})
+
+		// Set up a daily job to check and rotate the log file at midnight
+		repman.globalScheduler.AddFunc("@daily", func() {
+			repman.CheckAndRotateLog(carbonApiLog, ExpectedUser)
 		})
 
 		go graphite.RunCarbonApi(&repman.Conf)
@@ -1872,6 +1883,8 @@ func (repman *ReplicationManager) Run() error {
 	if repman.Conf.HttpServ {
 		go repman.httpserver()
 	}
+
+	repman.globalScheduler.Start()
 
 	repman.LimitPrivileges()
 
