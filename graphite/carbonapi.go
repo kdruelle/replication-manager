@@ -18,9 +18,9 @@ import (
 
 	"github.com/signal18/replication-manager/config"
 	pb "github.com/signal18/replication-manager/graphite/carbonzipper/carbonzipperpb"
-	"github.com/signal18/replication-manager/graphite/carbonzipper/mlog"
 	"github.com/signal18/replication-manager/graphite/carbonzipper/mstats"
 	"github.com/signal18/replication-manager/graphite/expr"
+	clog "github.com/sirupsen/logrus"
 
 	"github.com/bradfitz/gomemcache/memcache"
 	ecache "github.com/dgryski/go-expirecache"
@@ -64,7 +64,7 @@ var findCache bytesCache
 
 var defaultTimeZone = time.Local
 
-var logger mlog.Level
+var LogApi = clog.New()
 
 // Zipper is API entry to carbonzipper
 var Zipper zipper
@@ -290,7 +290,7 @@ func renderHandler(w http.ResponseWriter, r *http.Request, stats *renderStats) {
 	if tstr := r.FormValue("cacheTimeout"); tstr != "" {
 		t, err := strconv.Atoi(tstr)
 		if err != nil {
-			logger.Logf("failed to parse cacheTimeout: %v: %v", tstr, err)
+			LogApi.Warnf("failed to parse cacheTimeout: %v: %v", tstr, err)
 		} else {
 			cacheTimeout = int32(t)
 		}
@@ -364,7 +364,7 @@ func renderHandler(w http.ResponseWriter, r *http.Request, stats *renderStats) {
 				stats.zipperRequests++
 				glob, err = Zipper.Find(m.Metric)
 				if err != nil {
-					logger.Logf("Find: %v: %v", m.Metric, err)
+					LogApi.Warnf("Find: %v: %v", m.Metric, err)
 					continue
 				}
 				b, err := glob.Marshal()
@@ -391,7 +391,7 @@ func renderHandler(w http.ResponseWriter, r *http.Request, stats *renderStats) {
 					if err == nil {
 						rptr = &r
 					} else {
-						logger.Logf("Render: %v: %v", m.GetPath(), err)
+						LogApi.Warnf("Render: %v: %v", m.GetPath(), err)
 					}
 					rch <- rptr
 					Limiter.leave()
@@ -414,7 +414,7 @@ func renderHandler(w http.ResponseWriter, r *http.Request, stats *renderStats) {
 				if r := recover(); r != nil {
 					var buf [1024]byte
 					runtime.Stack(buf[:], false)
-					logger.Logf("panic during eval: %s: %s\n%s\n", cacheKey, r, string(buf[:]))
+					LogApi.Errorf("panic during eval: %s: %s\n%s\n", cacheKey, r, string(buf[:]))
 				}
 			}()
 			exprs, err := expr.EvalExpr(exp, from32, until32, metricMap)
@@ -667,34 +667,26 @@ func RunCarbonApi(conf *config.Config) {
 	var memsize int = 200
 	var cpus int = 0
 	var tz string = ""
-	var logdir string = conf.WorkingDir
 
 	interval := 60 * time.Second
 	graphiteHost := ""
-	logtostdout := false
 	idleconns := 10
 	pidFile := ""
 
-	if logdir == "" {
-		mlog.SetRawStream(os.Stdout)
-	} else {
-		mlog.SetOutput(logdir, "carbonapi", logtostdout)
-	}
-
 	expvar.NewString("BuildVersion").Set(BuildVersion)
-	logger.Logln("starting carbonapi", BuildVersion)
+	LogApi.Println("starting carbonapi", BuildVersion)
 
 	Limiter = newLimiter(l)
 
 	if z == "" {
-		logger.Fatalln("no zipper provided")
+		LogApi.Fatalln("no zipper provided")
 	}
 
 	if _, err := url.Parse(z); err != nil {
-		logger.Fatalln("unable to parze zipper:", err)
+		LogApi.Fatalln("unable to parze zipper:", err)
 	}
 
-	logger.Logln("using zipper", z)
+	LogApi.Println("using zipper", z)
 	Zipper = zipper{
 		z: z,
 		client: &http.Client{
@@ -707,11 +699,11 @@ func RunCarbonApi(conf *config.Config) {
 	switch cacheType {
 	case "memcache":
 		if mc == "" {
-			logger.Fatalln("memcache cache requested but no memcache servers provided")
+			LogApi.Fatalln("memcache cache requested but no memcache servers provided")
 		}
 
 		servers := strings.Split(mc, ",")
-		logger.Logln("using memcache servers:", servers)
+		LogApi.Println("using memcache servers:", servers)
 		queryCache = &memcachedCache{client: memcache.New(servers...)}
 		findCache = &memcachedCache{client: memcache.New(servers...)}
 
@@ -741,21 +733,21 @@ func RunCarbonApi(conf *config.Config) {
 	if tz != "" {
 		fields := strings.Split(tz, ",")
 		if len(fields) != 2 {
-			logger.Fatalf("expected two fields for tz,seconds, got %d", len(fields))
+			LogApi.Fatalf("expected two fields for tz,seconds, got %d", len(fields))
 		}
 
 		var err error
 		offs, err := strconv.Atoi(fields[1])
 		if err != nil {
-			logger.Fatalf("unable to parse seconds: %s: %s", fields[1], err)
+			LogApi.Fatalf("unable to parse seconds: %s: %s", fields[1], err)
 		}
 
 		defaultTimeZone = time.FixedZone(fields[0], offs)
-		logger.Logf("using fixed timezone %s, offset %d ", defaultTimeZone.String(), offs)
+		LogApi.Infof("using fixed timezone %s, offset %d ", defaultTimeZone.String(), offs)
 	}
 
 	if cpus != 0 {
-		logger.Logln("using GOMAXPROCS", cpus)
+		LogApi.Println("using GOMAXPROCS", cpus)
 		runtime.GOMAXPROCS(cpus)
 	}
 
@@ -772,9 +764,9 @@ func RunCarbonApi(conf *config.Config) {
 			host = graphiteHost
 		}
 
-		logger.Logln("Using graphite host", host)
+		LogApi.Println("Using graphite host", host)
 
-		logger.Logln("setting stats interval to", interval)
+		LogApi.Println("setting stats interval to", interval)
 
 		// register our metrics with graphite
 		graphite := g2g.NewGraphite(host, interval, 10*time.Second)
@@ -811,14 +803,14 @@ func RunCarbonApi(conf *config.Config) {
 		t0 := time.Now()
 		renderHandler(w, r, &stats)
 		since := time.Since(t0)
-		logger.Logln(r.RequestURI, since.Nanoseconds()/int64(time.Millisecond), stats.zipperRequests)
+		LogApi.Infoln(r.RequestURI, since.Nanoseconds()/int64(time.Millisecond), stats.zipperRequests)
 	}
 
 	if pidFile != "" {
 		pidfile.SetPidfilePath(pidFile)
 		err := pidfile.Write()
 		if err != nil {
-			logger.Fatalln("error during pidfile.Write():", err)
+			LogApi.Fatalln("error during pidfile.Write():", err)
 		}
 	}
 
@@ -839,10 +831,10 @@ func RunCarbonApi(conf *config.Config) {
 	r.HandleFunc("/lb_check", lbcheckHandler)
 	r.HandleFunc("/", usageHandler)
 
-	logger.Logln("listening on port", port)
+	LogApi.Println("listening on port", port)
 	handler := handlers.CompressHandler(r)
 	handler = handlers.CORS()(handler)
-	handler = handlers.CombinedLoggingHandler(mlog.GetOutput(), handler)
+	handler = handlers.CombinedLoggingHandler(LogApi.Out, handler)
 
 	err := gracehttp.Serve(&http.Server{
 		Addr:    ":" + strconv.Itoa(port),
@@ -850,6 +842,6 @@ func RunCarbonApi(conf *config.Config) {
 	})
 
 	if err != nil {
-		logger.Fatalln(err)
+		LogApi.Fatalln(err)
 	}
 }

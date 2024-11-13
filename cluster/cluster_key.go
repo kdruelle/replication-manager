@@ -243,7 +243,7 @@ func (cluster *Cluster) keyToFile(filename string, key *rsa.PrivateKey) {
 
 		file, err := os.Create(filename)
 		if err != nil {
-			cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModConfigLoad, config.LvlInfo, "Failed to generate file: %s", err)
+			cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModConfigLoad, config.LvlInfo, "Failed to generate file %s: %s", filename, err)
 		}
 		defer file.Close()
 		b := x509.MarshalPKCS1PrivateKey(key)

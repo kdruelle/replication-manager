@@ -17,6 +17,7 @@ import (
 	"io"
 	"log/syslog"
 	"net"
+	"os/exec"
 	"os/signal"
 	"os/user"
 	"runtime"
@@ -40,7 +41,9 @@ import (
 	"github.com/spf13/viper"
 	"golang.org/x/oauth2"
 	"google.golang.org/grpc"
+	"gopkg.in/natefinch/lumberjack.v2"
 
+	"github.com/sirupsen/logrus"
 	clog "github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 	lSyslog "github.com/sirupsen/logrus/hooks/syslog"
@@ -1673,6 +1676,15 @@ func (repman *ReplicationManager) Run() error {
 	// Defer to recover and log panics
 	defer repman.LogPanicToFile()
 
+	ExpectedUser := repman.OsUser
+
+	if repman.OsUser.Uid == "0" && repman.Conf.MonitoringSystemUser != "" {
+		u, err := user.Lookup(repman.Conf.MonitoringSystemUser)
+		if err == nil {
+			ExpectedUser = u
+		}
+	}
+
 	repman.Version = Version
 	repman.Fullversion = FullVersion
 	repman.Arch = GoArch
@@ -1750,7 +1762,7 @@ func (repman *ReplicationManager) Run() error {
 	loglen := repman.termlength - 9 - (len(strings.Split(repman.Conf.Hosts, ",")) * 3)
 	repman.tlog = s18log.NewTermLog(loglen)
 	repman.Logs = s18log.NewHttpLog(80)
-	repman.InitServicePlans()
+	repman.InitServicePlans(ExpectedUser)
 	repman.ServiceOrchestrators = repman.Conf.GetOrchestratorsProv()
 	repman.InitGrants()
 	repman.InitRoles()
@@ -1802,6 +1814,7 @@ func (repman *ReplicationManager) Run() error {
 
 	// Initialize go-carbon
 	if repman.Conf.GraphiteEmbedded {
+		graphite.User = ExpectedUser
 		graphite.Log = repman.clog
 		graphite.Log.AddHook(&writer.Hook{ // Send logs with level higher than warning to stderr
 			Writer: os.Stderr,
@@ -1819,6 +1832,26 @@ func (repman *ReplicationManager) Run() error {
 			"httpport":   repman.Conf.GraphiteCarbonServerPort,
 		}).Info("Carbon server started")
 		time.Sleep(2 * time.Second)
+
+		carbonApiLog := &lumberjack.Logger{
+			Filename:   repman.Conf.WorkingDir + "/carbonapi.log", // Log file name
+			MaxSize:    repman.Conf.LogRotateMaxSize,
+			MaxBackups: repman.Conf.LogRotateMaxBackup,
+			MaxAge:     repman.Conf.LogRotateMaxAge,
+			Compress:   true, // Compress rotated log files
+		}
+
+		// Set Logrus to write only to the log file
+		graphite.LogApi.SetOutput(carbonApiLog)
+
+		// Optional: Configure log level and formatter
+		graphite.LogApi.SetLevel(config.ToLogrusLevel(repman.Conf.LogGraphiteLevel))
+		graphite.LogApi.SetFormatter(&logrus.TextFormatter{
+			DisableColors:   true,
+			TimestampFormat: "2006-01-02 15:04:05",
+			FullTimestamp:   true,
+		})
+
 		go graphite.RunCarbonApi(&repman.Conf)
 		repman.Logrus.WithField("apiport", repman.Conf.GraphiteCarbonApiPort).Info("Carbon server API started")
 	}
@@ -1830,16 +1863,6 @@ func (repman *ReplicationManager) Run() error {
 	repman.Logrus.Infof("repman.Conf.ShareDir : %s", repman.Conf.ShareDir)
 
 	repman.initKeys()
-	repman.LimitPrivileges()
-
-	for _, gl := range repman.ClusterList {
-		repman.StartCluster(gl)
-	}
-	for _, cluster := range repman.Clusters {
-		cluster.SetClusterList(repman.Clusters)
-
-		cluster.SetCarbonLogger(repman.clog)
-	}
 
 	//	repman.currentCluster.SetCfgGroupDisplay(strClusters)
 	if repman.Conf.ApiServ {
@@ -1848,6 +1871,16 @@ func (repman *ReplicationManager) Run() error {
 	// HTTP server should start after Cluster Init or may lead to various nil pointer if clients still requesting
 	if repman.Conf.HttpServ {
 		go repman.httpserver()
+	}
+
+	repman.LimitPrivileges()
+
+	for _, gl := range repman.ClusterList {
+		repman.StartCluster(gl)
+	}
+	for _, cluster := range repman.Clusters {
+		cluster.SetClusterList(repman.Clusters)
+		cluster.SetCarbonLogger(repman.clog)
 	}
 
 	if _, err := os.Stat(conf.WorkingDir + "/cloud18.toml"); os.IsNotExist(err) {
@@ -2239,7 +2272,7 @@ func (repman *ReplicationManager) DownloadFile(url string, file string) error {
 	return nil
 }
 
-func (repman *ReplicationManager) InitServicePlans() error {
+func (repman *ReplicationManager) InitServicePlans(u *user.User) error {
 	var err error
 	if !repman.Conf.Test {
 
@@ -2263,6 +2296,11 @@ func (repman *ReplicationManager) InitServicePlans() error {
 	if err != nil {
 		repman.Logrus.Errorf("GetServicePlans ConvertCSVtoJSON %s", err)
 		return err
+	}
+
+	if repman.OsUser.Uid == "0" && u.Uid != "0" {
+		exec.Command("chown", fmt.Sprintf("%s:%s", u.Uid, u.Gid), repman.Conf.WorkingDir+"/serviceplan.csv").Run()
+		exec.Command("chown", fmt.Sprintf("%s:%s", u.Uid, u.Gid), repman.Conf.WorkingDir+"/serviceplan.json").Run()
 	}
 
 	file, err := os.ReadFile(repman.Conf.WorkingDir + "/serviceplan.json")

@@ -57,10 +57,7 @@ func (cluster *Cluster) newServerList() error {
 	if cluster.Conf.Hosts != "" {
 		for k, url := range cluster.hostList {
 			// Source name will equal to cluster name
-			cluster.Servers[k], err = cluster.newServerMonitor(url, cluster.GetDbUser(), cluster.GetDbPass(), false, cluster.GetDomain(), cluster.Name)
-			if err != nil {
-				cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlErr, "Could not open connection to server %s : %s", cluster.Servers[k].URL, err)
-			}
+			cluster.Servers[k], _ = cluster.newServerMonitor(url, cluster.GetDbUser(), cluster.GetDbPass(), false, cluster.GetDomain(), cluster.Name)
 			cluster.Servers[k].SetPlacement(k, cluster.Conf.ProvAgents, cluster.Conf.SlapOSDBPartitions, cluster.Conf.SchedulerReceiverPorts)
 
 			if cluster.Conf.Verbose {
