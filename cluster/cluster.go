@@ -20,6 +20,7 @@ import (
 	"os/exec"
 	"os/user"
 	"runtime"
+	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -883,6 +884,17 @@ func (cluster *Cluster) Save() error {
 	if err != nil {
 		return err
 	}
+
+	// Sort them so it will not push if no changes are made
+	slices.SortStableFunc(cluster.Agents, func(a, b Agent) int {
+		if a.Id < b.Id {
+			return -1
+		} else if b.Id > a.Id {
+			return 1
+		} else {
+			return 0
+		}
+	})
 
 	saveAgents, _ := json.MarshalIndent(cluster.Agents, "", "\t")
 
