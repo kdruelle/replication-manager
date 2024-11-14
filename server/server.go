@@ -1686,6 +1686,11 @@ func (repman *ReplicationManager) Run() error {
 		u, err := user.Lookup(repman.Conf.MonitoringSystemUser)
 		if err == nil {
 			ExpectedUser = u
+
+			// Compatibility with old version, for files with root level permission in workingdir
+			uid, _ := strconv.Atoi(ExpectedUser.Uid)
+			gid, _ := strconv.Atoi(ExpectedUser.Gid)
+			misc.ChownR(repman.Conf.WorkingDir, uid, gid)
 		}
 	}
 
