@@ -22,6 +22,7 @@ import (
 	"os/user"
 	"runtime"
 	"runtime/pprof"
+	"slices"
 	"sort"
 	"sync"
 	"syscall"
@@ -2712,6 +2713,7 @@ func (repman *ReplicationManager) SaveImmutable() (hash.Hash, error) {
 
 	s := t
 	keys := t.Keys()
+	slices.Sort(keys)
 	for _, key := range keys {
 		if _, ok := repman.ServerScopeList[key]; ok {
 			val, ok := repman.Conf.ImmuableFlagMap[key]
