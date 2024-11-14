@@ -987,7 +987,15 @@ func (cluster *Cluster) SaveImmutableConfig() error {
 	}
 	defer file.Close()
 
-	for key, val := range cluster.Conf.ImmuableFlagMap {
+	keys := make([]string, 0)
+	for key, _ := range cluster.Conf.ImmuableFlagMap {
+		keys = append(keys, key)
+	}
+
+	slices.Sort(keys)
+
+	for _, key := range keys {
+		val := cluster.Conf.ImmuableFlagMap[key]
 		if _, ok := cluster.Conf.Secrets[key]; ok {
 			encrypt_val := cluster.GetEncryptedValueFromMemory(key)
 			file.WriteString(key + " = \"" + encrypt_val + "\"\n")
