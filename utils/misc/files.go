@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
-	"log"
 	"os"
+	"os/exec"
+	"os/user"
 	"path/filepath"
 	"strings"
 	"time"
@@ -254,7 +255,6 @@ func CopyFilesWithSuffix(srcDir, dstDir string, suffixes ...string) error {
 			for _, sfx := range suffixes {
 				if strings.HasSuffix(d.Name(), sfx) {
 					destPath := filepath.Join(dstDir, d.Name())
-					log.Printf("Copying %s to %s\n", path, destPath)
 					err := CopyFile(path, destPath)
 					if err != nil {
 						return err
@@ -278,7 +278,6 @@ func CopyFilesWithPrefix(srcDir, dstDir string, prefixes ...string) error {
 			for _, pfx := range prefixes {
 				if strings.HasPrefix(d.Name(), pfx) {
 					destPath := filepath.Join(dstDir, d.Name())
-					log.Printf("Copying %s to %s\n", path, destPath)
 					err := CopyFile(path, destPath)
 					if err != nil {
 						return err
@@ -302,7 +301,6 @@ func CopyFilesContainFilenames(srcDir, dstDir string, substrings ...string) erro
 			for _, substr := range substrings {
 				if strings.Contains(d.Name(), substr) {
 					destPath := filepath.Join(dstDir, d.Name())
-					log.Printf("Copying %s to %s\n", path, destPath)
 					err := CopyFile(path, destPath)
 					if err != nil {
 						return err
@@ -313,4 +311,22 @@ func CopyFilesContainFilenames(srcDir, dstDir string, substrings ...string) erro
 		}
 		return nil
 	})
+}
+
+func CloseAndChown(f *os.File, u *user.User) (err error) {
+	defer func() {
+		e := ChownFile(f, u)
+		if err == nil {
+			err = e
+		}
+	}()
+
+	err = f.Close()
+
+	return
+}
+
+func ChownFile(f *os.File, u *user.User) error {
+	cmd := exec.Command("chown", fmt.Sprintf("%s:%s", u.Uid, u.Gid), f.Name())
+	return cmd.Run()
 }

@@ -2,13 +2,16 @@ package server
 
 import (
 	"fmt"
+	"os"
+	"os/exec"
+	"os/user"
 	"runtime/debug"
 	"time"
 
 	"github.com/signal18/replication-manager/config"
 	"github.com/signal18/replication-manager/utils/s18log"
-	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
+	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 // State Levels
@@ -96,7 +99,7 @@ func (repman *ReplicationManager) LogModulePrintf(forcingLog bool, module int, l
 
 func (repman *ReplicationManager) LogPanicToFile() {
 	if r := recover(); r != nil {
-		repman.Logrus.WithFields(logrus.Fields{
+		repman.Logrus.WithFields(log.Fields{
 			"cluster":    "none",
 			"panic":      r,
 			"stacktrace": string(debug.Stack()),
@@ -131,4 +134,31 @@ func (repman *ReplicationManager) UpdateFileHookLogLevel(hook *s18log.RotateFile
 	repman.Logrus.WithFields(log.Fields{"new_file_log_level": hook.Config.Level.String()}).Info(text)
 
 	return nil
+}
+
+// checkAndRotateLog checks if the log file has any content before rotating
+func (repman *ReplicationManager) CheckAndRotateLog(logFile *lumberjack.Logger, u *user.User) {
+	defer repman.LogPanicToFile()
+	fileInfo, err := os.Stat(logFile.Filename)
+	if err != nil {
+		if os.IsNotExist(err) {
+			fmt.Println("Log file does not exist, no rotation needed.")
+			return
+		}
+		fmt.Println("Error checking log file:", err)
+		return
+	}
+
+	// Only rotate if the file has content (size > 0)
+	if fileInfo.Size() > 0 {
+		err := logFile.Rotate()
+		if err != nil {
+			fmt.Println("Failed to rotate log file:", err)
+		} else {
+			exec.Command("chown", fmt.Sprintf("%s:%s", u.Uid, u.Gid), logFile.Filename).Run()
+			fmt.Println("Log file rotated.")
+		}
+	} else {
+		fmt.Println("Log file is empty, no rotation performed.")
+	}
 }

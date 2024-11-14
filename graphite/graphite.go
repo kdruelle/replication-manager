@@ -6,6 +6,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"os/exec"
 	"os/signal"
 	"os/user"
 	"path/filepath"
@@ -23,6 +24,7 @@ import (
 )
 
 var Log = logrus.New()
+var User, _ = user.Current()
 
 // Graphite is a struct that defines the relevant properties of a graphite
 // connection
@@ -245,6 +247,8 @@ func RunCarbon(conf *config.Config) error {
 		os.Exit(1)
 	}
 
+	exec.Command("chown", fmt.Sprintf("%s:%s", User.Uid, User.Gid), conf.WorkingDir+"/carbon.conf").Run()
+
 	carbon.Log = Log
 	app := carbon.New(conf.WorkingDir + "/carbon.conf")
 
@@ -253,7 +257,7 @@ func RunCarbon(conf *config.Config) error {
 	}
 
 	app.Config.Common.Logfile = conf.WorkingDir + "/carbon.log"
-	//	log.Fatal(app.Config.Whisper.SchemasFilename)
+	app.Config.Common.User = User.Username
 	cfg := app.Config
 
 	var runAsUser *user.User
