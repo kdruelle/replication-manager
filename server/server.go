@@ -1621,6 +1621,9 @@ func (repman *ReplicationManager) LimitPrivileges() {
 
 			repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGeneral, config.LvlInfo, "Setting uid and gid to target user: %s, uid: %d, gid: %d", targetUser.Username, uidInt, gidInt)
 
+			// Compatibility with old version, for files with root level permission in workingdir
+			misc.ChownR(repman.Conf.WorkingDir, uidInt, gidInt)
+
 			// Set GID (Group ID)
 			err = syscall.Setgid(gidInt)
 			if err != nil {
@@ -1686,11 +1689,6 @@ func (repman *ReplicationManager) Run() error {
 		u, err := user.Lookup(repman.Conf.MonitoringSystemUser)
 		if err == nil {
 			ExpectedUser = u
-
-			// Compatibility with old version, for files with root level permission in workingdir
-			uid, _ := strconv.Atoi(ExpectedUser.Uid)
-			gid, _ := strconv.Atoi(ExpectedUser.Gid)
-			misc.ChownR(repman.Conf.WorkingDir, uid, gid)
 		}
 	}
 
