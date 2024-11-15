@@ -1317,30 +1317,14 @@ func (repman *ReplicationManager) InitConfig(conf config.Config) {
 			tok = conf.GetDecryptedValue("git-acces-token")
 		}
 
-		conf.CloneConfigFromGit(conf.GitUrl, conf.GitUsername, tok, conf.WorkingDir)
+		err := conf.CloneConfigFromGit(conf.GitUrl, conf.GitUsername, tok, conf.WorkingDir)
+		if err != nil {
+			repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlErr, err.Error())
+		}
 	}
 
 	if conf.Cloud18GitUser != "" && conf.Cloud18GitPassword != "" && conf.Cloud18 {
-		acces_tok := githelper.GetGitLabTokenBasicAuth(conf.Cloud18GitUser, conf.GetDecryptedValue("cloud18-gitlab-password"), conf.LogGit)
-		personal_access_token, _ := githelper.GetGitLabTokenOAuth(acces_tok, conf.LogGit)
-		if personal_access_token != "" {
-			var Secrets config.Secret
-			Secrets.Value = personal_access_token
-			conf.Secrets["git-acces-token"] = Secrets
-			conf.GitUrl = conf.OAuthProvider + "/" + conf.Cloud18Domain + "/" + conf.Cloud18SubDomain + "-" + conf.Cloud18SubDomainZone + ".git"
-			conf.GitUsername = conf.Cloud18GitUser
-			conf.GitAccesToken = personal_access_token
-			conf.ImmuableFlagMap["git-url"] = conf.GitUrl
-			conf.ImmuableFlagMap["git-username"] = conf.GitUsername
-			conf.ImmuableFlagMap["git-acces-token"] = personal_access_token
-			conf.CloneConfigFromGit(conf.GitUrl, conf.GitUsername, conf.GitAccesToken, conf.WorkingDir)
-			conf.PushConfigToGit(conf.GitUrl, conf.GitAccesToken, conf.GitUsername, conf.WorkingDir, []string{})
-			//conf.GitAddReadMe(conf.GitUrl, conf.GitAccesToken, conf.GitUsername, conf.WorkingDir)
-
-		} else if conf.LogGit {
-			repman.Logrus.WithField("group", repman.ClusterList[cfgGroupIndex]).Infof("Could not get personal access token from gitlab")
-		}
-
+		repman.InitGitConfig(&conf)
 	}
 
 	//add config from cluster to the config map

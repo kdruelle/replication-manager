@@ -229,44 +229,52 @@ func RefreshAccessToken(refresh_tok string, client_id string, secret_id string, 
 	return accessToken.AccessToken, accessToken.RefreshToken, nil
 }
 
-func GetGitLabTokenBasicAuth(user string, password string, log_git bool) string {
+type ErrorResponse struct {
+	Error            string `json:"error"`
+	ErrorDescription string `json:"error_description"`
+}
+
+func GetGitLabTokenBasicAuth(user string, password string, log_git bool) (string, error) {
 	url := "https://gitlab.signal18.io/oauth/token"
 	data := "grant_type=password&username=" + user + "&password=" + password
 
 	client := &http.Client{}
 	req, err := http.NewRequest("POST", url, strings.NewReader(data))
 	if err != nil {
-		fmt.Println("Erreur lors de la création de la requête : ", err)
-		return ""
+		return "", fmt.Errorf("error creating request: %w", err)
 	}
 
 	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Println("Erreur lors de l'envoi de la requête : ", err)
-		return ""
+		return "", fmt.Errorf("error sending request: %w", err)
 	}
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Println("Erreur lors de la lecture de la réponse : ", err)
-		return ""
+		return "", fmt.Errorf("error reading response body: %w", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		// Parse the error response into Main struct
+		var apiError ErrorResponse
+		if err := json.Unmarshal(body, &apiError); err != nil {
+			return "", fmt.Errorf("received non-OK HTTP status %d and failed to parse error response: %w", resp.StatusCode, err)
+		}
+		return "", fmt.Errorf("API error: %s - %s", apiError.Error, apiError.ErrorDescription)
 	}
 
 	var accessToken AccessToken
-
 	err = json.Unmarshal(body, &accessToken)
 	if err != nil {
-		log.Println("Gitlab API Error: ", err)
-		return ""
+		return "", fmt.Errorf("error unmarshalling response: %w", err)
 	}
 
 	if log_git {
-		fmt.Println("Réponse :", string(body))
+		fmt.Println("Response:", string(body))
 	}
 
-	return accessToken.AccessToken
-
+	return accessToken.AccessToken, nil
 }
 
 type UserId struct {
