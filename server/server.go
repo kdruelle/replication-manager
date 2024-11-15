@@ -1897,8 +1897,16 @@ func (repman *ReplicationManager) Run() error {
 			case <-ticker_GitPull.C:
 				//to do it only when using github
 				if repman.Conf.GitUrl != "" {
-					repman.Conf.CloneConfigFromGit(repman.Conf.GitUrl, repman.Conf.GitUsername, repman.Conf.Secrets["git-acces-token"].Value, repman.Conf.WorkingDir)
-					repman.Conf.PushConfigToGit(repman.Conf.GitUrl, repman.Conf.Secrets["git-acces-token"].Value, repman.Conf.GitUsername, repman.Conf.WorkingDir, repman.ClusterList)
+					err = repman.Conf.CloneConfigFromGit(repman.Conf.GitUrl, repman.Conf.GitUsername, repman.Conf.Secrets["git-acces-token"].Value, repman.Conf.WorkingDir)
+					if err != nil {
+						repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlErr, err.Error())
+					}
+
+					err = repman.Conf.PushConfigToGit(repman.Conf.GitUrl, repman.Conf.Secrets["git-acces-token"].Value, repman.Conf.GitUsername, repman.Conf.WorkingDir, repman.ClusterList)
+					if err != nil {
+						repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlErr, err.Error())
+					}
+
 					for _, cluster := range repman.Clusters {
 						cluster.IsGitPull = true
 					}

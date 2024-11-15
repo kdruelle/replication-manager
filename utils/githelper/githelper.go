@@ -41,9 +41,14 @@ type AccessToken struct {
 	RefreshToken string `json:"refresh_token"`
 }
 
+type GroupId struct {
+	ID          int `json:"id"`
+	AccessLevel int `json:"access_level"`
+}
+
 func GetGitLabTokenOAuth(acces_token string, log_git bool) (string, int) {
 
-	uid, _, err := GetGitLabUserId(acces_token)
+	uid, err := GetGitLabUserId(acces_token, log_git)
 	if err != nil {
 		return "", -1
 	}
@@ -271,7 +276,7 @@ func GetGitLabTokenBasicAuth(user string, password string, log_git bool) (string
 	}
 
 	if log_git {
-		fmt.Println("Response:", string(body))
+		fmt.Println("Git Auth Response:", string(body))
 	}
 
 	return accessToken.AccessToken, nil
@@ -281,30 +286,125 @@ type UserId struct {
 	ID int `json:"id"`
 }
 
-func GetGitLabUserId(acces_token string) (int, []byte, error) {
+func GetGitLabUserId(acces_token string, log_git bool) (int, error) {
 	var body = make([]byte, 0)
 
 	req, err := http.NewRequest("GET", "https://gitlab.signal18.io/api/v4/user", nil)
 	if err != nil {
-		return 0, body, fmt.Errorf("Gitlab User API Error: ", err)
+		return 0, fmt.Errorf("Gitlab User API Error: ", err)
 	}
 	req.Header.Set("Authorization", "Bearer "+acces_token)
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return 0, body, fmt.Errorf("Gitlab User API Error: ", err)
+		return 0, fmt.Errorf("Gitlab User API Error: ", err)
 	}
 	defer resp.Body.Close()
 
 	body, _ = io.ReadAll(resp.Body)
 
+	if resp.StatusCode != http.StatusOK {
+		// Parse the error response into Main struct
+		var apiError ErrorResponse
+		if err := json.Unmarshal(body, &apiError); err != nil {
+			return 0, fmt.Errorf("received non-OK HTTP status %d and failed to parse error response: %w", resp.StatusCode, err)
+		}
+		return 0, fmt.Errorf("API error: %d - %s - %s", resp.StatusCode, apiError.Error, apiError.ErrorDescription)
+	}
+
+	if log_git {
+		fmt.Printf("Init Git Config - Get User response: %s", string(body))
+	}
+
 	var userId UserId
 
 	err = json.Unmarshal(body, &userId)
 	if err != nil {
-		return 0, body, fmt.Errorf("Gitlab User API Unmarshall Error: ", err)
+		return 0, fmt.Errorf("Gitlab User API Unmarshall Error: ", err)
 	}
 
-	return userId.ID, body, nil
+	return userId.ID, nil
+
+}
+
+// Get User Access Level
+func GetGroupAccessLevel(acces_token, domain string, log_git bool) (int, error) {
+	var body = make([]byte, 0)
+	var err error
+
+	req, err := http.NewRequest("GET", "https://gitlab.signal18.io/api/v4/groups/"+domain, nil)
+	if err != nil {
+		return 0, fmt.Errorf("Gitlab User API Error: ", err)
+	}
+	req.Header.Set("Authorization", "Bearer "+acces_token)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return 0, fmt.Errorf("Gitlab User API Error: ", err)
+	}
+	defer resp.Body.Close()
+
+	// If 404 error, create the group
+	if resp.StatusCode == http.StatusNotFound {
+		_, createErr := CreateCloud18Domain(acces_token, domain, log_git)
+		if createErr != nil {
+			return 0, fmt.Errorf("error creating GitLab group: %w", createErr)
+		}
+		// Try to get the access level again
+		return GetGroupAccessLevel(acces_token, domain, log_git)
+	}
+
+	body, _ = io.ReadAll(resp.Body)
+	if log_git {
+		fmt.Printf("Get User Access response: %s", string(body))
+	}
+
+	var groupId GroupId
+	err = json.Unmarshal(body, &groupId)
+	if err != nil {
+		return 0, fmt.Errorf("Gitlab User API Unmarshall Error: ", err)
+	}
+
+	return groupId.AccessLevel, nil
+}
+
+func CreateCloud18Domain(acces_token, domain string, log_git bool) (int, error) {
+	data := "name=" + domain + "&path=" + domain
+	req, err := http.NewRequest("POST", "https://gitlab.signal18.io/api/v4/groups", strings.NewReader(data))
+	if err != nil {
+		return 0, fmt.Errorf("Gitlab User API Error: ", err)
+	}
+	req.Header.Set("Authorization", "Bearer "+acces_token)
+	req.Header.Add("content-type", "application/x-www-form-urlencoded")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return 0, fmt.Errorf("Gitlab User API Error: ", err)
+	}
+	defer resp.Body.Close()
+
+	body, _ := io.ReadAll(resp.Body)
+
+	if log_git {
+		fmt.Printf("Create Cloud18 Domain response: %s", string(body))
+	}
+
+	if resp.StatusCode != http.StatusCreated {
+		// Parse the error response into Main struct
+		var apiError ErrorResponse
+		if err := json.Unmarshal(body, &apiError); err != nil {
+			return 0, fmt.Errorf("received non-OK HTTP status %d and failed to parse error response: %w", resp.StatusCode, err)
+		}
+		return 0, fmt.Errorf("API error: %d - %s - %s", resp.StatusCode, apiError.Error, apiError.ErrorDescription)
+	}
+
+	var groupId GroupId
+
+	err = json.Unmarshal(body, &groupId)
+	if err != nil {
+		return 0, fmt.Errorf("Gitlab User API Unmarshall Error: ", err)
+	}
+
+	return groupId.ID, nil
 
 }

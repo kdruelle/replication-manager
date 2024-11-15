@@ -1465,7 +1465,7 @@ func (conf *Config) CloneConfigFromGit(url string, user string, tok string, dir 
 			Force:        true,
 		})
 		if err != nil && err.Error() != "already up-to-date" {
-			return fmt.Errorf("git error: cannot pull from repository: %w", err)
+			fmt.Printf("git error: cannot pull from repository: %w", err)
 		}
 
 	} else {
@@ -1505,17 +1505,17 @@ func (conf *Config) PushConfigToGit(url string, tok string, user string, dir str
 	// Add cluster-specific files
 	if len(clusterList) != 0 {
 		for _, name := range clusterList {
-			if err := w.AddGlob(name + "/*.toml"); err != nil {
-				return fmt.Errorf("git error: cannot add %s/*.toml: %w", name, err)
+			if err := w.AddGlob(name + "/*.toml"); err != nil && conf.IsEligibleForPrinting(ConstLogModGit, LvlWarn) {
+				fmt.Printf("Git error: cannot add %s/*.toml: %w", name, err)
 			}
 
 			// Check and add specific JSON files if they exist
 			if _, err := os.Stat(conf.WorkingDir + "/" + name + "/agents.json"); !os.IsNotExist(err) {
-				if _, err := w.Add(name + "/agents.json"); err != nil {
-					return fmt.Errorf("git error: cannot add %s/agents.json: %w", name, err)
+				if _, err := w.Add(name + "/agents.json"); err != nil && conf.IsEligibleForPrinting(ConstLogModGit, LvlWarn) {
+					fmt.Printf("git error: cannot add %s/agents.json: %w", name, err)
 				}
-				if _, err := w.Add(name + "/queryrules.json"); err != nil {
-					return fmt.Errorf("git error: cannot add %s/queryrules.json: %w", name, err)
+				if _, err := w.Add(name + "/queryrules.json"); err != nil && conf.IsEligibleForPrinting(ConstLogModGit, LvlWarn) {
+					fmt.Printf("git error: cannot add %s/queryrules.json: %w", name, err)
 				}
 			}
 		}
@@ -1523,8 +1523,8 @@ func (conf *Config) PushConfigToGit(url string, tok string, user string, dir str
 
 	// Add cloud18.toml if it exists
 	if _, err := os.Stat(conf.WorkingDir + "/cloud18.toml"); !os.IsNotExist(err) {
-		if _, err := w.Add("cloud18.toml"); err != nil {
-			return fmt.Errorf("git error: cannot add cloud18.toml: %w", err)
+		if _, err := w.Add("cloud18.toml"); err != nil && conf.IsEligibleForPrinting(ConstLogModGit, LvlWarn) {
+			fmt.Printf("git error: cannot add cloud18.toml: %w", err)
 		}
 	}
 
@@ -1546,8 +1546,8 @@ func (conf *Config) PushConfigToGit(url string, tok string, user string, dir str
 		Auth:       auth,
 		RemoteURL:  url,
 		Force:      true,
-	}); err != nil && err.Error() != "already up-to-date" {
-		return fmt.Errorf("git error: cannot pull from repository %s: %w", url, err)
+	}); err != nil && err.Error() != "already up-to-date" && conf.IsEligibleForPrinting(ConstLogModGit, LvlWarn) {
+		fmt.Printf("git error: cannot pull from repository %s: %w", url, err)
 	}
 
 	// Push the changes to the remote repository
