@@ -31,14 +31,14 @@ export const getMonitoredData = createAsyncThunk('globalClusters/getMonitoredDat
 
 export const switchGlobalSetting = createAsyncThunk(
   'globalClusters/switchGlobalSetting',
-  async ({ setting }, thunkAPI) => {
+  async ({ setting, errMessage }, thunkAPI) => {
     try {
       const { data, status } = await globalClustersService.switchGlobalSetting(setting)
       showSuccessBanner('Cloud18 setting switch is successful!', status, thunkAPI)
       return { data, status }
     } catch (error) {
       console.log('error::', error)
-      showErrorBanner('Cloud18 setting switch is failed!', error, thunkAPI)
+      showErrorBanner('Cloud18 setting switch is failed!', errMessage(error), thunkAPI)
       handleError(error, thunkAPI)
     }
   }

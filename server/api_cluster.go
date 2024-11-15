@@ -25,6 +25,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/signal18/replication-manager/cluster"
 	"github.com/signal18/replication-manager/config"
+	"github.com/signal18/replication-manager/utils/githelper"
 	"github.com/signal18/replication-manager/utils/s18log"
 )
 
@@ -1138,7 +1139,11 @@ func (repman *ReplicationManager) handlerMuxSwitchGlobalSettings(w http.Response
 		valid, user := repman.IsValidClusterACL(r, mycluster)
 		if valid {
 			mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, "INFO", "API receive switch global setting %s", setting)
-			repman.switchServerSetting(user, r.URL.Path, setting)
+			err := repman.switchServerSetting(user, r.URL.Path, setting)
+			if err != nil {
+				http.Error(w, fmt.Sprintf("Failed to set value for %s: %s", setting, err.Error()), 400)
+				return
+			}
 		} else {
 			http.Error(w, fmt.Sprintf("User doesn't have required ACL for global setting: %s", setting), 403)
 			return
@@ -1924,15 +1929,25 @@ func (repman *ReplicationManager) setRepmanSetting(name string, value string) er
 func (repman *ReplicationManager) switchRepmanSetting(name string) error {
 	//not immutable
 	if !repman.Conf.IsVariableImmutable(name) {
-		repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGeneral, "INFO", "API receive set setting %s", name)
+		repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGeneral, "INFO", "API receive switch setting %s", name)
 	} else {
 		repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGeneral, config.LvlWarn, "Overwriting an immutable parameter defined in config , please use config-merge command to preserve them between restart")
-		repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGeneral, "INFO", "API receive set setting %s", name)
+		repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGeneral, "INFO", "API receive switch setting %s", name)
 	}
 
 	switch name {
 	case "cloud18":
 		repman.Conf.SwitchCloud18()
+		if repman.Conf.Cloud18 {
+			_, err := githelper.GetGitLabTokenBasicAuth(repman.Conf.Cloud18GitUser, repman.Conf.GetDecryptedValue("cloud18-gitlab-password"), repman.Conf.IsEligibleForPrinting(config.ConstLogModGit, config.LvlDbg))
+			if err != nil {
+				repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlErr, err.Error())
+				if strings.Contains(err.Error(), "invalid_grant") {
+					repman.Conf.Cloud18 = false
+					return fmt.Errorf("invalid_grant")
+				}
+			}
+		}
 	case "cloud18-shared":
 		repman.Conf.SwitchCloud18Shared()
 	case "api-https-bind":
@@ -1974,15 +1989,19 @@ func (repman *ReplicationManager) setServerSetting(user string, URL string, name
 	}
 }
 
-func (repman *ReplicationManager) switchServerSetting(user string, URL string, name string) {
-	repman.switchRepmanSetting(name)
-
+func (repman *ReplicationManager) switchServerSetting(user string, URL string, name string) error {
+	err := repman.switchRepmanSetting(name)
+	if err != nil {
+		return err
+	}
 	for cname, cl := range repman.Clusters {
 		//Don't print error with no valid ACL
 		if cl.IsURLPassACL(user, fmt.Sprintf(URL, cname), false) {
 			repman.switchClusterSettings(cl, name)
 		}
 	}
+
+	return nil
 }
 
 func (repman *ReplicationManager) handlerMuxAddTag(w http.ResponseWriter, r *http.Request) {
