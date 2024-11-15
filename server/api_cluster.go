@@ -1747,7 +1747,15 @@ func (repman *ReplicationManager) setClusterSetting(mycluster *cluster.Cluster, 
 	case "cloud18-gitlab-user":
 		mycluster.Conf.Cloud18GitUser = value
 	case "cloud18-gitlab-password":
-		mycluster.Conf.Cloud18GitPassword = value
+		val, err := base64.StdEncoding.DecodeString(value)
+		if err != nil {
+			return errors.New("Unable to decode")
+		}
+		mycluster.Conf.Cloud18GitPassword = string(val)
+		var new_secret config.Secret
+		new_secret.Value = mycluster.Conf.Cloud18GitPassword
+		new_secret.OldValue = mycluster.Conf.GetDecryptedValue("cloud18-gitlab-password")
+		mycluster.Conf.Secrets["cloud18-gitlab-password"] = new_secret
 	case "cloud18-platform-description":
 		mycluster.Conf.Cloud18PlatformDescription = value
 	case "log-file-level":
@@ -1828,7 +1836,15 @@ func (repman *ReplicationManager) setRepmanSetting(name string, value string) er
 	case "cloud18-gitlab-user":
 		repman.Conf.Cloud18GitUser = value
 	case "cloud18-gitlab-password":
-		repman.Conf.Cloud18GitPassword = value
+		val, err := base64.StdEncoding.DecodeString(value)
+		if err != nil {
+			return errors.New("Unable to decode")
+		}
+		repman.Conf.Cloud18GitPassword = string(val)
+		var new_secret config.Secret
+		new_secret.Value = repman.Conf.Cloud18GitPassword
+		new_secret.OldValue = repman.Conf.GetDecryptedValue("cloud18-gitlab-password")
+		repman.Conf.Secrets["cloud18-gitlab-password"] = new_secret
 	case "cloud18-platform-description":
 		repman.Conf.Cloud18PlatformDescription = value
 	case "api-bind":
@@ -1939,9 +1955,9 @@ func (repman *ReplicationManager) switchRepmanSetting(name string) error {
 	case "cloud18":
 		repman.Conf.SwitchCloud18()
 		if repman.Conf.Cloud18 {
-			_, err := githelper.GetGitLabTokenBasicAuth(repman.Conf.Cloud18GitUser, repman.Conf.GetDecryptedValue("cloud18-gitlab-password"), repman.Conf.IsEligibleForPrinting(config.ConstLogModGit, config.LvlDbg))
+			access_token, err := githelper.GetGitLabTokenBasicAuth(repman.Conf.Cloud18GitUser, repman.Conf.GetDecryptedValue("cloud18-gitlab-password"), repman.Conf.IsEligibleForPrinting(config.ConstLogModGit, config.LvlDbg))
 			if err != nil {
-				repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlErr, err.Error())
+				repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlErr, err.Error()+". access_token:"+access_token)
 				if strings.Contains(err.Error(), "invalid_grant") {
 					repman.Conf.Cloud18 = false
 					return fmt.Errorf("invalid_grant")

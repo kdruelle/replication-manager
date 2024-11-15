@@ -58,7 +58,7 @@ function CloudSettings({ config }) {
           value={config?.cloud18GitlabPassword}
           confirmTitle={`Confirm gitlab password to `}
           onSave={(value) => {
-            dispatch(setGlobalSetting({ setting: 'cloud18-gitlab-password', value }))
+            dispatch(setGlobalSetting({ setting: 'cloud18-gitlab-password', value: btoa(value) }))
           }}
         />
       )
