@@ -1417,12 +1417,13 @@ func (conf *Config) LoadEncrytionKey() ([]byte, error) {
 
 func (conf *Config) GetEncryptedString(str string) string {
 	p := crypto.Password{PlainText: str}
-	var err error
+
+	if conf.SecretKey == nil {
+		conf.LoadEncrytionKey()
+	}
+
 	if conf.SecretKey != nil {
-		p.Key, err = crypto.ReadKey(fmt.Sprintf("%v", conf.MonitoringKeyPath))
-		if err != nil {
-			return str
-		}
+		p.Key = conf.SecretKey
 		p.Encrypt()
 		return "hash_" + p.CipherText
 	}
