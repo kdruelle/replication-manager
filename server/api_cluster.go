@@ -1138,7 +1138,11 @@ func (repman *ReplicationManager) handlerMuxSwitchGlobalSettings(w http.Response
 		valid, user := repman.IsValidClusterACL(r, mycluster)
 		if valid {
 			mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, "INFO", "API receive switch global setting %s", setting)
-			repman.switchServerSetting(user, r.URL.Path, setting)
+			err := repman.switchServerSetting(user, r.URL.Path, setting)
+			if err != nil {
+				http.Error(w, fmt.Sprintf("Failed to set value for %s: %s", setting, err.Error()), 400)
+				return
+			}
 		} else {
 			http.Error(w, fmt.Sprintf("User doesn't have required ACL for global setting: %s", setting), 403)
 			return
@@ -1742,7 +1746,15 @@ func (repman *ReplicationManager) setClusterSetting(mycluster *cluster.Cluster, 
 	case "cloud18-gitlab-user":
 		mycluster.Conf.Cloud18GitUser = value
 	case "cloud18-gitlab-password":
-		mycluster.Conf.Cloud18GitPassword = value
+		val, err := base64.StdEncoding.DecodeString(value)
+		if err != nil {
+			return errors.New("Unable to decode")
+		}
+		mycluster.Conf.Cloud18GitPassword = string(val)
+		var new_secret config.Secret
+		new_secret.Value = mycluster.Conf.Cloud18GitPassword
+		new_secret.OldValue = mycluster.Conf.GetDecryptedValue("cloud18-gitlab-password")
+		mycluster.Conf.Secrets["cloud18-gitlab-password"] = new_secret
 	case "cloud18-platform-description":
 		mycluster.Conf.Cloud18PlatformDescription = value
 	case "log-file-level":
@@ -1823,7 +1835,15 @@ func (repman *ReplicationManager) setRepmanSetting(name string, value string) er
 	case "cloud18-gitlab-user":
 		repman.Conf.Cloud18GitUser = value
 	case "cloud18-gitlab-password":
-		repman.Conf.Cloud18GitPassword = value
+		val, err := base64.StdEncoding.DecodeString(value)
+		if err != nil {
+			return errors.New("Unable to decode")
+		}
+		repman.Conf.Cloud18GitPassword = string(val)
+		var new_secret config.Secret
+		new_secret.Value = repman.Conf.Cloud18GitPassword
+		new_secret.OldValue = repman.Conf.GetDecryptedValue("cloud18-gitlab-password")
+		repman.Conf.Secrets["cloud18-gitlab-password"] = new_secret
 	case "cloud18-platform-description":
 		repman.Conf.Cloud18PlatformDescription = value
 	case "api-bind":
@@ -1924,15 +1944,23 @@ func (repman *ReplicationManager) setRepmanSetting(name string, value string) er
 func (repman *ReplicationManager) switchRepmanSetting(name string) error {
 	//not immutable
 	if !repman.Conf.IsVariableImmutable(name) {
-		repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGeneral, "INFO", "API receive set setting %s", name)
+		repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGeneral, "INFO", "API receive switch setting %s", name)
 	} else {
 		repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGeneral, config.LvlWarn, "Overwriting an immutable parameter defined in config , please use config-merge command to preserve them between restart")
-		repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGeneral, "INFO", "API receive set setting %s", name)
+		repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGeneral, "INFO", "API receive switch setting %s", name)
 	}
 
 	switch name {
 	case "cloud18":
-		repman.Conf.SwitchCloud18()
+		if !repman.Conf.Cloud18 {
+			if err := repman.InitGitConfig(&repman.Conf); err != nil {
+				if strings.Contains(err.Error(), "invalid_grant") {
+					return fmt.Errorf("invalid_grant")
+				}
+				return err
+			}
+			repman.Conf.SwitchCloud18()
+		}
 	case "cloud18-shared":
 		repman.Conf.SwitchCloud18Shared()
 	case "api-https-bind":
@@ -1974,15 +2002,19 @@ func (repman *ReplicationManager) setServerSetting(user string, URL string, name
 	}
 }
 
-func (repman *ReplicationManager) switchServerSetting(user string, URL string, name string) {
-	repman.switchRepmanSetting(name)
-
+func (repman *ReplicationManager) switchServerSetting(user string, URL string, name string) error {
+	err := repman.switchRepmanSetting(name)
+	if err != nil {
+		return err
+	}
 	for cname, cl := range repman.Clusters {
 		//Don't print error with no valid ACL
 		if cl.IsURLPassACL(user, fmt.Sprintf(URL, cname), false) {
 			repman.switchClusterSettings(cl, name)
 		}
 	}
+
+	return nil
 }
 
 func (repman *ReplicationManager) handlerMuxAddTag(w http.ResponseWriter, r *http.Request) {

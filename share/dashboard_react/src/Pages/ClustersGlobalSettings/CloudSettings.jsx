@@ -1,14 +1,20 @@
-import { Flex } from '@chakra-ui/react'
-import React from 'react'
+import { Flex, Link } from '@chakra-ui/react'
+import React, { useEffect, useState } from 'react'
 import styles from './styles.module.scss'
 import RMSwitch from '../../components/RMSwitch'
 import { useDispatch } from 'react-redux'
 import TableType2 from '../../components/TableType2'
 import { switchGlobalSetting, setGlobalSetting } from '../../redux/globalClustersSlice'
 import TextForm from '../../components/TextForm'
+import { showErrorBanner } from '../../utility/common'
 
-function CloudSettings({ monitor }) {
+function CloudSettings({ config }) {
   const dispatch = useDispatch()
+  const errInvalidGrant = (err) => { if (err?.message?.includes("invalid_grant")) err.message = <>{err.message}. <Link href="https://gitlab.signal18.io/users/sign_up" target='_blank'><u>Click here to Sign Up</u></Link></>; return err }
+
+  useEffect(() => {
+    // Re-render when the config prop changes
+  }, [config]);
 
   const dataObject = [
     {
@@ -16,8 +22,8 @@ function CloudSettings({ monitor }) {
       value: (
         <RMSwitch
           confirmTitle={'Confirm switch global settings for cloud18?'}
-          onChange={() => dispatch(switchGlobalSetting({ setting: 'cloud18' }))}
-          isChecked={monitor?.config?.cloud18}
+          onChange={(_v, setRefresh) => dispatch(switchGlobalSetting({ setting: 'cloud18', errMessage: errInvalidGrant, setRefresh }))}
+          isChecked={config?.cloud18}
         />
       )
     },
@@ -25,7 +31,7 @@ function CloudSettings({ monitor }) {
       key: 'Domain',
       value: (
         <TextForm
-          value={monitor?.config?.cloud18Domain}
+          value={config?.cloud18Domain}
           confirmTitle={`Confirm cloud18 Domain to `}
           onSave={(value) => {
             dispatch(setGlobalSetting({ setting: 'cloud18-domain', value }))
@@ -37,7 +43,7 @@ function CloudSettings({ monitor }) {
       key: 'Git user',
       value: (
         <TextForm
-          value={monitor?.config?.cloud18GitUser}
+          value={config?.cloud18GitUser}
           confirmTitle={`Confirm git username to `}
           onSave={(value) => {
             dispatch(setGlobalSetting({ setting: 'cloud18-gitlab-user', value }))
@@ -49,10 +55,10 @@ function CloudSettings({ monitor }) {
       key: 'Gitlab Password',
       value: (
         <TextForm
-          value={monitor?.config?.cloud18GitlabPassword}
+          value={config?.cloud18GitlabPassword}
           confirmTitle={`Confirm gitlab password to `}
           onSave={(value) => {
-            dispatch(setGlobalSetting({ setting: 'cloud18-gitlab-password', value }))
+            dispatch(setGlobalSetting({ setting: 'cloud18-gitlab-password', value: btoa(value) }))
           }}
         />
       )
@@ -61,7 +67,7 @@ function CloudSettings({ monitor }) {
       key: 'Platform Description',
       value: (
         <TextForm
-          value={monitor?.config?.cloud18PlatformDescription}
+          value={config?.cloud18PlatformDescription}
           confirmTitle={`Confirm platform description to `}
           onSave={(value) => {
             dispatch(setGlobalSetting({ setting: 'cloud18-platform-description', value }))
@@ -75,7 +81,7 @@ function CloudSettings({ monitor }) {
         <RMSwitch
           confirmTitle={'Confirm switch global settings for shared cloud18?'}
           onChange={() => dispatch(switchGlobalSetting({ setting: 'cloud18Shared' }))}
-          isChecked={monitor?.config?.cloud18Shared}
+          isChecked={config?.cloud18Shared}
         />
       )
     },
@@ -83,7 +89,7 @@ function CloudSettings({ monitor }) {
       key: 'Subdomain',
       value: (
         <TextForm
-          value={monitor?.config?.cloud18SubDomain}
+          value={config?.cloud18SubDomain}
           confirmTitle={`Confirm subdomain to `}
           onSave={(value) => {
             dispatch(setGlobalSetting({ setting: 'cloud18-sub-domain', value }))
@@ -95,7 +101,7 @@ function CloudSettings({ monitor }) {
       key: 'Subdomain zone',
       value: (
         <TextForm
-          value={monitor?.config?.cloud18SubDomainZone}
+          value={config?.cloud18SubDomainZone}
           confirmTitle={`Confirm subdomain zone to `}
           onSave={(value) => {
             dispatch(setGlobalSetting({ setting: 'cloud18-sub-domain-zone', value }))

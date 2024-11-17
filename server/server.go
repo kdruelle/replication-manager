@@ -22,6 +22,7 @@ import (
 	"os/user"
 	"runtime"
 	"runtime/pprof"
+	"slices"
 	"sort"
 	"sync"
 	"syscall"
@@ -516,7 +517,7 @@ func (repman *ReplicationManager) AddFlags(flags *pflag.FlagSet, conf *config.Co
 	flags.StringVar(&conf.GitAccesToken, "git-acces-token", "", "GitHub personnal acces token")
 	flags.IntVar(&conf.GitMonitoringTicker, "git-monitoring-ticker", 60, "Git monitoring interval in seconds")
 	flags.BoolVar(&conf.LogGit, "log-git", true, "To log clone/push/pull from git")
-	flags.IntVar(&conf.LogGitLevel, "log-git-level", 1, "Log GIT Level")
+	flags.IntVar(&conf.LogGitLevel, "log-git-level", 4, "Log GIT Level")
 
 	//flags.BoolVar(&conf.Daemon, "daemon", true, "Daemon mode. Do not start the Termbox console")
 	conf.Daemon = true
@@ -1294,6 +1295,8 @@ func (repman *ReplicationManager) InitConfig(conf config.Config) {
 	//load config file from git hub
 	conf.DecryptSecretsFromConfig()
 
+	githelper.Logrus = repman.Logrus
+
 	if conf.GitUrl != "" && conf.GitAccesToken != "" && !conf.Cloud18 {
 		var tok string
 
@@ -1316,30 +1319,14 @@ func (repman *ReplicationManager) InitConfig(conf config.Config) {
 			tok = conf.GetDecryptedValue("git-acces-token")
 		}
 
-		conf.CloneConfigFromGit(conf.GitUrl, conf.GitUsername, tok, conf.WorkingDir)
+		err := conf.CloneConfigFromGit(conf.GitUrl, conf.GitUsername, tok, conf.WorkingDir)
+		if err != nil {
+			repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlErr, err.Error())
+		}
 	}
 
 	if conf.Cloud18GitUser != "" && conf.Cloud18GitPassword != "" && conf.Cloud18 {
-		acces_tok := githelper.GetGitLabTokenBasicAuth(conf.Cloud18GitUser, conf.GetDecryptedValue("cloud18-gitlab-password"), conf.LogGit)
-		personal_access_token, _ := githelper.GetGitLabTokenOAuth(acces_tok, conf.LogGit)
-		if personal_access_token != "" {
-			var Secrets config.Secret
-			Secrets.Value = personal_access_token
-			conf.Secrets["git-acces-token"] = Secrets
-			conf.GitUrl = conf.OAuthProvider + "/" + conf.Cloud18Domain + "/" + conf.Cloud18SubDomain + "-" + conf.Cloud18SubDomainZone + ".git"
-			conf.GitUsername = conf.Cloud18GitUser
-			conf.GitAccesToken = personal_access_token
-			conf.ImmuableFlagMap["git-url"] = conf.GitUrl
-			conf.ImmuableFlagMap["git-username"] = conf.GitUsername
-			conf.ImmuableFlagMap["git-acces-token"] = personal_access_token
-			conf.CloneConfigFromGit(conf.GitUrl, conf.GitUsername, conf.GitAccesToken, conf.WorkingDir)
-			conf.PushConfigToGit(conf.GitUrl, conf.GitAccesToken, conf.GitUsername, conf.WorkingDir, []string{})
-			//conf.GitAddReadMe(conf.GitUrl, conf.GitAccesToken, conf.GitUsername, conf.WorkingDir)
-
-		} else if conf.LogGit {
-			repman.Logrus.WithField("group", repman.ClusterList[cfgGroupIndex]).Infof("Could not get personal access token from gitlab")
-		}
-
+		repman.InitGitConfig(&conf)
 	}
 
 	//add config from cluster to the config map
@@ -1912,8 +1899,16 @@ func (repman *ReplicationManager) Run() error {
 			case <-ticker_GitPull.C:
 				//to do it only when using github
 				if repman.Conf.GitUrl != "" {
-					repman.Conf.CloneConfigFromGit(repman.Conf.GitUrl, repman.Conf.GitUsername, repman.Conf.Secrets["git-acces-token"].Value, repman.Conf.WorkingDir)
-					repman.Conf.PushConfigToGit(repman.Conf.GitUrl, repman.Conf.Secrets["git-acces-token"].Value, repman.Conf.GitUsername, repman.Conf.WorkingDir, repman.ClusterList)
+					err = repman.Conf.CloneConfigFromGit(repman.Conf.GitUrl, repman.Conf.GitUsername, repman.Conf.Secrets["git-acces-token"].Value, repman.Conf.WorkingDir)
+					if err != nil {
+						repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlErr, err.Error())
+					}
+
+					err = repman.Conf.PushConfigToGit(repman.Conf.GitUrl, repman.Conf.Secrets["git-acces-token"].Value, repman.Conf.GitUsername, repman.Conf.WorkingDir, repman.ClusterList)
+					if err != nil {
+						repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlErr, err.Error())
+					}
+
 					for _, cluster := range repman.Clusters {
 						cluster.IsGitPull = true
 					}
@@ -2712,6 +2707,7 @@ func (repman *ReplicationManager) SaveImmutable() (hash.Hash, error) {
 
 	s := t
 	keys := t.Keys()
+	slices.Sort(keys)
 	for _, key := range keys {
 		if _, ok := repman.ServerScopeList[key]; ok {
 			val, ok := repman.Conf.ImmuableFlagMap[key]

@@ -18,6 +18,7 @@ share/dashboard/node_modules/
 .gnupg/
 .nvm/
 .npm/
+.local/
 .ssh/
 share/dashboard/node_modules
 .vim/

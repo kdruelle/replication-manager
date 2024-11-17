@@ -20,6 +20,7 @@ import (
 	"os/exec"
 	"os/user"
 	"runtime"
+	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -884,6 +885,17 @@ func (cluster *Cluster) Save() error {
 		return err
 	}
 
+	// Sort them so it will not push if no changes are made
+	slices.SortStableFunc(cluster.Agents, func(a, b Agent) int {
+		if a.Id < b.Id {
+			return -1
+		} else if b.Id > a.Id {
+			return 1
+		} else {
+			return 0
+		}
+	})
+
 	saveAgents, _ := json.MarshalIndent(cluster.Agents, "", "\t")
 
 	err = os.WriteFile(cluster.Conf.WorkingDir+"/"+cluster.Name+"/agents.json", saveAgents, 0644)
@@ -975,7 +987,15 @@ func (cluster *Cluster) SaveImmutableConfig() error {
 	}
 	defer file.Close()
 
-	for key, val := range cluster.Conf.ImmuableFlagMap {
+	keys := make([]string, 0)
+	for key, _ := range cluster.Conf.ImmuableFlagMap {
+		keys = append(keys, key)
+	}
+
+	slices.Sort(keys)
+
+	for _, key := range keys {
+		val := cluster.Conf.ImmuableFlagMap[key]
 		if _, ok := cluster.Conf.Secrets[key]; ok {
 			encrypt_val := cluster.GetEncryptedValueFromMemory(key)
 			file.WriteString(key + " = \"" + encrypt_val + "\"\n")
@@ -1001,7 +1021,14 @@ func (cluster *Cluster) SaveCacheConfig() error {
 	}
 	defer file.Close()
 
-	for key := range cluster.Conf.ImmuableFlagMap {
+	keys := make([]string, 0)
+	for key, _ := range cluster.Conf.ImmuableFlagMap {
+		keys = append(keys, key)
+	}
+
+	slices.Sort(keys)
+
+	for _, key := range keys {
 		if _, ok := cluster.Conf.Secrets[key]; ok {
 			encrypt_val := cluster.GetEncryptedValueFromMemory(key)
 			file.WriteString(key + " = \"" + encrypt_val + "\"\n")

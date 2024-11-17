@@ -1447,12 +1447,13 @@ func (conf *Config) LoadEncrytionKey() ([]byte, error) {
 
 func (conf *Config) GetEncryptedString(str string) string {
 	p := crypto.Password{PlainText: str}
-	var err error
+
+	if conf.SecretKey == nil {
+		conf.LoadEncrytionKey()
+	}
+
 	if conf.SecretKey != nil {
-		p.Key, err = crypto.ReadKey(fmt.Sprintf("%v", conf.MonitoringKeyPath))
-		if err != nil {
-			return str
-		}
+		p.Key = conf.SecretKey
 		p.Encrypt()
 		return "hash_" + p.CipherText
 	}
@@ -1467,149 +1468,125 @@ func (conf *Config) PrintSecret(value string) string {
 	return masker.String(masker.MAddress, value)
 }
 
-func (conf *Config) CloneConfigFromGit(url string, user string, tok string, dir string) {
-
+func (conf *Config) CloneConfigFromGit(url string, user string, tok string, dir string) error {
 	auth := &git_https.BasicAuth{
-		Username: user, // yes, this can be anything except an empty string
+		Username: user, // can be any non-empty string
 		Password: tok,
-	}
-	if conf.LogGit {
-		log.Printf("Clone from git : url %s, tok %s, dir %s\n", url, conf.PrintSecret(tok), dir)
 	}
 
 	path := dir
 	if _, err := os.Stat(path + "/.git"); err == nil {
-
-		// We instantiate a new repository targeting the given path (the .git folder)
+		// Open existing repository
 		r, err := git.PlainOpen(path)
-		if err != nil && conf.LogGit {
-			log.Errorf("Git error : cannot PlainOpen : %s", err)
-			return
+		if err != nil {
+			return fmt.Errorf("git error: cannot open repository: %w", err)
 		}
 
 		// Get the working directory for the repository
 		w, err := r.Worktree()
-		if err != nil && conf.LogGit {
-			log.Errorf("Git error : cannot Worktree : %s", err)
-			return
+		if err != nil {
+			return fmt.Errorf("git error: cannot get worktree: %w", err)
 		}
-		// Pull the latest changes from the origin remote and merge into the current branch
-		//git_ex.Info("git pull origin")
+
+		// Pull the latest changes from origin
 		err = w.Pull(&git.PullOptions{
 			RemoteName:   "origin",
 			Auth:         auth,
 			SingleBranch: true,
-			//RemoteURL:    url,
-			Force: true,
+			Force:        true,
 		})
-		if err != nil && fmt.Sprintf("%v", err) != "already up-to-date" && conf.LogGit {
-			log.Errorf("Git error : cannot Pull : %s", err)
+		if err != nil && err.Error() != "already up-to-date" {
+			fmt.Printf("git error: cannot pull from repository: %w", err)
 		}
 
 	} else {
-		// Clone the given repository to the given directory
-		//git_ex.Info("git clone %s %s --recursive", url, path)
-
+		// Clone the repository to the given directory
 		_, err := git.PlainClone(path, false, &git.CloneOptions{
 			URL:               url,
 			RecurseSubmodules: git.DefaultSubmoduleRecursionDepth,
 			Auth:              auth,
 		})
-
-		if err != nil && conf.LogGit {
-			log.Errorf("Git error : cannot Clone %s repository : %s", url, err)
+		if err != nil {
+			return fmt.Errorf("git error: cannot clone repository %s: %w", url, err)
 		}
 	}
+
+	return nil
 }
 
-func (conf *Config) PushConfigToGit(url string, tok string, user string, dir string, clusterList []string) {
+func (conf *Config) PushConfigToGit(url string, tok string, user string, dir string, clusterList []string) error {
 
-	if conf.LogGit {
-		log.Infof("Push to git : tok %s, dir %s, user %s, clustersList : %v\n", conf.PrintSecret(tok), dir, user, clusterList)
-	}
 	auth := &git_https.BasicAuth{
-		Username: user, // yes, this can be anything except an empty string
+		Username: user, // can be any non-empty string
 		Password: tok,
 	}
-	path := dir
-	r, err := git.PlainOpen(path)
-	if err != nil && conf.LogGit {
-		log.Errorf("Git error : cannot PlainOpen : %s", err)
-		return
+
+	// Open the repository
+	r, err := git.PlainOpen(dir)
+	if err != nil {
+		return fmt.Errorf("git error: cannot open repository: %w", err)
 	}
 
+	// Get the working tree
 	w, err := r.Worktree()
-	if err != nil && conf.LogGit {
-		log.Errorf("Git error : cannot Worktree : %s", err)
-		return
+	if err != nil {
+		return fmt.Errorf("git error: cannot get worktree: %w", err)
 	}
 
+	// Add cluster-specific files
 	if len(clusterList) != 0 {
 		for _, name := range clusterList {
-			// Adds the new file to the staging area.
-			err = w.AddGlob(name + "/*.toml")
-			if err != nil && conf.LogGit {
-				log.Errorf("Git error : cannot Add %s : %s", name+"/*.toml", err)
+			if err := w.AddGlob(name + "/*.toml"); err != nil && conf.IsEligibleForPrinting(ConstLogModGit, LvlWarn) {
+				fmt.Printf("Git error: cannot add %s/*.toml: %w", name, err)
 			}
 
+			// Check and add specific JSON files if they exist
 			if _, err := os.Stat(conf.WorkingDir + "/" + name + "/agents.json"); !os.IsNotExist(err) {
-				_, err = w.Add(name + "/agents.json")
-				if err != nil && conf.LogGit {
-					log.Errorf("Git error : cannot Add %s : %s", name+"/agents.json", err)
+				if _, err := w.Add(name + "/agents.json"); err != nil && conf.IsEligibleForPrinting(ConstLogModGit, LvlWarn) {
+					fmt.Printf("git error: cannot add %s/agents.json: %w", name, err)
 				}
-				_, err = w.Add(name + "/queryrules.json")
-				if err != nil && conf.LogGit {
-					log.Errorf("Git error : cannot Add %s : %s", name+"/queryrules.json", err)
+				if _, err := w.Add(name + "/queryrules.json"); err != nil && conf.IsEligibleForPrinting(ConstLogModGit, LvlWarn) {
+					fmt.Printf("git error: cannot add %s/queryrules.json: %w", name, err)
 				}
 			}
 		}
 	}
 
+	// Add cloud18.toml if it exists
 	if _, err := os.Stat(conf.WorkingDir + "/cloud18.toml"); !os.IsNotExist(err) {
-		_, err = w.Add("cloud18.toml")
-		if err != nil && conf.LogGit {
-			log.Errorf("Git error : cannot Add cloud18.toml : %s", err)
+		if _, err := w.Add("cloud18.toml"); err != nil && conf.IsEligibleForPrinting(ConstLogModGit, LvlWarn) {
+			fmt.Printf("git error: cannot add cloud18.toml: %w", err)
 		}
 	}
 
+	// Commit the changes
 	msg := "Update file"
-
-	_, err = w.Commit(msg, &git.CommitOptions{
+	if _, err := w.Commit(msg, &git.CommitOptions{
 		Author: &git_obj.Signature{
 			Name: "Replication-manager",
 			When: time.Now(),
 		},
 		All: true,
-	})
-
-	if err != nil && conf.LogGit {
-		log.Errorf("Git error : cannot Commit : %s", err)
-		return
+	}); err != nil {
+		return fmt.Errorf("git error: cannot commit changes: %w", err)
 	}
 
-	err = w.Pull(&git.PullOptions{
+	// Pull the latest changes from the remote repository
+	if err := w.Pull(&git.PullOptions{
 		RemoteName: "origin",
 		Auth:       auth,
 		RemoteURL:  url,
 		Force:      true,
-	})
-
-	if err != nil && fmt.Sprintf("%v", err) != "already up-to-date" && conf.LogGit {
-
-		if err != nil && conf.LogGit {
-			log.Errorf("Git error : cannot Pull %s repository : %s", url, err)
-			//conf.PullByGitCli()
-			//return
-		}
-
+	}); err != nil && err.Error() != "already up-to-date" && conf.IsEligibleForPrinting(ConstLogModGit, LvlWarn) {
+		fmt.Printf("git error: cannot pull from repository %s: %w", url, err)
 	}
 
-	// push using default options
-	err = r.Push(&git.PushOptions{Auth: auth})
-	if err != nil && conf.LogGit {
-		log.Errorf("Git error : cannot Push : %s", err)
-
+	// Push the changes to the remote repository
+	if err := r.Push(&git.PushOptions{Auth: auth}); err != nil {
+		return fmt.Errorf("git error: cannot push to remote repository: %w", err)
 	}
+
+	return nil
 }
 
 /*

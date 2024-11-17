@@ -431,7 +431,7 @@ func (repman *ReplicationManager) loginHandler(w http.ResponseWriter, r *http.Re
 				http.Error(w, "Error logging in: User is not registered", http.StatusUnauthorized)
 				return
 			} else {
-				token := githelper.GetGitLabTokenBasicAuth(user.Username, user.Password, false)
+				token, _ := githelper.GetGitLabTokenBasicAuth(user.Username, user.Password, false)
 				if token == "" {
 					http.Error(w, "Error logging in to gitlab: Token is empty", http.StatusUnauthorized)
 					return
@@ -555,7 +555,11 @@ func (repman *ReplicationManager) handlerMuxAuthCallback(w http.ResponseWriter, 
 					newSecret.Value = new_token
 					cluster.Conf.Secrets["git-acces-token"] = newSecret
 					//cluster.Conf.GitAccesToken = tokenInfo.token
-					cluster.Conf.CloneConfigFromGit(cluster.Conf.GitUrl, cluster.Conf.GitUsername, cluster.Conf.Secrets["git-acces-token"].Value, cluster.Conf.WorkingDir)
+					cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGit, config.LvlDbg, "Clone from git : url %s, tok %s, dir %s\n", cluster.Conf.GitUrl, cluster.Conf.PrintSecret(cluster.Conf.Secrets["git-acces-token"].Value), cluster.Conf.WorkingDir)
+					err = cluster.Conf.CloneConfigFromGit(cluster.Conf.GitUrl, cluster.Conf.GitUsername, cluster.Conf.Secrets["git-acces-token"].Value, cluster.Conf.WorkingDir)
+					if err != nil {
+						cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGit, config.LvlErr, err.Error())
+					}
 				} else {
 					log.Printf("Failed to get token from gitlab: %v\n", err)
 				}

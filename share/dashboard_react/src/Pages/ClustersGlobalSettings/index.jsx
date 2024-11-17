@@ -33,7 +33,7 @@ function ClustersGlobalSettings({}) {
         heading={'Cloud18'}
         headerClassName={styles.accordionHeader}
         panelClassName={styles.accordionPanel}
-        body={<CloudSettings monitor={monitor} openConfirmModal={openConfirmModal} />}
+        body={<CloudSettings config={monitor?.config} openConfirmModal={openConfirmModal} />}
       />
 
       {isConfirmModalOpen && (
