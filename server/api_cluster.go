@@ -25,7 +25,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/signal18/replication-manager/cluster"
 	"github.com/signal18/replication-manager/config"
-	"github.com/signal18/replication-manager/utils/githelper"
 	"github.com/signal18/replication-manager/utils/s18log"
 )
 
@@ -1953,16 +1952,14 @@ func (repman *ReplicationManager) switchRepmanSetting(name string) error {
 
 	switch name {
 	case "cloud18":
-		repman.Conf.SwitchCloud18()
-		if repman.Conf.Cloud18 {
-			access_token, err := githelper.GetGitLabTokenBasicAuth(repman.Conf.Cloud18GitUser, repman.Conf.GetDecryptedValue("cloud18-gitlab-password"), repman.Conf.IsEligibleForPrinting(config.ConstLogModGit, config.LvlDbg))
-			if err != nil {
-				repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlErr, err.Error()+". access_token:"+access_token)
+		if !repman.Conf.Cloud18 {
+			if err := repman.InitGitConfig(&repman.Conf); err != nil {
 				if strings.Contains(err.Error(), "invalid_grant") {
-					repman.Conf.Cloud18 = false
 					return fmt.Errorf("invalid_grant")
 				}
+				return err
 			}
+			repman.Conf.SwitchCloud18()
 		}
 	case "cloud18-shared":
 		repman.Conf.SwitchCloud18Shared()

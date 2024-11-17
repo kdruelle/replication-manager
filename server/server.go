@@ -517,7 +517,7 @@ func (repman *ReplicationManager) AddFlags(flags *pflag.FlagSet, conf *config.Co
 	flags.StringVar(&conf.GitAccesToken, "git-acces-token", "", "GitHub personnal acces token")
 	flags.IntVar(&conf.GitMonitoringTicker, "git-monitoring-ticker", 60, "Git monitoring interval in seconds")
 	flags.BoolVar(&conf.LogGit, "log-git", true, "To log clone/push/pull from git")
-	flags.IntVar(&conf.LogGitLevel, "log-git-level", 1, "Log GIT Level")
+	flags.IntVar(&conf.LogGitLevel, "log-git-level", 4, "Log GIT Level")
 
 	//flags.BoolVar(&conf.Daemon, "daemon", true, "Daemon mode. Do not start the Termbox console")
 	conf.Daemon = true
@@ -1294,6 +1294,8 @@ func (repman *ReplicationManager) InitConfig(conf config.Config) {
 	conf.ImmuableFlagMap = ImmuableMap
 	//load config file from git hub
 	conf.DecryptSecretsFromConfig()
+
+	githelper.Logrus = repman.Logrus
 
 	if conf.GitUrl != "" && conf.GitAccesToken != "" && !conf.Cloud18 {
 		var tok string

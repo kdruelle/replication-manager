@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import { handleError, showErrorBanner, showSuccessBanner } from '../utility/common'
 import { globalClustersService } from '../services/globalClustersService'
+import { Link } from '@chakra-ui/react'
 
 export const getClusters = createAsyncThunk('globalClusters/getClusters', async ({}, thunkAPI) => {
   try {
@@ -31,15 +32,22 @@ export const getMonitoredData = createAsyncThunk('globalClusters/getMonitoredDat
 
 export const switchGlobalSetting = createAsyncThunk(
   'globalClusters/switchGlobalSetting',
-  async ({ setting, errMessage }, thunkAPI) => {
+  async ({ setting, errMessage, setRefresh }, thunkAPI) => {
     try {
       const { data, status } = await globalClustersService.switchGlobalSetting(setting)
       showSuccessBanner('Cloud18 setting switch is successful!', status, thunkAPI)
       return { data, status }
     } catch (error) {
       console.log('error::', error)
-      showErrorBanner('Cloud18 setting switch is failed!', errMessage(error), thunkAPI)
+      if (errMessage) {
+        showErrorBanner('Cloud18 setting switch is failed!', errMessage(error), thunkAPI)
+      } else {
+        showErrorBanner('Cloud18 setting switch is failed!', error, thunkAPI)
+      }
       handleError(error, thunkAPI)
+      if (setRefresh) {
+        setRefresh(Math.random().toString(36).slice(2, 7))
+      }
     }
   }
 )

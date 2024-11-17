@@ -1,33 +1,44 @@
 package server
 
 import (
+	"fmt"
+
 	"github.com/signal18/replication-manager/config"
 	"github.com/signal18/replication-manager/utils/githelper"
 )
 
-func (repman *ReplicationManager) InitGitConfig(conf *config.Config) {
+func (repman *ReplicationManager) InitGitConfig(conf *config.Config) error {
 	acces_tok, err := githelper.GetGitLabTokenBasicAuth(conf.Cloud18GitUser, conf.GetDecryptedValue("cloud18-gitlab-password"), conf.LogGit)
 	if err != nil {
-		repman.LogModulePrintf(conf.Verbose, config.ConstLogModGit, config.LvlErr, err.Error())
+		if conf.Verbose || conf.IsEligibleForPrinting(config.ConstLogModGit, config.LvlErr) {
+			repman.Logrus.Errorf(err.Error() + "\n")
+		}
 		conf.Cloud18 = false
-		return
+		return err
 	}
 
 	uid, err := githelper.GetGitLabUserId(acces_tok, conf.LogGit)
-
 	if err != nil {
-		repman.LogModulePrintf(conf.Verbose, config.ConstLogModGit, config.LvlErr, err.Error())
+		if conf.Verbose || conf.IsEligibleForPrinting(config.ConstLogModGit, config.LvlErr) {
+			repman.Logrus.Errorf(err.Error() + "\n")
+		}
 		conf.Cloud18 = false
-		return
+		return err
 	} else if uid == 0 {
-		repman.LogModulePrintf(conf.Verbose, config.ConstLogModGit, config.LvlErr, err.Error())
+		if conf.Verbose || conf.IsEligibleForPrinting(config.ConstLogModGit, config.LvlErr) {
+			repman.Logrus.Errorf("Invalid user Id \n")
+		}
 		conf.Cloud18 = false
-		return
+		return fmt.Errorf("Invalid user Id")
 	}
 
-	_, err = githelper.GetGroupAccessLevel(acces_tok, conf.Cloud18Domain, conf.LogGit)
+	_, err = githelper.InitGroupAccessLevel(acces_tok, conf.Cloud18Domain, uid, conf.LogGit)
 	if err != nil {
-		repman.LogModulePrintf(conf.Verbose, config.ConstLogModGit, config.LvlErr, err.Error())
+		if conf.Verbose || conf.IsEligibleForPrinting(config.ConstLogModGit, config.LvlErr) {
+			repman.Logrus.Errorf(err.Error() + "\n")
+		}
+		conf.Cloud18 = false
+		return err
 	}
 
 	personal_access_token, _ := githelper.GetGitLabTokenOAuth(acces_tok, conf.LogGit)
@@ -42,18 +53,32 @@ func (repman *ReplicationManager) InitGitConfig(conf *config.Config) {
 		conf.ImmuableFlagMap["git-username"] = conf.GitUsername
 		conf.ImmuableFlagMap["git-acces-token"] = personal_access_token
 
-		repman.LogModulePrintf(conf.Verbose, config.ConstLogModGit, config.LvlDbg, "Clone from git : url %s, tok %s, dir %s\n", conf.GitUrl, conf.PrintSecret(conf.GitAccesToken), conf.WorkingDir)
+		if conf.Verbose || conf.IsEligibleForPrinting(config.ConstLogModGit, config.LvlDbg) {
+			repman.Logrus.Debugf("Clone from git : url %s, tok %s, dir %s\n", conf.GitUrl, conf.PrintSecret(conf.GitAccesToken), conf.WorkingDir)
+		}
 		err := conf.CloneConfigFromGit(conf.GitUrl, conf.GitUsername, conf.GitAccesToken, conf.WorkingDir)
 		if err != nil {
-			repman.LogModulePrintf(conf.Verbose, config.ConstLogModGit, config.LvlErr, err.Error())
+			if conf.Verbose || conf.IsEligibleForPrinting(config.ConstLogModGit, config.LvlErr) {
+				repman.Logrus.Errorf(err.Error() + "\n")
+			}
 		}
 
-		repman.LogModulePrintf(conf.Verbose, config.ConstLogModGit, config.LvlDbg, "Push to git : tok %s, dir %s, user %s, clustersList : %v\n", conf.PrintSecret(conf.GitAccesToken), conf.WorkingDir, conf.GitUsername, []string{})
+		if conf.Verbose || conf.IsEligibleForPrinting(config.ConstLogModGit, config.LvlDbg) {
+			repman.Logrus.Debugf("Push to git : tok %s, dir %s, user %s, clustersList : %v\n", conf.PrintSecret(conf.GitAccesToken), conf.WorkingDir, conf.GitUsername, []string{})
+		}
 		err = conf.PushConfigToGit(conf.GitUrl, conf.GitAccesToken, conf.GitUsername, conf.WorkingDir, []string{})
 		if err != nil {
-			repman.LogModulePrintf(conf.Verbose, config.ConstLogModGit, config.LvlErr, err.Error())
+			if conf.Verbose || conf.IsEligibleForPrinting(config.ConstLogModGit, config.LvlErr) {
+				repman.Logrus.Errorf(err.Error() + "\n")
+			}
 		}
 	} else {
-		repman.LogModulePrintf(conf.Verbose, config.ConstLogModGit, config.LvlInfo, "Could not get personal access token from gitlab")
+		if conf.Verbose || conf.IsEligibleForPrinting(config.ConstLogModGit, config.LvlErr) {
+			repman.Logrus.Errorf("Could not get personal access token from gitlab" + "\n")
+			conf.Cloud18 = false
+			return fmt.Errorf("Could not get personal access token from gitlab")
+		}
 	}
+
+	return nil
 }

@@ -1,5 +1,5 @@
 import { Flex, Link } from '@chakra-ui/react'
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import styles from './styles.module.scss'
 import RMSwitch from '../../components/RMSwitch'
 import { useDispatch } from 'react-redux'
@@ -22,7 +22,7 @@ function CloudSettings({ config }) {
       value: (
         <RMSwitch
           confirmTitle={'Confirm switch global settings for cloud18?'}
-          onChange={() => dispatch(switchGlobalSetting({ setting: 'cloud18', errMessage: errInvalidGrant }))}
+          onChange={(_v, setRefresh) => dispatch(switchGlobalSetting({ setting: 'cloud18', errMessage: errInvalidGrant, setRefresh }))}
           isChecked={config?.cloud18}
         />
       )

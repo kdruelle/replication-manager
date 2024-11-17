@@ -16,19 +16,20 @@ function RMSwitch({
 }) {
   const [currentValue, setCurrentValue] = useState(isChecked)
   const [previousValue, setPreviousValue] = useState(isChecked)
+  const [refresh, setRefresh] = useState("")
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false)
 
   useEffect(() => {
     setCurrentValue(isChecked)
     setPreviousValue(isChecked)
-  }, [isChecked])
+  }, [refresh, isChecked])
 
   const handleChange = (e) => {
     setCurrentValue(e.target.checked)
     if (confirmTitle) {
       openConfirmModal()
     } else {
-      onChange(e.target.checked)
+      onChange(e.target.checked,setRefresh)
     }
   }
 
@@ -44,7 +45,7 @@ function RMSwitch({
 
   return (
     <Flex className={styles.switchContainer} align='center'>
-      <Switch size={size} id={id} isChecked={currentValue} isDisabled={isDisabled} onChange={handleChange} />
+      <Switch key={refresh} size={size} id={id} isChecked={currentValue} isDisabled={isDisabled} onChange={handleChange} />
       <Text className={`${styles.text} ${currentValue ? styles.green : styles.red}`}>
         {currentValue ? onText : offText}
       </Text>
@@ -57,7 +58,7 @@ function RMSwitch({
           }}
           title={confirmTitle}
           onConfirmClick={() => {
-            onChange(currentValue)
+            onChange(currentValue,setRefresh)
             closeConfirmModal('')
           }}
         />
