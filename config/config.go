@@ -668,10 +668,23 @@ type Config struct {
 	Cloud18Domain                             string                 `scope:"server" mapstructure:"cloud18-domain" toml:"cloud18-domain" json:"cloud18Domain"`
 	Cloud18SubDomain                          string                 `scope:"server" mapstructure:"cloud18-sub-domain" toml:"cloud18-sub-domain" json:"cloud18SubDomain"`
 	Cloud18SubDomainZone                      string                 `scope:"server" mapstructure:"cloud18-sub-domain-zone" toml:"cloud18-sub-domain-zone" json:"cloud18SubDomainZone"`
-	Cloud18Shared                             bool                   `scope:"server" mapstructure:"cloud18-shared"  toml:"cloud18-shared" json:"cloud18Shared"`
 	Cloud18GitUser                            string                 `scope:"server" mapstructure:"cloud18-gitlab-user" toml:"cloud18-gitlab-user" json:"cloud18GitUser"`
 	Cloud18GitPassword                        string                 `scope:"server" mapstructure:"cloud18-gitlab-password" toml:"cloud18-gitlab-password" json:"-"`
 	Cloud18PlatformDescription                string                 `scope:"server" mapstructure:"cloud18-platform-description"  toml:"cloud18-platform-description" json:"cloud18PlatformDescription"`
+	Cloud18Shared                             bool                   `mapstructure:"cloud18-shared"  toml:"cloud18-shared" json:"cloud18Shared"`
+	Cloud18MonthlyInfraCost                   float64                `mapstructure:"cloud18-montly-infra-cost"  toml:"cloud18-montly-infra-cost" json:"cloud18MonthlyInfraCost"`
+	Cloud18MonthlyLicenseCost                 float64                `mapstructure:"cloud18-montly-license-cost"  toml:"cloud18-montly-license-cost" json:"cloud18MonthlyLicenseCost"`
+	Cloud18MonthlySysopsCost                  float64                `mapstructure:"cloud18-montly-sysops-cost"  toml:"cloud18-montly-sysops-cost" json:"cloud18MonthlySysopsCost"`
+	Cloud18MonthlyDbopsCost                   float64                `mapstructure:"cloud18-montly-dbops-cost"  toml:"cloud18-montly-dbops-cost" json:"cloud18MonthlyDbopsCost"`
+	Cloud18CostCurency                        string                 `mapstructure:"cloud18-cost-currency"  toml:"cloud18-cost-currency" json:"cloud18CostCurrency"`
+	Cloud18OpenDbops                          bool                   `mapstructure:"cloud18-open-dbops"  toml:"cloud18-open-dbops" json:"cloud18OpenDbops"`
+	Cloud1SubscribedDbops                     bool                   `mapstructure:"cloud18-subscribed-dbops"  toml:"cloud18-subscribed-dbops" json:"cloud18SubscribedDbops"`
+	Cloud18OpenSysops                         bool                   `mapstructure:"cloud18-open-sysops"  toml:"cloud18-open-sysops" json:"cloud18OpenSysops"`
+	Cloud18DatabseWriteSrvRecord              string                 `mapstructure:"cloud18-database-write-srv-record"  toml:"cloud18-database-write-srv-record" json:"cloud18DatabaseWriteSrvRecord"`
+	Cloud18DatabseReadSrvRecord               string                 `mapstructure:"cloud18-database-read-srv-record"  toml:"cloud18-database-read-srv-record" json:"cloud18DatabaseReadSrvRecord"`
+	Cloud18DatabseReadWriteSrvRecord          string                 `mapstructure:"cloud18-database-read-write-srv-record"  toml:"cloud18-database-read-write-srv-record" json:"cloud18DatabaseReadWriteSrvRecord"`
+	Cloud18DbaUserCredentials                 string                 `mapstructure:"cloud18-dba-user-credentials"  toml:"cloud18-dba-user-credentials" json:"cloud18DbaUserCredential"`
+	Cloud18Plan                               string                 `mapstructure:"cloud18-plan" toml:"cloud18-plan" json:"cloud18Plan"`
 	LogSecrets                                bool                   `mapstructure:"log-secrets"  toml:"log-secrets" json:"-"`
 	Secrets                                   map[string]Secret      `json:"-"`
 	SecretKey                                 []byte                 `json:"-"`
@@ -713,14 +726,26 @@ type Secret struct {
 }
 
 type PeerCluster struct {
-	ClusterName                string   `json:"cluster-name"`
-	PeerUsers                  []string `json:"peer-users"`
-	Cloud18Domain              string   `json:"cloud18-domain"`
-	Cloud18PlatformDescription string   `json:"cloud18-platfom-desciption"`
-	Cloud18Shared              bool     `json:"cloud18-share"`
-	Cloud18SubDomain           string   `json:"cloud18-sub-domain"`
-	Cloud18SubDomainZone       string   `json:"cloud18-sub-domain-zone"`
-	ApiPublicUrl               string   `json:"api-plublic-url"`
+	ClusterName                      string   `json:"cluster-name"`
+	PeerUsers                        []string `json:"peer-users"`
+	ApiPublicUrl                     string   `json:"api-plublic-url"`
+	Cloud18Domain                    string   `json:"cloud18-domain"`
+	Cloud18PlatformDescription       string   `json:"cloud18-platfom-desciption"`
+	Cloud18Shared                    bool     `json:"cloud18-share"`
+	Cloud18Plan                      string   `json:"cloud18-plan"`
+	Cloud18SubDomain                 string   `json:"cloud18-sub-domain"`
+	Cloud18SubDomainZone             string   `json:"cloud18-sub-domain-zone"`
+	Cloud18MonthlyInfraCost          float64  `json:"cloud18-montly-infra-cost"`
+	Cloud18MonthlyLicenseCost        float64  `json:"cloud18-montly-license-cost"`
+	Cloud18MonthlySysopsCost         float64  `json:"cloud18-montly-sysops-cost"`
+	Cloud18MonthlyDbopsCost          float64  `json:"cloud18-montly-dbops-cost"`
+	Cloud18CostCurency               string   `json:"cloud18-cost-currency"`
+	Cloud18OpenDbops                 bool     `json:"cloud18-open-dbops"`
+	Cloud18SubscribedDbops           bool     `json:"cloud18-subscribed-dbops"`
+	Cloud18OpenSysops                bool     `json:"cloud18-open-sysops"`
+	Cloud18DatabseWriteSrvRecord     string   `json:"cloud18-database-write-srv-record"`
+	Cloud18DatabseReadSrvRecord      string   `json:"cloud18-database-read-srv-record"`
+	Cloud18DatabseReadWriteSrvRecord string   `json:"cloud18-database-read-write-srv-record"`
 }
 
 // Compliance created in OpenSVC collector and exported as JSON
@@ -812,15 +837,20 @@ const (
 )
 
 type ServicePlan struct {
-	Id           int    `json:"id,string"`
-	Plan         string `json:"plan"`
-	DbMemory     int    `json:"dbmemory,string"`
-	DbCores      int    `json:"dbcores,string"`
-	DbDataSize   int    `json:"dbdatasize,string"`
-	DbSystemSize int    `json:"dbSystemSize,string"`
-	DbIops       int    `json:"dbiops,string"`
-	PrxDataSize  int    `json:"prxdatasize,string"`
-	PrxCores     int    `json:"prxcores,string"`
+	Id           int     `json:"id,string"`
+	Plan         string  `json:"plan"`
+	DbMemory     int     `json:"dbmemory,string"`
+	DbCores      int     `json:"dbcores,string"`
+	DbDataSize   int     `json:"dbdatasize,string"`
+	DbSystemSize int     `json:"dbSystemSize,string"`
+	DbIops       int     `json:"dbiops,string"`
+	PrxDataSize  int     `json:"prxdatasize,string"`
+	PrxCores     int     `json:"prxcores,string"`
+	InfraCost    float64 `json:"infracost,string"`
+	LicenceCost  float64 `json:"licencecost,string"`
+	DbaCost      float64 `json:"dbacost,string"`
+	SysCost      float64 `json:"syscost,string"`
+	Devise       string  `json:"devise"`
 }
 
 type DockerTag struct {
@@ -1652,9 +1682,9 @@ func (conf *Config) GetCloud18PeerClusters() []PeerCluster {
 	return []PeerCluster{
 		PeerCluster{
 			ClusterName:                "Bench",
-			PeerUsers:                  []string{"admin"},
+			PeerUsers:                  []string{"stephane@signal18.io", "ahmad@signal18.io", "guillaume@signal18.io"},
 			Cloud18Domain:              "signal18",
-			Cloud18PlatformDescription: "Stephane 3 nodes mariadb",
+			Cloud18PlatformDescription: "Stephane dev Small 3xMariaDB 2xProxySQL MasterSlave",
 			Cloud18Shared:              false,
 			Cloud18SubDomain:           "ovh-1",
 			Cloud18SubDomainZone:       "fr",
@@ -1662,9 +1692,9 @@ func (conf *Config) GetCloud18PeerClusters() []PeerCluster {
 		},
 		PeerCluster{
 			ClusterName:                "Marie",
-			PeerUsers:                  []string{"admin"},
+			PeerUsers:                  []string{"stephane@signal18.io", "ahmad@signal18.io", "guillaume@signal18.io"},
 			Cloud18Domain:              "signal18",
-			Cloud18PlatformDescription: "Priyanka 3 nodes mariadb",
+			Cloud18PlatformDescription: "Priyanka dev 3xMariaDB 2xProxySQL MasterSlave",
 			Cloud18Shared:              false,
 			Cloud18SubDomain:           "ovh-1",
 			Cloud18SubDomainZone:       "fr",
@@ -1672,9 +1702,19 @@ func (conf *Config) GetCloud18PeerClusters() []PeerCluster {
 		},
 		PeerCluster{
 			ClusterName:                "Ahmad",
-			PeerUsers:                  []string{"admin"},
+			PeerUsers:                  []string{"stephane@signal18.io", "ahmad@signal18.io", "guillaume@signal18.io"},
 			Cloud18Domain:              "signal18",
-			Cloud18PlatformDescription: "Ahamd 3 nodes mariadb",
+			Cloud18PlatformDescription: "Ahamd dev 3xMariaDB 2xProxySQL MasterSlave",
+			Cloud18Shared:              false,
+			Cloud18SubDomain:           "ovh-1",
+			Cloud18SubDomainZone:       "fr",
+			ApiPublicUrl:               "repman.ahmad.svc.cloud18:10005",
+		},
+		PeerCluster{
+			ClusterName:                "rs1small",
+			PeerUsers:                  []string{"stephane@signal18.io", "ahmad@signal18.io", "guillaume@signal18.io"},
+			Cloud18Domain:              "signal18",
+			Cloud18PlatformDescription: "Small 16G RAM NVME 4cores 3xMariaDB 2xProxySQL MasterSlave",
 			Cloud18Shared:              false,
 			Cloud18SubDomain:           "ovh-1",
 			Cloud18SubDomainZone:       "fr",
