@@ -14,6 +14,7 @@ import (
 	"log"
 	"net"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -171,4 +172,33 @@ func RemoveEmptyString(slice []string) []string {
 		}
 	}
 	return result
+}
+
+func SortKeysAsc(keys []string) []string {
+	// Sort them so it will not push if no changes are made
+	slices.SortStableFunc(keys, func(a, b string) int {
+		if a < b {
+			return -1
+		} else if a > b {
+			return 1
+		} else {
+			return 0
+		}
+	})
+
+	return keys
+}
+
+func SortKeysDesc(keys []string) []string {
+	// Sort them so it will not push if no changes are made
+	slices.SortStableFunc(keys, func(a, b string) int {
+		if a > b {
+			return -1
+		} else if a < b {
+			return 1
+		} else {
+			return 0
+		}
+	})
+	return keys
 }

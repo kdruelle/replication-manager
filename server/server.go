@@ -22,7 +22,6 @@ import (
 	"os/user"
 	"runtime"
 	"runtime/pprof"
-	"slices"
 	"sort"
 	"sync"
 	"syscall"
@@ -1517,7 +1516,7 @@ func (repman *ReplicationManager) initAlias(v *viper.Viper) {
 	v.RegisterAlias("replication-master-connection", "replication-source-name")
 	v.RegisterAlias("logfile", "log-file")
 	v.RegisterAlias("wait-kill", "switchover-wait-kill")
-	v.RegisterAlias("user", "db-servers-credential")
+	// v.RegisterAlias("user", "db-servers-credential")
 	v.RegisterAlias("hosts", "db-servers-hosts")
 	v.RegisterAlias("hosts-tls-ca-cert", "db-servers-tls-ca-cert")
 	v.RegisterAlias("hosts-tls-client-key", "db-servers-tls-client-key")
@@ -2707,7 +2706,9 @@ func (repman *ReplicationManager) SaveImmutable() (hash.Hash, error) {
 
 	s := t
 	keys := t.Keys()
-	slices.Sort(keys)
+
+	keys = misc.SortKeysAsc(keys)
+
 	for _, key := range keys {
 		if _, ok := repman.ServerScopeList[key]; ok {
 			val, ok := repman.Conf.ImmuableFlagMap[key]

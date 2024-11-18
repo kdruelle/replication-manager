@@ -151,8 +151,8 @@ func initDeprecated() {
 	monitorCmd.Flags().MarkDeprecated("logfile", "Deprecate for log-file")
 	monitorCmd.Flags().Int64Var(&conf.SwitchWaitKill, "wait-kill", 5000, "Deprecate for switchover-wait-kill Wait this many milliseconds before killing threads on demoted master")
 	monitorCmd.Flags().MarkDeprecated("wait-kill", "Deprecate for switchover-wait-kill Wait this many milliseconds before killing threads on demoted master")
-	monitorCmd.Flags().StringVar(&conf.User, "user", "", "User for database login, specified in the [user]:[password] format")
-	monitorCmd.Flags().MarkDeprecated("user", "Deprecate for db-servers-credential")
+	// monitorCmd.Flags().StringVar(&conf.User, "user", "", "User for database login, specified in the [user]:[password] format")
+	// monitorCmd.Flags().MarkDeprecated("user", "Deprecate for db-servers-credential")
 
 	monitorCmd.Flags().StringVar(&conf.ProvDBBinaryBasedir, "db-servers-binary-path", "/usr/local/mysql/bin", "Deprecate Path to mysqld binary for testing")
 	monitorCmd.Flags().MarkDeprecated("db-servers-binary-path", "Deprecate for prov-db-binary-basedir")

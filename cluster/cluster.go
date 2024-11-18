@@ -889,7 +889,7 @@ func (cluster *Cluster) Save() error {
 	slices.SortStableFunc(cluster.Agents, func(a, b Agent) int {
 		if a.Id < b.Id {
 			return -1
-		} else if b.Id > a.Id {
+		} else if a.Id > b.Id {
 			return 1
 		} else {
 			return 0
@@ -992,7 +992,7 @@ func (cluster *Cluster) SaveImmutableConfig() error {
 		keys = append(keys, key)
 	}
 
-	slices.Sort(keys)
+	keys = misc.SortKeysAsc(keys)
 
 	for _, key := range keys {
 		val := cluster.Conf.ImmuableFlagMap[key]
@@ -1026,7 +1026,7 @@ func (cluster *Cluster) SaveCacheConfig() error {
 		keys = append(keys, key)
 	}
 
-	slices.Sort(keys)
+	keys = misc.SortKeysAsc(keys)
 
 	for _, key := range keys {
 		if _, ok := cluster.Conf.Secrets[key]; ok {
