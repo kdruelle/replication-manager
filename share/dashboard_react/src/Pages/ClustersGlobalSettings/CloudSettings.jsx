@@ -6,7 +6,6 @@ import { useDispatch } from 'react-redux'
 import TableType2 from '../../components/TableType2'
 import { switchGlobalSetting, setGlobalSetting } from '../../redux/globalClustersSlice'
 import TextForm from '../../components/TextForm'
-import { showErrorBanner } from '../../utility/common'
 
 function CloudSettings({ config }) {
   const dispatch = useDispatch()
@@ -24,18 +23,6 @@ function CloudSettings({ config }) {
           confirmTitle={'Confirm switch global settings for cloud18?'}
           onChange={(_v, setRefresh) => dispatch(switchGlobalSetting({ setting: 'cloud18', errMessage: errInvalidGrant, setRefresh }))}
           isChecked={config?.cloud18}
-        />
-      )
-    },
-    {
-      key: 'Domain',
-      value: (
-        <TextForm
-          value={config?.cloud18Domain}
-          confirmTitle={`Confirm cloud18 Domain to `}
-          onSave={(value) => {
-            dispatch(setGlobalSetting({ setting: 'cloud18-domain', value }))
-          }}
         />
       )
     },
@@ -64,24 +51,14 @@ function CloudSettings({ config }) {
       )
     },
     {
-      key: 'Platform Description',
+      key: 'Domain',
       value: (
         <TextForm
-          value={config?.cloud18PlatformDescription}
-          confirmTitle={`Confirm platform description to `}
+          value={config?.cloud18Domain}
+          confirmTitle={`Confirm cloud18 Domain to `}
           onSave={(value) => {
-            dispatch(setGlobalSetting({ setting: 'cloud18-platform-description', value }))
+            dispatch(setGlobalSetting({ setting: 'cloud18-domain', value }))
           }}
-        />
-      )
-    },
-    {
-      key: 'Shared',
-      value: (
-        <RMSwitch
-          confirmTitle={'Confirm switch global settings for shared cloud18?'}
-          onChange={() => dispatch(switchGlobalSetting({ setting: 'cloud18Shared' }))}
-          isChecked={config?.cloud18Shared}
         />
       )
     },
@@ -105,6 +82,18 @@ function CloudSettings({ config }) {
           confirmTitle={`Confirm subdomain zone to `}
           onSave={(value) => {
             dispatch(setGlobalSetting({ setting: 'cloud18-sub-domain-zone', value }))
+          }}
+        />
+      )
+    },
+    {
+      key: 'Platform Description',
+      value: (
+        <TextForm
+          value={config?.cloud18PlatformDescription}
+          confirmTitle={`Confirm platform description to `}
+          onSave={(value) => {
+            dispatch(setGlobalSetting({ setting: 'cloud18-platform-description', value }))
           }}
         />
       )
