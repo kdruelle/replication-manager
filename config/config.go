@@ -672,10 +672,10 @@ type Config struct {
 	Cloud18GitPassword                        string                 `scope:"server" mapstructure:"cloud18-gitlab-password" toml:"cloud18-gitlab-password" json:"-"`
 	Cloud18PlatformDescription                string                 `scope:"server" mapstructure:"cloud18-platform-description"  toml:"cloud18-platform-description" json:"cloud18PlatformDescription"`
 	Cloud18Shared                             bool                   `mapstructure:"cloud18-shared"  toml:"cloud18-shared" json:"cloud18Shared"`
-	Cloud18MonthlyInfraCost                   float64                `mapstructure:"cloud18-montly-infra-cost"  toml:"cloud18-montly-infra-cost" json:"cloud18MonthlyInfraCost"`
-	Cloud18MonthlyLicenseCost                 float64                `mapstructure:"cloud18-montly-license-cost"  toml:"cloud18-montly-license-cost" json:"cloud18MonthlyLicenseCost"`
-	Cloud18MonthlySysopsCost                  float64                `mapstructure:"cloud18-montly-sysops-cost"  toml:"cloud18-montly-sysops-cost" json:"cloud18MonthlySysopsCost"`
-	Cloud18MonthlyDbopsCost                   float64                `mapstructure:"cloud18-montly-dbops-cost"  toml:"cloud18-montly-dbops-cost" json:"cloud18MonthlyDbopsCost"`
+	Cloud18MonthlyInfraCost                   float64                `mapstructure:"cloud18-monthly-infra-cost"  toml:"cloud18-monthly-infra-cost" json:"cloud18MonthlyInfraCost"`
+	Cloud18MonthlyLicenseCost                 float64                `mapstructure:"cloud18-monthly-license-cost"  toml:"cloud18-monthly-license-cost" json:"cloud18MonthlyLicenseCost"`
+	Cloud18MonthlySysopsCost                  float64                `mapstructure:"cloud18-monthly-sysops-cost"  toml:"cloud18-monthly-sysops-cost" json:"cloud18MonthlySysopsCost"`
+	Cloud18MonthlyDbopsCost                   float64                `mapstructure:"cloud18-monthly-dbops-cost"  toml:"cloud18-monthly-dbops-cost" json:"cloud18MonthlyDbopsCost"`
 	Cloud18CostCurency                        string                 `mapstructure:"cloud18-cost-currency"  toml:"cloud18-cost-currency" json:"cloud18CostCurrency"`
 	Cloud18OpenDbops                          bool                   `mapstructure:"cloud18-open-dbops"  toml:"cloud18-open-dbops" json:"cloud18OpenDbops"`
 	Cloud1SubscribedDbops                     bool                   `mapstructure:"cloud18-subscribed-dbops"  toml:"cloud18-subscribed-dbops" json:"cloud18SubscribedDbops"`
