@@ -676,9 +676,9 @@ type Config struct {
 	Cloud18MonthlyLicenseCost                 float64                `mapstructure:"cloud18-monthly-license-cost"  toml:"cloud18-monthly-license-cost" json:"cloud18MonthlyLicenseCost"`
 	Cloud18MonthlySysopsCost                  float64                `mapstructure:"cloud18-monthly-sysops-cost"  toml:"cloud18-monthly-sysops-cost" json:"cloud18MonthlySysopsCost"`
 	Cloud18MonthlyDbopsCost                   float64                `mapstructure:"cloud18-monthly-dbops-cost"  toml:"cloud18-monthly-dbops-cost" json:"cloud18MonthlyDbopsCost"`
-	Cloud18CostCurency                        string                 `mapstructure:"cloud18-cost-currency"  toml:"cloud18-cost-currency" json:"cloud18CostCurrency"`
+	Cloud18CostCurrency                       string                 `mapstructure:"cloud18-cost-currency"  toml:"cloud18-cost-currency" json:"cloud18CostCurrency"`
 	Cloud18OpenDbops                          bool                   `mapstructure:"cloud18-open-dbops"  toml:"cloud18-open-dbops" json:"cloud18OpenDbops"`
-	Cloud1SubscribedDbops                     bool                   `mapstructure:"cloud18-subscribed-dbops"  toml:"cloud18-subscribed-dbops" json:"cloud18SubscribedDbops"`
+	Cloud18SubscribedDbops                    bool                   `mapstructure:"cloud18-subscribed-dbops"  toml:"cloud18-subscribed-dbops" json:"cloud18SubscribedDbops"`
 	Cloud18OpenSysops                         bool                   `mapstructure:"cloud18-open-sysops"  toml:"cloud18-open-sysops" json:"cloud18OpenSysops"`
 	Cloud18DatabseWriteSrvRecord              string                 `mapstructure:"cloud18-database-write-srv-record"  toml:"cloud18-database-write-srv-record" json:"cloud18DatabaseWriteSrvRecord"`
 	Cloud18DatabseReadSrvRecord               string                 `mapstructure:"cloud18-database-read-srv-record"  toml:"cloud18-database-read-srv-record" json:"cloud18DatabaseReadSrvRecord"`

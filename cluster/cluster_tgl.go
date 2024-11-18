@@ -652,3 +652,15 @@ func (cluster *Cluster) SwitchForceWriteConfig() {
 func (cluster *Cluster) SwitchBackupKeepUntilValid() {
 	cluster.Conf.BackupKeepUntilValid = !cluster.Conf.BackupKeepUntilValid
 }
+
+func (cluster *Cluster) SwitchCloud18OpenDbops() {
+	cluster.Conf.Cloud18OpenDbops = !cluster.Conf.Cloud18OpenDbops
+}
+
+func (cluster *Cluster) SwitchCloud18SubscribedDbops() {
+	cluster.Conf.Cloud18SubscribedDbops = !cluster.Conf.Cloud18SubscribedDbops
+}
+
+func (cluster *Cluster) SwitchCloud18OpenSysops() {
+	cluster.Conf.Cloud18OpenSysops = !cluster.Conf.Cloud18OpenSysops
+}

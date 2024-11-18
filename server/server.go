@@ -2451,6 +2451,19 @@ func (repman *ReplicationManager) GetEncryptedValueFromMemory(key string) string
 			}
 		}
 		return strings.Join(tab_ApiUser, ",")
+	case "cloud18-dba-user-credentials":
+		var tab_ApiUser []string
+		lst_Users := strings.Split(repman.Conf.Secrets["cloud18-dba-user-credentials"].Value, ",")
+		for ind := range lst_Users {
+			user_pass := strings.Split(lst_Users[ind], ":")
+			for _, cluster := range repman.Clusters {
+				if u, ok := cluster.APIUsers[user_pass[0]]; ok {
+					tab_ApiUser = append(tab_ApiUser, u.User+":"+repman.Conf.GetEncryptedString(u.Password))
+					break
+				}
+			}
+		}
+		return strings.Join(tab_ApiUser, ",")
 	case "backup-restic-password":
 		return repman.Conf.GetEncryptedString(repman.Conf.GetDecryptedValue("backup-restic-password"))
 	case "haproxy-password":

@@ -1298,10 +1298,6 @@ func (repman *ReplicationManager) switchClusterSettings(mycluster *cluster.Clust
 		mycluster.SwitchMonitoringVariableDiff()
 	case "monitoring-processlist":
 		mycluster.SwitchMonitoringProcesslist()
-	case "cloud18":
-		mycluster.Conf.SwitchCloud18()
-	case "cloud18-shared":
-		mycluster.Conf.SwitchCloud18Shared()
 	case "force-slave-readonly":
 		mycluster.SwitchForceSlaveReadOnly()
 	case "force-binlog-row":
@@ -1384,6 +1380,16 @@ func (repman *ReplicationManager) switchClusterSettings(mycluster *cluster.Clust
 		mycluster.SwitchBackupKeepUntilValid()
 	case "mail-smtp-tls-skip-verify":
 		mycluster.SwitchMailSmtpTlsSkipVerify()
+	case "cloud18":
+		mycluster.Conf.SwitchCloud18()
+	case "cloud18-shared":
+		mycluster.Conf.SwitchCloud18Shared()
+	case "cloud18-open-dbops":
+		mycluster.SwitchCloud18OpenDbops()
+	case "cloud18-subscribed-dbops":
+		mycluster.SwitchCloud18SubscribedDbops()
+	case "cloud18-open-sysops":
+		mycluster.SwitchCloud18OpenSysops()
 	default:
 		return errors.New("Setting not found")
 	}
@@ -1806,6 +1812,38 @@ func (repman *ReplicationManager) setClusterSetting(mycluster *cluster.Cluster, 
 			return errors.New("Unable to decode")
 		}
 		mycluster.Conf.BackupMysqldumpOptions = string(val)
+	case "cloud18-plan":
+		mycluster.Conf.Cloud18Plan = value
+	case "cloud18-monthly-infra-cost":
+		val, _ := strconv.ParseFloat(value, 64)
+		mycluster.Conf.Cloud18MonthlyInfraCost = val
+	case "cloud18-monthly-license-cost":
+		val, _ := strconv.ParseFloat(value, 64)
+		mycluster.Conf.Cloud18MonthlyLicenseCost = val
+	case "cloud18-monthly-sysops-cost":
+		val, _ := strconv.ParseFloat(value, 64)
+		mycluster.Conf.Cloud18MonthlySysopsCost = val
+	case "cloud18-monthly-dbops-cost":
+		val, _ := strconv.ParseFloat(value, 64)
+		mycluster.Conf.Cloud18MonthlyDbopsCost = val
+	case "cloud18-cost-currency":
+		mycluster.Conf.Cloud18CostCurrency = value
+	case "cloud18-database-write-srv-record":
+		mycluster.Conf.Cloud18DatabseWriteSrvRecord = value
+	case "cloud18-database-read-srv-record":
+		mycluster.Conf.Cloud18DatabseReadSrvRecord = value
+	case "cloud18-database-read-write-srv-record":
+		mycluster.Conf.Cloud18DatabseReadWriteSrvRecord = value
+	case "cloud18-dba-user-credentials":
+		val, err := base64.StdEncoding.DecodeString(value)
+		if err != nil {
+			return errors.New("Unable to decode")
+		}
+		mycluster.Conf.Cloud18DbaUserCredentials = string(val)
+		var new_secret config.Secret
+		new_secret.Value = mycluster.Conf.Cloud18DbaUserCredentials
+		new_secret.OldValue = mycluster.Conf.GetDecryptedValue("cloud18-dba-user-credentials")
+		mycluster.Conf.Secrets["cloud18-dba-user-credentials"] = new_secret
 	default:
 		return errors.New("Setting not found")
 	}
