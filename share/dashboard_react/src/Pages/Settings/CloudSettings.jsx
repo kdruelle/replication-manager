@@ -10,21 +10,10 @@ function CloudSettings({ selectedCluster, user }) {
   const dispatch = useDispatch()
 
   const dataObject = [
-    {
-      key: 'Cloud18',
-      value: (
-        <RMSwitch
-          confirmTitle={'Confirm switch settings for cloud18?'}
-          onChange={() => dispatch(switchSetting({ clusterName: selectedCluster?.name, setting: 'cloud18' }))}
-          isDisabled={user?.grants['cluster-settings'] == false}
-          isChecked={selectedCluster?.config?.cloud18}
-        />
-      )
-    },
     ...(selectedCluster?.config?.cloud18
       ? [
           {
-            key: 'Share the cluster on the Cloud18',
+            key: 'For Sale',
             value: (
               <RMSwitch
                 confirmTitle={'Confirm switch settings for cloud18-shared?'}
