@@ -15,7 +15,6 @@ func (repman *ReplicationManager) AddCluster(clusterName string, clusterHead str
 	myconf[clusterName] = repman.Conf
 	repman.Lock()
 	repman.ClusterList = append(repman.ClusterList, clusterName)
-	//repman.ClusterList = repman.ClusterList
 	repman.Confs[clusterName] = repman.Conf
 
 	repman.VersionConfs[clusterName] = new(config.ConfVersion)
@@ -25,8 +24,6 @@ func (repman *ReplicationManager) AddCluster(clusterName string, clusterHead str
 	repman.DynamicFlagMaps[clusterName] = repman.DynamicFlagMaps["default"]
 
 	repman.Unlock()
-	//confs[clusterName] = repman.GetClusterConfig(fistRead, repman.ImmuableFlagMaps["default"], repman.DynamicFlagMaps["default"], clusterName, conf)
-
 	cluster, _ := repman.StartCluster(clusterName)
 
 	for _, cluster := range repman.Clusters {

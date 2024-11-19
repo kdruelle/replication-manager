@@ -12,6 +12,17 @@ export const getClusters = createAsyncThunk('globalClusters/getClusters', async 
   }
 })
 
+export const addCluster = createAsyncThunk('globalClusters/addCluster', async ({ clusterName, formdata }, thunkAPI) => {
+  try {
+    const { data, status } = await globalClustersService.addCluster(clusterName,formdata)
+    showSuccessBanner("Add cluster '"+clusterName+"' is successful!", status, thunkAPI)
+    return { data, status }
+  } catch (error) {
+    showErrorBanner("Add cluster '"+clusterName+"' is failed!", error, thunkAPI)
+    handleError(error, thunkAPI)
+  }
+})
+
 export const getClusterPeers = createAsyncThunk('globalClusters/getClusterPeers', async ({}, thunkAPI) => {
   try {
     const { data, status } = await globalClustersService.getClusterPeers()

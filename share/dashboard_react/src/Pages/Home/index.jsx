@@ -18,7 +18,8 @@ import {
   getShardSchema,
   getTopProcess,
   setCluster,
-  setRefreshInterval
+  setRefreshInterval,
+  pauseAutoReload
 } from '../../redux/clusterSlice'
 import { getClusters, getMonitoredData, getClusterPeers } from '../../redux/globalClustersSlice'
 import { AppSettings } from '../../AppSettings'
@@ -37,6 +38,9 @@ import Shards from '../Shards'
 import QueryRules from '../QueryRules'
 import PeerClusterList from '../PeerClusterList'
 import ClustersGlobalSettings from '../ClustersGlobalSettings'
+import NewClusterModal from '../../components/Modals/NewClusterModal'
+import { FaPlus } from 'react-icons/fa'
+import RMIconButton from '../../components/RMIconButton'
 
 function Home() {
   const dispatch = useDispatch()
@@ -48,6 +52,7 @@ function Home() {
   const [selectedCluster, setSelectedCluster] = useState(null)
   const dashboardTabsRef = useRef([])
   const globalTabsRef = useRef([])
+  const [isNewClusterModalOpen, setIsNewClusterModalOpen] = useState(false)
 
   const params = useParams()
 
@@ -133,13 +138,17 @@ function Home() {
   }
 
   const callServices = () => {
+    const isAutoReloadPaused = localStorage.getItem('pause_auto_reload')
+
     if (!isClusterOpenRef.current) {
       if (
         globalTabsRef.current[selectedTabRef.current] === 'Clusters Local' ||
         globalTabsRef.current[selectedTabRef.current] === 'Settings'
       ) {
-        dispatch(getClusters({}))
-        dispatch(getMonitoredData({}))
+        if (!isAutoReloadPaused) {
+          dispatch(getMonitoredData({}))
+          dispatch(getClusters({}))
+        }
       }
       if (
         globalTabsRef.current[selectedTabRef.current] === 'Clusters Peer' ||
@@ -148,7 +157,6 @@ function Home() {
         dispatch(getClusterPeers({}))
       }
     } else if (selectedClusterNameRef.current) {
-      const isAutoReloadPaused = localStorage.getItem('pause_auto_reload')
       if (!isAutoReloadPaused) {
         dispatch(getClusterData({ clusterName: selectedClusterNameRef.current }))
         dispatch(getClusterAlerts({ clusterName: selectedClusterNameRef.current }))
@@ -190,6 +198,17 @@ function Home() {
     selectedClusterNameRef.current = cluster.name
     setSelectedTab(1)
   }
+  const openNewClusterModal = (e) => {
+    e.stopPropagation()
+    setIsNewClusterModalOpen(true)
+    setSelectedTab(0)
+    dispatch(pauseAutoReload({ isPaused: true }))
+  }
+
+  const closeNewClusterModal = () => {
+    setIsNewClusterModalOpen(false)
+    dispatch(pauseAutoReload({ isPaused: false }))
+  }
 
   return (
     <PageContainer>
@@ -202,33 +221,43 @@ function Home() {
               ? [renderClusterListTabWithArrow(), ...dashboardTabsRef.current]
               : globalTabsRef.current
           }
+          tabPrefix={selectedClusterNameRef.current == '' && (<div onClick={openNewClusterModal} className={styles.tabSelected}><CustomIcon icon={FaPlus}/></div>)}
           tabContents={[
             <ClusterList onClick={setDashboardTab} />,
             ...(isClusterOpenRef.current
               ? [
-                  <Dashboard user={user} selectedCluster={selectedCluster} />,
-                  <Settings user={user} selectedCluster={selectedCluster} />,
-                  <Configs user={user} selectedCluster={selectedCluster} />,
-                  ...(selectedCluster?.config?.graphiteMetrics && user?.grants['cluster-show-graphs']
-                    ? [<Graphs />]
-                    : []),
-                  ...(user?.grants['cluster-show-agents']
-                    ? [<Agents user={user} selectedCluster={selectedCluster} />]
-                    : []),
-                  ...(user?.grants['cluster-show-backups']
-                    ? [<Maintenance user={user} selectedCluster={selectedCluster} />]
-                    : []),
-                  ...(user?.grants['db-show-process'] ? [<Top selectedCluster={selectedCluster} />] : []),
-                  ...(selectedCluster?.config?.proxysql && user?.grants['cluster-show-agents']
-                    ? [<QueryRules selectedCluster={selectedCluster} />]
-                    : []),
-                  ...(user?.grants['db-show-schema'] ? [<Shards selectedCluster={selectedCluster} />] : [])
-                ]
+                <Dashboard user={user} selectedCluster={selectedCluster} />,
+                <Settings user={user} selectedCluster={selectedCluster} />,
+                <Configs user={user} selectedCluster={selectedCluster} />,
+                ...(selectedCluster?.config?.graphiteMetrics && user?.grants['cluster-show-graphs']
+                  ? [<Graphs />]
+                  : []),
+                ...(user?.grants['cluster-show-agents']
+                  ? [<Agents user={user} selectedCluster={selectedCluster} />]
+                  : []),
+                ...(user?.grants['cluster-show-backups']
+                  ? [<Maintenance user={user} selectedCluster={selectedCluster} />]
+                  : []),
+                ...(user?.grants['db-show-process'] ? [<Top selectedCluster={selectedCluster} />] : []),
+                ...(selectedCluster?.config?.proxysql && user?.grants['cluster-show-agents']
+                  ? [<QueryRules selectedCluster={selectedCluster} />]
+                  : []),
+                ...(user?.grants['db-show-schema'] ? [<Shards selectedCluster={selectedCluster} />] : [])
+              ]
               : globalTabsRef.current.includes('Clusters Peer') // monitor?.config?.cloud18 is false, do not show "Peer Clusters" tab
                 ? [<PeerClusterList />, <PeerClusterList mode='shared' />, <ClustersGlobalSettings />]
                 : [<ClustersGlobalSettings />])
           ]}
         />
+        {
+          selectedClusterNameRef.current == '' && (
+            <>
+              {isNewClusterModalOpen && (
+                <NewClusterModal plans={monitor?.servicePlans} orchestrators={monitor?.serviceOrchestrators} defaultOrchestrator={monitor?.config.provOrchestrator} isOpen={isNewClusterModalOpen} closeModal={closeNewClusterModal} />
+              )}
+            </>
+          )
+        }
       </Box>
     </PageContainer>
   )

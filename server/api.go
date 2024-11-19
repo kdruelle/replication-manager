@@ -790,9 +790,29 @@ func (repman *ReplicationManager) handlerMuxClusterAdd(w http.ResponseWriter, r 
 		return
 	}
 
+	var cForm cluster.ClusterForm
+
+	//decode request into UserCredentials struct
+	err := json.NewDecoder(r.Body).Decode(&cForm)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "Error in request")
+		return
+	}
+
+	if cname, ok := vars["clusterName"]; !ok || cname == "" {
+		vars["clusterName"] = cForm.ClusterName
+	}
+
+	cl := repman.getClusterByName(vars["clusterName"])
+	if cl != nil {
+		http.Error(w, "Cluster already exists", http.StatusBadRequest)
+		return
+	}
+
 	repman.AddCluster(vars["clusterName"], "")
 	// Create user and grant for new cluster
-	cl := repman.getClusterByName(vars["clusterName"])
+	cl = repman.getClusterByName(vars["clusterName"])
 	if cl != nil {
 		if u, ok := cl.APIUsers[username]; !ok {
 			// Create user and grant for new cluster
@@ -808,6 +828,16 @@ func (repman *ReplicationManager) handlerMuxClusterAdd(w http.ResponseWriter, r 
 			cl.SetNewUserGrants(&u, "cluster db proxy prov")
 			cl.SetNewUserRoles(&u, strings.Join(([]string{config.RoleSponsor, config.RoleDBOps, config.RoleSysOps}), " "))
 			cl.APIUsers[u.User] = u
+		}
+
+		// Adjust cluster based on selected orchestrator
+		if cForm.Orchestrator != "" && cForm.Orchestrator != cl.Conf.ProvOrchestrator {
+			cl.SetProvOrchestrator(cForm.Orchestrator)
+		}
+
+		// Cluster will auto set service when plan is not empty
+		if cForm.Plan != "" {
+			cl.SetServicePlan(cForm.Plan)
 		}
 	}
 }

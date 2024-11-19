@@ -313,6 +313,12 @@ const (
 	VaultDbEngine      string = "database_engine"
 )
 
+type ClusterForm struct {
+	ClusterName  string `json:"clusterName"`
+	Orchestrator string `json:"orchestrator"`
+	Plan         string `json:"plan"`
+}
+
 // Init initial cluster definition
 func (cluster *Cluster) Init(confs *config.ConfVersion, cfgGroup string, tlog *s18log.TermLog, loghttp *s18log.HttpLog, termlength int, runUUID string, RepMgrVersion string, RepMgrHostname string) error {
 	cluster.Confs = confs

@@ -1,3 +1,28 @@
 .container {
   margin: rem(24) rem(16);
 }
+
+.tabNormal {
+  padding: rem(8) rem(24);
+  border-top-left-radius: $border-radius-sm;
+  border-top-right-radius: $border-radius-sm;
+  color: var(--text-color);
+  &:hover {
+    border: rem(1) solid var(--text-color) !important;
+    cursor: pointer
+  }
+}
+
+.tabSelected {
+  padding: rem(8) rem(16);
+  border-top-left-radius: $border-radius-sm;
+  border-top-right-radius: $border-radius-sm;
+  background-color: var(--primary-color) !important;
+  color: var(--white-color) !important;
+  font-weight: bold;
+  border: rem(1) solid var(--primary-color) !important;
+  &:hover {
+    border: rem(1) solid var(--primary-color) !important;
+    cursor: pointer
+  }
+}
