@@ -34,7 +34,7 @@ function NewClusterModal({ plans, orchestrators, defaultOrchestrator, isOpen, cl
   const [orchestratorError, setOrchestratorError] = useState('')
   const [planError, setPlanError] = useState('') 
 
-  const handleCreateNewServer = () => {
+  const handleCreateNewCluster = () => {
     setClusterNameError('')
     setOrchestratorError('')
 
@@ -134,7 +134,7 @@ function NewClusterModal({ plans, orchestrators, defaultOrchestrator, isOpen, cl
     <Modal isOpen={isOpen} size={"lg"} onClose={closeModal}>
       <ModalOverlay />
       <ModalContent className={theme === 'light' ? parentStyles.modalLightContent : parentStyles.modalDarkContent}>
-        <ModalHeader>{'New server'}</ModalHeader>
+        <ModalHeader>{'New Cluster'}</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
           <Stack spacing='5'>
@@ -153,6 +153,7 @@ function NewClusterModal({ plans, orchestrators, defaultOrchestrator, isOpen, cl
                 }}
                 selectedValue={defaultOrchestrator}
                 options={orchestratorOptions}
+                className={parentStyles.fullWidth}
               />
               <FormErrorMessage>{orchestratorError}</FormErrorMessage>
             </FormControl>
@@ -165,6 +166,7 @@ function NewClusterModal({ plans, orchestrators, defaultOrchestrator, isOpen, cl
                   onPlanChange(option)
                 }}
                 options={planOptions}
+                className={parentStyles.fullWidth}
               />
               <FormErrorMessage>{planError}</FormErrorMessage>
             </FormControl>
@@ -176,7 +178,7 @@ function NewClusterModal({ plans, orchestrators, defaultOrchestrator, isOpen, cl
           <RMButton colorScheme='blue' size='medium' variant='outline' onClick={closeModal}>
             No
           </RMButton>
-          <RMButton onClick={handleCreateNewServer} size='medium'>
+          <RMButton onClick={handleCreateNewCluster} size='medium'>
             Yes
           </RMButton>
         </ModalFooter>
