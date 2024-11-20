@@ -12,6 +12,7 @@ import (
 	cryptorand "crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
+	"encoding/base64"
 	"encoding/json"
 	"encoding/pem"
 	"fmt"
@@ -43,6 +44,7 @@ import (
 	"github.com/signal18/replication-manager/regtest"
 	"github.com/signal18/replication-manager/share"
 	"github.com/signal18/replication-manager/utils/githelper"
+	"github.com/signal18/replication-manager/utils/peerclient"
 )
 
 //RSA KEYS AND INITIALISATION
@@ -222,6 +224,11 @@ func (repman *ReplicationManager) apiserver() {
 	router.Handle("/api/auth/callback", negroni.New(
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxAuthCallback)),
 	))
+
+	router.Handle("/api/peers/{encodedURL}/{route:.*}", negroni.New(
+		negroni.Wrap(http.HandlerFunc(repman.handlerMuxPeerRoutes)),
+	))
+
 	router.Handle("/api/clusters", negroni.New(
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxClusters)),
 	))
@@ -463,7 +470,7 @@ func (repman *ReplicationManager) loginHandler(w http.ResponseWriter, r *http.Re
 			Name     string
 			Role     string
 			Password string
-		}{user.Username, "Member", user.Password}
+		}{user.Username, "Member", repman.Conf.GetEncryptedString(user.Password)}
 		signer.Claims = claims
 		sk, _ := jwt.ParseRSAPrivateKeyFromPEM(signingKey)
 		//sk, _ := jwt.ParseRSAPublicKeyFromPEM(signingKey)
@@ -577,7 +584,7 @@ func (repman *ReplicationManager) handlerMuxAuthCallback(w http.ResponseWriter, 
 				Name     string
 				Role     string
 				Password string
-			}{userInfo.Email, "Member", cluster.APIUsers[userInfo.Email].Password}
+			}{userInfo.Email, "Member", repman.Conf.GetEncryptedString(cluster.APIUsers[userInfo.Email].Password)}
 			password := cluster.APIUsers[userInfo.Email].Password
 			signer.Claims = claims
 			sk, _ := jwt.ParseRSAPrivateKeyFromPEM(signingKey)
@@ -741,6 +748,65 @@ func (repman *ReplicationManager) handlerMuxPeerClusters(w http.ResponseWriter, 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(cl)
 
+}
+
+func (repman *ReplicationManager) handlerMuxPeerRoutes(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	vars := mux.Vars(r)
+
+	ok, err := repman.isValidRequest(r)
+	if !ok {
+		http.Error(w, "Unauthenticated resource: "+err.Error(), 401)
+		return
+	}
+
+	pclient, ok := repman.peerClientMap[vars["encodedURL"]]
+
+	if !ok {
+		baseURL, err := base64.StdEncoding.DecodeString(vars["encodedURL"])
+		if err != nil {
+			http.Error(w, "Invalid Peer URL", 400)
+			return
+		}
+
+		pclient = peerclient.NewPeerClient(string(baseURL), time.Duration(repman.Conf.Timeout))
+		repman.peerClientMap[vars["encodedURL"]] = pclient
+	}
+
+	pEndpoint, err := base64.StdEncoding.DecodeString(vars["route"])
+	if err != nil {
+		http.Error(w, "Invalid Peer Endpoint", 400)
+		return
+	}
+
+	var res []byte
+	var code int
+	switch r.Method {
+	case http.MethodGet:
+		// Handle GET method
+		code, res, err = pclient.Get(string(pEndpoint))
+	case http.MethodPost:
+		// Handle POST method
+		code, res, err = pclient.Post(string(pEndpoint), r.Body)
+	case http.MethodPut:
+		// Handle PUT method
+		code, res, err = pclient.Put(string(pEndpoint), r.Body)
+	case http.MethodDelete:
+		// Handle DELETE method
+		code, res, err = pclient.Delete(string(pEndpoint))
+	default:
+		// Handle unsupported methods
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	if err != nil {
+		http.Error(w, err.Error(), code)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(res)
 }
 
 func (repman *ReplicationManager) validateTokenMiddleware(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {

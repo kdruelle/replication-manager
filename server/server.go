@@ -61,6 +61,7 @@ import (
 	"github.com/signal18/replication-manager/utils/cron"
 	"github.com/signal18/replication-manager/utils/githelper"
 	"github.com/signal18/replication-manager/utils/misc"
+	"github.com/signal18/replication-manager/utils/peerclient"
 	"github.com/signal18/replication-manager/utils/s18log"
 	"github.com/signal18/replication-manager/utils/state"
 	"github.com/spf13/pflag"
@@ -120,23 +121,24 @@ type ReplicationManager struct {
 	exit                                             bool
 	isStarted                                        bool
 	Confs                                            map[string]config.Config
-	VersionConfs                                     map[string]*config.ConfVersion `json:"-"`
-	grpcServer                                       *grpc.Server                   `json:"-"`
-	grpcWrapped                                      *grpcweb.WrappedGrpcServer     `json:"-"`
-	V3Up                                             chan bool                      `json:"-"`
-	v3Config                                         Repmanv3Config                 `json:"-"`
-	cloud18CheckSum                                  hash.Hash                      `json:"-"`
-	clog                                             *clog.Logger                   `json:"-"`
-	cApiLog                                          *clog.Logger                   `json:"-"`
-	Logrus                                           *log.Logger                    `json:"-"`
-	IsSavingConfig                                   bool                           `json:"isSavingConfig"`
-	HasSavingConfigQueue                             bool                           `json:"hasSavingConfigQueue"`
-	IsGitPull                                        bool                           `json:"isGitPull"`
-	CanConnectVault                                  bool                           `json:"canConnectVault"`
-	IsExportPush                                     bool                           `json:"-"`
-	errorConnectVault                                error                          `json:"-"`
-	globalScheduler                                  *cron.Cron                     `json:"-"`
-	CheckSumConfig                                   map[string]hash.Hash           `json:"-"`
+	VersionConfs                                     map[string]*config.ConfVersion    `json:"-"`
+	grpcServer                                       *grpc.Server                      `json:"-"`
+	grpcWrapped                                      *grpcweb.WrappedGrpcServer        `json:"-"`
+	V3Up                                             chan bool                         `json:"-"`
+	v3Config                                         Repmanv3Config                    `json:"-"`
+	cloud18CheckSum                                  hash.Hash                         `json:"-"`
+	clog                                             *clog.Logger                      `json:"-"`
+	cApiLog                                          *clog.Logger                      `json:"-"`
+	Logrus                                           *log.Logger                       `json:"-"`
+	IsSavingConfig                                   bool                              `json:"isSavingConfig"`
+	HasSavingConfigQueue                             bool                              `json:"hasSavingConfigQueue"`
+	IsGitPull                                        bool                              `json:"isGitPull"`
+	CanConnectVault                                  bool                              `json:"canConnectVault"`
+	IsExportPush                                     bool                              `json:"-"`
+	errorConnectVault                                error                             `json:"-"`
+	globalScheduler                                  *cron.Cron                        `json:"-"`
+	CheckSumConfig                                   map[string]hash.Hash              `json:"-"`
+	peerClientMap                                    map[string]*peerclient.PeerClient `json:"-"`
 	fileHook                                         log.Hook
 	repmanv3.UnimplementedClusterPublicServiceServer `json:"-"`
 	repmanv3.UnimplementedClusterServiceServer       `json:"-"`
@@ -1687,6 +1689,7 @@ func (repman *ReplicationManager) Run() error {
 	repman.cApiLog = clog.New()
 	repman.clog = clog.New()
 	repman.CheckSumConfig = make(map[string]hash.Hash)
+	repman.peerClientMap = make(map[string]*peerclient.PeerClient)
 
 	repman.clog.SetLevel(config.ToLogrusLevel(repman.Conf.LogGraphiteLevel))
 	if repman.CpuProfile != "" {
