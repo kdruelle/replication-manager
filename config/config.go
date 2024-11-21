@@ -1570,9 +1570,8 @@ func (conf *Config) PushConfigToGit(url string, tok string, user string, dir str
 	msg := "Update file"
 	if _, err := w.Commit(msg, &git.CommitOptions{
 		Author: &git_obj.Signature{
-			Name:  "Replication-manager",
-			Email: conf.GitUsername,
-			When:  time.Now(),
+			Name: "Replication-manager",
+			When: time.Now(),
 		},
 		All: true,
 	}); err != nil {
