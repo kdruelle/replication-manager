@@ -72,7 +72,7 @@ func (u *APIUser) Granted(grant string) error {
 func (cluster *Cluster) IsValidACL(strUser string, strPassword string, URL string, AuthMethod string) bool {
 	if user, ok := cluster.APIUsers[strUser]; ok {
 		//		fmt.Printf("password :" + user.Password)
-		if user.Password == strPassword || AuthMethod == "oidc" {
+		if user.Password == cluster.Conf.GetDecryptedPassword("api-credentials", strPassword) || AuthMethod == "oidc" {
 			return cluster.IsURLPassACL(strUser, URL, true)
 		}
 		return false

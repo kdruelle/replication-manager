@@ -62,6 +62,7 @@ import (
 	"github.com/signal18/replication-manager/utils/cron"
 	"github.com/signal18/replication-manager/utils/githelper"
 	"github.com/signal18/replication-manager/utils/misc"
+	"github.com/signal18/replication-manager/utils/peerclient"
 	"github.com/signal18/replication-manager/utils/s18log"
 	"github.com/signal18/replication-manager/utils/state"
 	"github.com/spf13/pflag"
@@ -121,23 +122,25 @@ type ReplicationManager struct {
 	exit                                             bool
 	isStarted                                        bool
 	Confs                                            map[string]config.Config
-	VersionConfs                                     map[string]*config.ConfVersion `json:"-"`
-	grpcServer                                       *grpc.Server                   `json:"-"`
-	grpcWrapped                                      *grpcweb.WrappedGrpcServer     `json:"-"`
-	V3Up                                             chan bool                      `json:"-"`
-	v3Config                                         Repmanv3Config                 `json:"-"`
-	cloud18CheckSum                                  hash.Hash                      `json:"-"`
-	clog                                             *clog.Logger                   `json:"-"`
-	cApiLog                                          *clog.Logger                   `json:"-"`
-	Logrus                                           *log.Logger                    `json:"-"`
-	IsSavingConfig                                   bool                           `json:"isSavingConfig"`
-	HasSavingConfigQueue                             bool                           `json:"hasSavingConfigQueue"`
-	IsGitPull                                        bool                           `json:"isGitPull"`
-	CanConnectVault                                  bool                           `json:"canConnectVault"`
-	IsExportPush                                     bool                           `json:"-"`
-	errorConnectVault                                error                          `json:"-"`
-	globalScheduler                                  *cron.Cron                     `json:"-"`
-	CheckSumConfig                                   map[string]hash.Hash           `json:"-"`
+	VersionConfs                                     map[string]*config.ConfVersion    `json:"-"`
+	grpcServer                                       *grpc.Server                      `json:"-"`
+	grpcWrapped                                      *grpcweb.WrappedGrpcServer        `json:"-"`
+	V3Up                                             chan bool                         `json:"-"`
+	v3Config                                         Repmanv3Config                    `json:"-"`
+	cloud18CheckSum                                  hash.Hash                         `json:"-"`
+	clog                                             *clog.Logger                      `json:"-"`
+	cApiLog                                          *clog.Logger                      `json:"-"`
+	Logrus                                           *log.Logger                       `json:"-"`
+	IsSavingConfig                                   bool                              `json:"isSavingConfig"`
+	HasSavingConfigQueue                             bool                              `json:"hasSavingConfigQueue"`
+	IsGitPull                                        bool                              `json:"isGitPull"`
+	IsGitPush                                        bool                              `json:"isGitPush"`
+	CanConnectVault                                  bool                              `json:"canConnectVault"`
+	IsExportPush                                     bool                              `json:"-"`
+	errorConnectVault                                error                             `json:"-"`
+	globalScheduler                                  *cron.Cron                        `json:"-"`
+	CheckSumConfig                                   map[string]hash.Hash              `json:"-"`
+	peerClientMap                                    map[string]*peerclient.PeerClient `json:"-"`
 	fileHook                                         log.Hook
 	repmanv3.UnimplementedClusterPublicServiceServer `json:"-"`
 	repmanv3.UnimplementedClusterServiceServer       `json:"-"`
@@ -310,6 +313,7 @@ func (repman *ReplicationManager) AddFlags(flags *pflag.FlagSet, conf *config.Co
 	flags.StringVar(&conf.MonitoringSSLCert, "monitoring-ssl-cert", "", "HTTPS & API TLS certificate")
 	flags.StringVar(&conf.MonitoringSSLKey, "monitoring-ssl-key", "", "HTTPS & API TLS key")
 	flags.StringVar(&conf.MonitoringKeyPath, "monitoring-key-path", "/etc/replication-manager/.replication-manager.key", "Encryption key file path")
+	flags.BoolVar(&conf.MonitoringKeyPathGitOverwrite, "monitoring-key-path-git-overwrite", false, "Force overwrite old secret key in git repo")
 	flags.BoolVar(&conf.MonitorQueries, "monitoring-queries", true, "Monitor long queries")
 	flags.BoolVar(&conf.MonitorPlugins, "monitoring-plugins", true, "Monitor installed plugins")
 	flags.IntVar(&conf.MonitorLongQueryTime, "monitoring-long-query-time", 10000, "Long query time in ms")
@@ -1689,6 +1693,7 @@ func (repman *ReplicationManager) Run() error {
 	repman.cApiLog = clog.New()
 	repman.clog = clog.New()
 	repman.CheckSumConfig = make(map[string]hash.Hash)
+	repman.peerClientMap = make(map[string]*peerclient.PeerClient)
 
 	repman.clog.SetLevel(config.ToLogrusLevel(repman.Conf.LogGraphiteLevel))
 	if repman.CpuProfile != "" {
@@ -1949,7 +1954,6 @@ func (repman *ReplicationManager) Run() error {
 							}
 						}
 						defer file.Close()
-
 					}
 				}
 				if repman.Conf.Cloud18 {
@@ -1994,6 +1998,7 @@ func (repman *ReplicationManager) Run() error {
 						}
 					}
 				}
+
 			case <-quit_GitPull:
 				ticker_GitPull.Stop()
 				return
@@ -2012,9 +2017,9 @@ func (repman *ReplicationManager) Run() error {
 				//to do it only when auth to gitlab
 				if repman.Conf.GitUrl != "" && repman.OAuthAccessToken != nil && repman.Conf.Cloud18 {
 					//to obtain new app access token
-					repman.OAuthAccessToken.AccessToken, repman.OAuthAccessToken.RefreshToken, err = githelper.RefreshAccessToken(repman.OAuthAccessToken.RefreshToken, repman.Conf.OAuthClientID, repman.Conf.GetDecryptedPassword("api-oauth-client-secret", repman.Conf.OAuthClientSecret), repman.Conf.LogGit)
+					repman.OAuthAccessToken.AccessToken, repman.OAuthAccessToken.RefreshToken, err = githelper.RefreshAccessToken(repman.OAuthAccessToken.RefreshToken, repman.Conf.OAuthClientID, repman.Conf.GetDecryptedPassword("api-oauth-client-secret", repman.Conf.OAuthClientSecret), repman.Conf.IsEligibleForPrinting(config.ConstLogModGit, config.LvlDbg))
 					//to obtain a new PAT
-					new_tok, _ := githelper.GetGitLabTokenOAuth(repman.OAuthAccessToken.AccessToken, repman.Conf.LogGit)
+					new_tok, _ := githelper.GetGitLabTokenOAuth(repman.OAuthAccessToken.AccessToken, repman.Conf.IsEligibleForPrinting(config.ConstLogModGit, config.LvlDbg))
 
 					//save the new PAT
 					newSecret := repman.Conf.Secrets["git-acces-token"]
@@ -2253,11 +2258,13 @@ func (repman *ReplicationManager) Stop() {
 		pprof.WriteHeapProfile(f)
 		f.Close()
 	}
-	repman.Save()
-	if repman.Conf.GitUrl != "" {
-		go repman.PushConfigToGit(repman.Conf.Secrets["git-acces-token"].Value, repman.Conf.GitUsername, repman.Conf.WorkingDir)
+
+	// Wait for previous save since this is the last save
+	for repman.IsSavingConfig {
+		time.Sleep(time.Second)
 	}
 
+	repman.Save()
 }
 
 func (repman *ReplicationManager) DownloadFile(url string, file string) error {
@@ -2378,23 +2385,22 @@ func IsDefault(p string, v *viper.Viper) bool {
 
 func (repman *ReplicationManager) PushConfigToGit(tok string, user string, dir string) {
 
-	if repman.Conf.LogGit {
-		repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlInfo, "Push default to git : tok %s, dir %s, user %s\n", repman.Conf.PrintSecret(tok), dir, user)
-	}
+	repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlDbg, "Push default to git : tok %s, dir %s, user %s\n", repman.Conf.PrintSecret(tok), dir, user)
 	auth := &git_https.BasicAuth{
 		Username: user, // yes, this can be anything except an empty string
 		Password: tok,
 	}
+
 	path := dir
 	r, err := git.PlainOpen(path)
-	if err != nil && repman.Conf.LogGit {
-		repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlErr, "Git error : cannot PlainOpen : %s", err)
+	if err != nil {
+		repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlWarn, "Git error : cannot PlainOpen : %s", err)
 		return
 	}
 
 	w, err := r.Worktree()
-	if err != nil && repman.Conf.LogGit {
-		repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlErr, "Git error : cannot Worktree : %s", err)
+	if err != nil {
+		repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlWarn, "Git error : cannot Worktree : %s", err)
 		return
 	}
 
@@ -2402,8 +2408,15 @@ func (repman *ReplicationManager) PushConfigToGit(tok string, user string, dir s
 
 	// Adds the new file to the staging area.
 	err = w.AddGlob("*.toml")
-	if err != nil && repman.Conf.LogGit {
-		repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlErr, "Git error : cannot Add %s : %s", "*.toml", err)
+	if err != nil {
+		repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlWarn, "Git error : cannot Add %s : %s", "*.toml", err)
+	}
+
+	keyFilename, _ := repman.Conf.WriteKeyToWorkingDir()
+	// Adds the new file to the staging area.
+	err = w.AddGlob(keyFilename)
+	if err != nil {
+		repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlWarn, "Git error : cannot Add %s : %s", "*.toml", err)
 	}
 
 	_, err = w.Commit(msg, &git.CommitOptions{
@@ -2413,14 +2426,14 @@ func (repman *ReplicationManager) PushConfigToGit(tok string, user string, dir s
 		},
 	})
 
-	if err != nil && repman.Conf.LogGit {
-		repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlErr, "Git error : cannot Commit : %s", err)
+	if err != nil {
+		repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlWarn, "Git error : cannot Commit : %s", err)
 	}
 
 	// push using default options
 	err = r.Push(&git.PushOptions{Auth: auth})
-	if err != nil && repman.Conf.LogGit {
-		repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlErr, "Git error : cannot Push : %s", err)
+	if err != nil {
+		repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlWarn, "Git error : cannot Push : %s", err)
 
 	}
 }
@@ -2837,8 +2850,16 @@ func (repman *ReplicationManager) Save() error {
 			repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModConfigLoad, config.LvlWarn, "Error during Overwriting: %s", err)
 		}
 
-		repman.PushConfigToBackupDir()
+		repman.PushConfigs()
 	}
 
 	return nil
+}
+
+func (repman *ReplicationManager) PushConfigs() {
+	if repman.Conf.GitUrl != "" && !repman.IsGitPush {
+		go repman.PushConfigToGit(repman.Conf.Secrets["git-acces-token"].Value, repman.Conf.GitUsername, repman.Conf.WorkingDir)
+	} else if !repman.IsExportPush {
+		go repman.PushConfigToBackupDir()
+	}
 }

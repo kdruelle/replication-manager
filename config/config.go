@@ -59,6 +59,7 @@ type Config struct {
 	MonitoringSSLCert                         string                 `scope:"server" mapstructure:"monitoring-ssl-cert" toml:"monitoring-ssl-cert" json:"monitoringSSLCert"`
 	MonitoringSSLKey                          string                 `scope:"server" mapstructure:"monitoring-ssl-key" toml:"monitoring-ssl-key" json:"monitoringSSLKey"`
 	MonitoringKeyPath                         string                 `scope:"server" mapstructure:"monitoring-key-path" toml:"monitoring-key-path" json:"monitoringKeyPath"`
+	MonitoringKeyPathGitOverwrite             bool                   `scope:"server" mapstructure:"monitoring-key-path-git-overwrite" toml:"monitoring-key-path-git-overwrite" json:"monitoringKeyPathGitOverwrite"`
 	MonitoringTicker                          int64                  `mapstructure:"monitoring-ticker" toml:"monitoring-ticker" json:"monitoringTicker"`
 	MonitorWaitRetry                          int64                  `mapstructure:"monitoring-wait-retry" toml:"monitoring-wait-retry" json:"monitoringWaitRetry"`
 	Socket                                    string                 `mapstructure:"monitoring-socket" toml:"monitoring-socket" json:"monitoringSocket"`
@@ -1286,8 +1287,8 @@ func (conf *Config) GetDecryptedPassword(key string, value string) string {
 	if conf.SecretKey != nil && strings.HasPrefix(value, "hash_") {
 		value = strings.TrimPrefix(value, "hash_")
 		p := crypto.Password{Key: conf.SecretKey}
-		if conf.LogConfigLoad {
-			log.WithFields(log.Fields{"cluster": "none", "type": "log", "module": "config"}).Infof("GetDecryptedPassword: decrypting key `%s`: %s", key, value)
+		if conf.IsEligibleForPrinting(ConstLogModConfigLoad, LvlDbg) {
+			log.WithFields(log.Fields{"cluster": "none", "type": "log", "module": "config"}).Debugf("GetDecryptedPassword: decrypting key `%s`: %s", key, value)
 		}
 
 		if value != "" {
@@ -1443,6 +1444,12 @@ func (conf *Config) LoadEncrytionKey() ([]byte, error) {
 	}
 	conf.SecretKey = sec
 	return conf.SecretKey, err
+}
+
+func (conf *Config) WriteKeyToWorkingDir() (string, error) {
+	paths := strings.Split(conf.MonitoringKeyPath, "/")
+	filename := paths[len(paths)-1]
+	return filename, crypto.WriteKey(conf.SecretKey, conf.WorkingDir+"/"+filename, conf.MonitoringKeyPathGitOverwrite)
 }
 
 func (conf *Config) GetEncryptedString(str string) string {
