@@ -81,6 +81,7 @@ type ReplicationManager struct {
 	MemProfile       string                            `json:"memprofile"`
 	CpuProfile       string                            `json:"cpuprofile"`
 	Clusters         map[string]*cluster.Cluster       `json:"-"`
+	PeerClusters     []config.PeerCluster              `json:"-"`
 	Agents           []opensvc.Host                    `json:"agents"`
 	UUID             string                            `json:"uuid"`
 	Hostname         string                            `json:"hostname"`
@@ -1018,6 +1019,7 @@ func (repman *ReplicationManager) initFS(conf config.Config) error {
 
 func (repman *ReplicationManager) InitConfig(conf config.Config) {
 	repman.Logrus = log.New()
+	repman.PeerClusters = make([]config.PeerCluster, 0)
 	repman.ServerScopeList = make(map[string]bool)
 	repman.VersionConfs = make(map[string]*config.ConfVersion)
 	repman.ImmuableFlagMaps = make(map[string]map[string]interface{})
@@ -1881,6 +1883,7 @@ func (repman *ReplicationManager) Run() error {
 	}
 
 	repman.globalScheduler.Start()
+	repman.LoadPeerJson()
 
 	repman.LimitPrivileges()
 
@@ -1919,41 +1922,10 @@ func (repman *ReplicationManager) Run() error {
 						cluster.IsGitPull = true
 					}
 
-					//to check cloud18.toml for the first time
-					if repman.cloud18CheckSum == nil && repman.Conf.Cloud18 {
-						new_h := md5.New()
-						repman.Conf.ReadCloud18Config(repman.ViperConfig)
-						file, err := os.Open(repman.Conf.WorkingDir + "/cloud18.toml")
-						if err != nil {
-							if os.IsPermission(err) {
-								repman.Logrus.Infof("File permission denied: %s", repman.Conf.WorkingDir+"/cloud18.toml")
-							}
-						} else {
-							if _, err := io.Copy(new_h, file); err != nil {
-								repman.Logrus.Infof("Error during computing cloud18.toml hash: %s", err)
-							} else {
-								repman.cloud18CheckSum = new_h
-							}
-						}
-						defer file.Close()
-
-					} else if repman.Conf.Cloud18 {
-						//to check whether new parameters have been injected into the cloud18.toml config file
-						file, err := os.Open(repman.Conf.WorkingDir + "/cloud18.toml")
-						if err != nil {
-							if os.IsPermission(err) {
-								repman.Logrus.Infof("File permission denied: %s", repman.Conf.WorkingDir+"/cloud18.toml")
-							}
-						} else {
-							new_h := md5.New()
-							if _, err := io.Copy(new_h, file); err != nil {
-								repman.Logrus.Infof("Error during computing cloud18.toml hash: %s", err)
-							} else if !bytes.Equal(repman.cloud18CheckSum.Sum(nil), new_h.Sum(nil)) {
-								repman.Conf.ReadCloud18Config(repman.ViperConfig)
-								repman.cloud18CheckSum = new_h
-							}
-						}
-						defer file.Close()
+					//to check cloud18.toml
+					if repman.Conf.Cloud18 {
+						repman.CheckCloud18Config()
+						repman.LoadPeerJson()
 					}
 				}
 				if repman.Conf.Cloud18 {
@@ -2342,6 +2314,92 @@ func (repman *ReplicationManager) InitServicePlans(u *user.User) error {
 	return nil
 }
 
+func (repman *ReplicationManager) LoadPeerJson() error {
+	filePath := repman.Conf.WorkingDir + "/peer.json"
+
+	// Open the peer.json file
+	file, err := os.Open(filePath)
+	if err != nil {
+		if !os.IsNotExist(err) {
+			repman.Logrus.Errorf("failed opening peer file: %s", err)
+		}
+		return err
+	}
+	defer file.Close()
+
+	// Calculate the checksum of the file content
+	new_h := md5.New()
+	_, err = io.Copy(new_h, file)
+	if err != nil {
+		repman.Logrus.Errorf("failed reading peer file: %s", err)
+		return err
+	}
+
+	// Check if the content has changed by comparing the current hash with the stored one
+	h, ok := repman.CheckSumConfig["peer"]
+	if ok && bytes.Equal(h.Sum(nil), new_h.Sum(nil)) {
+		return nil // No change in content, so no need to process further
+	}
+
+	// Reset the file to the beginning to decode JSON
+	if _, err := file.Seek(0, io.SeekStart); err != nil {
+		repman.Logrus.Errorf("failed seeking to the start of the file: %s", err)
+		return err
+	}
+
+	// Decode the JSON content into PeerList
+	var PeerList []config.PeerCluster
+	decoder := json.NewDecoder(file)
+	if err := decoder.Decode(&PeerList); err != nil {
+		repman.Logrus.Errorf("failed to decode peer JSON: %s", err)
+		return err
+	}
+
+	// Update the PeerClusters and checksum
+	repman.PeerClusters = PeerList
+	repman.CheckSumConfig["peer"] = new_h
+
+	return nil
+}
+
+func (repman *ReplicationManager) CheckCloud18Config() error {
+	// Define the file path for cloud18.toml
+	filePath := repman.Conf.WorkingDir + "/cloud18.toml"
+
+	// Open the file and handle errors
+	file, err := os.Open(filePath)
+	if err != nil {
+		if os.IsPermission(err) {
+			repman.Logrus.Infof("File permission denied: %s", filePath)
+		} else if !os.IsNotExist(err) {
+			repman.Logrus.Infof("Failed to open file %s: %s", filePath, err)
+		}
+		return err
+	}
+	defer file.Close()
+
+	// Compute the hash of the cloud18.toml file
+	newHash := md5.New()
+	if _, err := io.Copy(newHash, file); err != nil {
+		repman.Logrus.Infof("Error during computing cloud18.toml hash: %s", err)
+		return err
+	}
+
+	// If cloud18CheckSum is nil and Cloud18 config is enabled, initialize it
+	if repman.cloud18CheckSum == nil && repman.Conf.Cloud18 {
+		repman.cloud18CheckSum = newHash
+		repman.Conf.ReadCloud18Config(repman.ViperConfig)
+	} else if repman.Conf.Cloud18 {
+		// If cloud18CheckSum is set, check if the file has changed
+		if !bytes.Equal(repman.cloud18CheckSum.Sum(nil), newHash.Sum(nil)) {
+			repman.Conf.ReadCloud18Config(repman.ViperConfig)
+			repman.cloud18CheckSum = newHash
+		}
+	}
+
+	return nil
+}
+
 type GrantSorter []config.Grant
 
 func (a GrantSorter) Len() int           { return len(a) }
@@ -2395,6 +2453,17 @@ func (repman *ReplicationManager) PushConfigToGit(tok string, user string, dir s
 	r, err := git.PlainOpen(path)
 	if err != nil {
 		repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlWarn, "Git error : cannot PlainOpen : %s", err)
+		return
+	}
+
+	// Fetch the latest changes from the remote repository
+	err = r.Fetch(&git.FetchOptions{
+		RemoteName: "origin",
+		Force:      true, // this ensures that even if it's a non-fast-forward update, it will fetch the changes
+		Auth:       auth,
+	})
+	if err != nil && err != git.NoErrAlreadyUpToDate {
+		repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlErr, "failed to fetch latest changes: %w", err)
 		return
 	}
 

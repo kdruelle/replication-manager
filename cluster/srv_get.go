@@ -607,6 +607,8 @@ func (server *ServerMonitor) GetSlowLogTable(wg *sync.WaitGroup) error {
 		return fmt.Errorf("Error truncate slow logs buffer table on %s", server.URL)
 	}
 
+	os.MkdirAll(server.Datadir+"/log", 0755)
+
 	f, err := os.OpenFile(server.Datadir+"/log/log_slow_query.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0600)
 	if err != nil {
 		return fmt.Errorf("Error writing slow queries logs on %s: %v", server.URL, err)
