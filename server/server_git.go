@@ -8,7 +8,7 @@ import (
 )
 
 func (repman *ReplicationManager) InitGitConfig(conf *config.Config) error {
-	acces_tok, err := githelper.GetGitLabTokenBasicAuth(conf.Cloud18GitUser, conf.GetDecryptedValue("cloud18-gitlab-password"), conf.LogGit)
+	acces_tok, err := githelper.GetGitLabTokenBasicAuth(conf.Cloud18GitUser, conf.GetDecryptedValue("cloud18-gitlab-password"), conf.IsEligibleForPrinting(config.ConstLogModGit, config.LvlDbg))
 	if err != nil {
 		if conf.Verbose || conf.IsEligibleForPrinting(config.ConstLogModGit, config.LvlErr) {
 			repman.Logrus.Errorf(err.Error() + "\n")
@@ -17,7 +17,7 @@ func (repman *ReplicationManager) InitGitConfig(conf *config.Config) error {
 		return err
 	}
 
-	uid, err := githelper.GetGitLabUserId(acces_tok, conf.LogGit)
+	uid, err := githelper.GetGitLabUserId(acces_tok, conf.IsEligibleForPrinting(config.ConstLogModGit, config.LvlDbg))
 	if err != nil {
 		if conf.Verbose || conf.IsEligibleForPrinting(config.ConstLogModGit, config.LvlErr) {
 			repman.Logrus.Errorf(err.Error() + "\n")
@@ -32,7 +32,7 @@ func (repman *ReplicationManager) InitGitConfig(conf *config.Config) error {
 		return fmt.Errorf("Invalid user Id")
 	}
 
-	_, err = githelper.InitGroupAccessLevel(acces_tok, conf.Cloud18Domain, uid, conf.LogGit)
+	_, err = githelper.InitGroupAccessLevel(acces_tok, conf.Cloud18Domain, uid, conf.IsEligibleForPrinting(config.ConstLogModGit, config.LvlDbg))
 	if err != nil {
 		if conf.Verbose || conf.IsEligibleForPrinting(config.ConstLogModGit, config.LvlErr) {
 			repman.Logrus.Errorf(err.Error() + "\n")
@@ -41,7 +41,7 @@ func (repman *ReplicationManager) InitGitConfig(conf *config.Config) error {
 		return err
 	}
 
-	personal_access_token, _ := githelper.GetGitLabTokenOAuth(acces_tok, conf.LogGit)
+	personal_access_token, _ := githelper.GetGitLabTokenOAuth(acces_tok, conf.IsEligibleForPrinting(config.ConstLogModGit, config.LvlDbg))
 	if personal_access_token != "" {
 		var Secrets config.Secret
 		Secrets.Value = personal_access_token

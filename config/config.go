@@ -1286,8 +1286,8 @@ func (conf *Config) GetDecryptedPassword(key string, value string) string {
 	if conf.SecretKey != nil && strings.HasPrefix(value, "hash_") {
 		value = strings.TrimPrefix(value, "hash_")
 		p := crypto.Password{Key: conf.SecretKey}
-		if conf.LogConfigLoad {
-			log.WithFields(log.Fields{"cluster": "none", "type": "log", "module": "config"}).Infof("GetDecryptedPassword: decrypting key `%s`: %s", key, value)
+		if conf.IsEligibleForPrinting(ConstLogModConfigLoad, LvlDbg) {
+			log.WithFields(log.Fields{"cluster": "none", "type": "log", "module": "config"}).Debugf("GetDecryptedPassword: decrypting key `%s`: %s", key, value)
 		}
 
 		if value != "" {
