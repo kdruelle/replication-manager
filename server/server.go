@@ -22,6 +22,7 @@ import (
 	"os/user"
 	"runtime"
 	"runtime/pprof"
+	"slices"
 	"sort"
 	"sync"
 	"syscall"
@@ -937,8 +938,9 @@ func (repman *ReplicationManager) DiscoverClusters(FirstRead *viper.Viper) strin
 
 		if strings.Contains(k, ".") {
 			mycluster := strings.Split(k, ".")[0]
-			//	repman.Logrus.Infof("Evaluate key %s %s", mycluster, k)
-			if strings.ToLower(mycluster) != "default" && strings.ToLower(mycluster) != "saved-default" {
+			defaults := []string{"default", "saved-default", "overwrite-default"}
+			lowername := strings.ToLower(mycluster)
+			if !slices.Contains(defaults, lowername) {
 				if strings.HasPrefix(mycluster, "saved-") {
 					mycluster = strings.TrimPrefix(mycluster, "saved-")
 				}
