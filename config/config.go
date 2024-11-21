@@ -59,6 +59,7 @@ type Config struct {
 	MonitoringSSLCert                         string                 `scope:"server" mapstructure:"monitoring-ssl-cert" toml:"monitoring-ssl-cert" json:"monitoringSSLCert"`
 	MonitoringSSLKey                          string                 `scope:"server" mapstructure:"monitoring-ssl-key" toml:"monitoring-ssl-key" json:"monitoringSSLKey"`
 	MonitoringKeyPath                         string                 `scope:"server" mapstructure:"monitoring-key-path" toml:"monitoring-key-path" json:"monitoringKeyPath"`
+	MonitoringKeyPathGitOverwrite             bool                   `scope:"server" mapstructure:"monitoring-key-path-git-overwrite" toml:"monitoring-key-path-git-overwrite" json:"monitoringKeyPathGitOverwrite"`
 	MonitoringTicker                          int64                  `mapstructure:"monitoring-ticker" toml:"monitoring-ticker" json:"monitoringTicker"`
 	MonitorWaitRetry                          int64                  `mapstructure:"monitoring-wait-retry" toml:"monitoring-wait-retry" json:"monitoringWaitRetry"`
 	Socket                                    string                 `mapstructure:"monitoring-socket" toml:"monitoring-socket" json:"monitoringSocket"`
@@ -1443,6 +1444,12 @@ func (conf *Config) LoadEncrytionKey() ([]byte, error) {
 	}
 	conf.SecretKey = sec
 	return conf.SecretKey, err
+}
+
+func (conf *Config) WriteKeyToWorkingDir() (string, error) {
+	paths := strings.Split(conf.MonitoringKeyPath, "/")
+	filename := paths[len(paths)-1]
+	return filename, crypto.WriteKey(conf.SecretKey, conf.WorkingDir+"/"+filename, conf.MonitoringKeyPathGitOverwrite)
 }
 
 func (conf *Config) GetEncryptedString(str string) string {
