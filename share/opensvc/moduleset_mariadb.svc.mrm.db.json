@@ -4121,8 +4121,8 @@
                 {
                     "var_author": "admin Manager",
                     "var_class": "file",
-                    "var_value": "{\"path\":\"%%ENV:SVC_CONF_ENV_BASE_DIR%%/%%ENV:POD%%/etc/mysql/replication-manager.d/no_disk_tmp_table.cnf\",\"mode\":\"%%ENV:CNF_PERMS%%\",\"uid\":\"%%ENV:MYSQL_UID%%\",\"gid\":\"%%ENV:MYSQL_GID%%\",\"fmt\":\"# mariadb_command: SET GLOBAL tmdpir = \\\"/tmp\\\";\\n# mysql_command: SET GLOBAL tmdpir = \\\"/tmp\\\";\\n[mysql]\\ntmpdir=/tmp\"}",
-                    "var_updated": "2024-09-22 13:22:02",
+                    "var_value": "{\"path\":\"%%ENV:SVC_CONF_ENV_BASE_DIR%%/%%ENV:POD%%/etc/mysql/replication-manager.d/no_disk_tmp_table.cnf\",\"mode\":\"%%ENV:CNF_PERMS%%\",\"uid\":\"%%ENV:MYSQL_UID%%\",\"gid\":\"%%ENV:MYSQL_GID%%\",\"fmt\":\"# mariadb_command: SET GLOBAL tmdpir = \\\"/tmp\\\";\\n# mysql_command: SET GLOBAL tmdpir = \\\"/tmp\\\";\\n[mysqld]\\ntmpdir=/tmp\"}",
+                    "var_updated": "2024-11-22 17:44:30",
                     "var_name": "db_cnf_disk_no_disktmptable",
                     "id": 6343
                 }
