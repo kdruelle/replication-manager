@@ -132,14 +132,23 @@ func NewMySQLGtid(s string, crcTable *crc64.Table) *Gtid {
 	g := new(Gtid)
 	f := strings.Split(s, ":")
 	seq := "1"
-	if strings.Contains(f[1], "-") {
-		e := strings.Split(f[1], "-")
-		seq = e[1]
-	} else {
-		seq = f[1]
+	if len(f) == 2 {
+		if strings.Contains(f[1], "-") {
+			e := strings.Split(f[1], "-")
+			seq = e[1]
+		} else {
+			seq = f[1]
+		}
+		g.DomainID = 0
+	} else if len(f) == 3 {
+		if strings.Contains(f[2], "-") {
+			e := strings.Split(f[2], "-")
+			seq = e[1]
+		} else {
+			seq = f[2]
+		}
+		g.DomainID = crc64.Checksum([]byte(strings.ToUpper(f[1])), crcTable)
 	}
-	g.DomainID = 0
-
 	g.ServerID = crc64.Checksum([]byte(strings.ToUpper(f[0])), crcTable)
 	g.SeqNo, _ = strconv.ParseUint(seq, 10, 64)
 	//fmt.Fprintf(os.Stdout, "gniac new MySQL GTID : "+f[0]+" "+strconv.FormatUint(g.ServerID, 10))
@@ -205,7 +214,6 @@ func (gl List) Sprint() string {
 	return strings.Join(sl, ",")
 }
 
-//
 func (gl List) Equal(glcomp *List) bool {
 	server := func(c1, c2 *Gtid) bool {
 		return c1.ServerID < c2.ServerID
