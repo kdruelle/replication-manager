@@ -10,11 +10,14 @@
 package config
 
 import (
+	"bytes"
 	"context"
+	"crypto/md5"
 	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"hash"
 	"io"
 
 	"os"
@@ -1599,7 +1602,7 @@ func (conf *Config) PushConfigToGit(url string, tok string, user string, dir str
 	}); err != nil && err.Error() != "already up-to-date" && conf.IsEligibleForPrinting(ConstLogModGit, LvlWarn) {
 		if strings.Contains(err.Error(), git.ErrNonFastForwardUpdate.Error()) {
 			if conf.GitForceSyncFromRepo {
-				if err = ForcePullFromRepo(r, url, auth); err != nil {
+				if err = ForcePullFromRepo(r, url, auth); err != nil && err.Error() != "already up-to-date" {
 					fmt.Printf("git error: %s", err.Error())
 				}
 			}
@@ -2606,4 +2609,50 @@ func (conf *Config) SwitchCloud18Shared() {
 
 func (conf *Config) SwitchCloud18() {
 	conf.Cloud18 = !conf.Cloud18
+}
+
+func (conf *Config) SwitchGitForceSyncFromRepo() {
+	conf.GitForceSyncFromRepo = !conf.GitForceSyncFromRepo
+}
+
+func (conf *Config) GetImmutableChecksum() (hash.Hash, error) {
+	new_h := md5.New()
+
+	Container := make([]string, 0)
+
+	for k, v := range conf.ImmuableFlagMap {
+		if _, ok := conf.Secrets[k]; !ok {
+			Container = append(Container, fmt.Sprintf("%s=%v", k, v))
+		}
+	}
+
+	misc.SortKeysAsc(Container)
+
+	js, err := json.Marshal(Container)
+	if err != nil {
+		return new_h, err
+	}
+
+	_, err = io.Copy(new_h, bytes.NewBuffer(js))
+	return new_h, err
+}
+
+func (conf *Config) GetSecretChecksum() (hash.Hash, error) {
+	new_h := md5.New()
+
+	Container := make([]string, 0)
+
+	for k, v := range conf.Secrets {
+		Container = append(Container, fmt.Sprintf("%s=%v", k, v))
+	}
+
+	misc.SortKeysAsc(Container)
+
+	js, err := json.Marshal(Container)
+	if err != nil {
+		return new_h, err
+	}
+
+	_, err = io.Copy(new_h, bytes.NewBuffer(js))
+	return new_h, err
 }

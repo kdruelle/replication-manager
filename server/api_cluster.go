@@ -1384,14 +1384,14 @@ func (repman *ReplicationManager) switchClusterSettings(mycluster *cluster.Clust
 		mycluster.Conf.SwitchCloud18()
 	case "cloud18-shared":
 		mycluster.Conf.SwitchCloud18Shared()
+	case "git-force-sync-from-repo":
+		mycluster.Conf.SwitchGitForceSyncFromRepo()
 	case "cloud18-open-dbops":
 		mycluster.SwitchCloud18OpenDbops()
 	case "cloud18-subscribed-dbops":
 		mycluster.SwitchCloud18SubscribedDbops()
 	case "cloud18-open-sysops":
 		mycluster.SwitchCloud18OpenSysops()
-	case "git-force-sync-from-repo":
-		mycluster.SwitchGitForceSyncFromRepo()
 	default:
 		return errors.New("Setting not found")
 	}
@@ -2003,6 +2003,8 @@ func (repman *ReplicationManager) switchRepmanSetting(name string) error {
 		}
 	case "cloud18-shared":
 		repman.Conf.SwitchCloud18Shared()
+	case "git-force-sync-from-repo":
+		repman.Conf.SwitchGitForceSyncFromRepo()
 	case "api-https-bind":
 		repman.Conf.APIHttpsBind = !repman.Conf.APIHttpsBind
 	case "api-server":

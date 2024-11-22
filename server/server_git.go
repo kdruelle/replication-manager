@@ -59,7 +59,8 @@ func (repman *ReplicationManager) InitGitConfig(conf *config.Config) error {
 		if conf.Verbose || conf.IsEligibleForPrinting(config.ConstLogModGit, config.LvlDbg) {
 			repman.Logrus.Debugf("Clone from git : url %s, tok %s, dir %s\n", conf.GitUrl, conf.PrintSecret(conf.GitAccesToken), conf.WorkingDir)
 		}
-		err := conf.CloneConfigFromGit(conf.GitUrl, conf.GitUsername, conf.GitAccesToken, conf.WorkingDir)
+
+		repman.GitRepo, err = githelper.CloneConfigFromGit(conf.GitUrl, conf.GitUsername, conf.GitAccesToken, conf.WorkingDir)
 		if err != nil {
 			if strings.Contains(err.Error(), git.ErrNonFastForwardUpdate.Error()) {
 				for _, cl := range repman.Clusters {
@@ -83,7 +84,8 @@ func (repman *ReplicationManager) InitGitConfig(conf *config.Config) error {
 		if conf.Verbose || conf.IsEligibleForPrinting(config.ConstLogModGit, config.LvlDbg) {
 			repman.Logrus.Debugf("Push to git : tok %s, dir %s, user %s, clustersList : %v\n", conf.PrintSecret(conf.GitAccesToken), conf.WorkingDir, conf.GitUsername, []string{})
 		}
-		err = conf.PushConfigToGit(conf.GitUrl, conf.GitAccesToken, conf.GitUsername, conf.WorkingDir, []string{})
+
+		err = repman.PushConfigToGit(conf.GitUrl, conf.GitAccesToken, conf.GitUsername, conf.WorkingDir)
 		if err != nil {
 			if strings.Contains(err.Error(), git.ErrNonFastForwardUpdate.Error()) {
 				for _, cl := range repman.Clusters {

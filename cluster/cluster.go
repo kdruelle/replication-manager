@@ -30,7 +30,6 @@ import (
 	git_obj "github.com/go-git/go-git/v5/plumbing/object"
 	vault "github.com/hashicorp/vault/api"
 
-	git_https "github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/pelletier/go-toml"
 	"github.com/signal18/replication-manager/cluster/configurator"
 	"github.com/signal18/replication-manager/cluster/nbc"
@@ -40,6 +39,7 @@ import (
 	"github.com/signal18/replication-manager/utils/alert"
 	"github.com/signal18/replication-manager/utils/cron"
 	"github.com/signal18/replication-manager/utils/dbhelper"
+	"github.com/signal18/replication-manager/utils/githelper"
 	"github.com/signal18/replication-manager/utils/logrus/hooks/pushover"
 	"github.com/signal18/replication-manager/utils/misc"
 	"github.com/signal18/replication-manager/utils/s18log"
@@ -227,6 +227,7 @@ type Cluster struct {
 	InBinlogBackup            bool                        `json:"inBinlogBackup"`
 	InResticBackup            bool                        `json:"inResticBackup"`
 	InRollingRestart          bool                        `json:"inRollingRestart"`
+	GitRepo                   *githelper.GitRepository    `json:"-"`
 	LastDelayStatPrint        time.Time
 	sync.Mutex
 	crcTable               *crc64.Table
@@ -850,9 +851,7 @@ func (cluster *Cluster) Stop() {
 	defer cluster.Unlock()
 	//	cluster.scheduler.Stop()
 	cluster.Save()
-	cluster.PushConfigs()
 	cluster.exit = true
-
 }
 
 func (cluster *Cluster) Save() error {
@@ -911,6 +910,18 @@ func (cluster *Cluster) Save() error {
 	}
 
 	if cluster.Conf.ConfRewrite {
+		defer cluster.PushConfigs()
+		new_ih, err := cluster.Conf.GetImmutableChecksum()
+		if err != nil {
+			cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModConfigLoad, config.LvlWarn, "Error during checksum immutable config: %s", err)
+		}
+		old_ih, ok := cluster.CheckSumConfig["plain-immutable"]
+
+		new_sh, err := cluster.Conf.GetSecretChecksum()
+		if err != nil {
+			cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModConfigLoad, config.LvlWarn, "Error during checksum secret config: %s", err)
+		}
+		old_sh, ok2 := cluster.CheckSumConfig["plain-secret"]
 
 		// Check and inject config
 		cluster.CheckInjectConfig()
@@ -921,16 +932,25 @@ func (cluster *Cluster) Save() error {
 			return err
 		}
 
-		// Save the immutable configuration file
-		if err := cluster.SaveImmutableConfig(); err != nil {
-			cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModConfigLoad, config.LvlWarn, "Error during save cluster immutable config: %s", err)
-			return err
-		}
+		if !ok || !ok2 || !bytes.Equal(old_ih.Sum(nil), new_ih.Sum(nil)) || !bytes.Equal(old_sh.Sum(nil), new_sh.Sum(nil)) {
+			if !ok || !bytes.Equal(old_ih.Sum(nil), new_ih.Sum(nil)) {
+				cluster.CheckSumConfig["plain-immutable"] = new_ih
+			}
+			// Save the immutable configuration file
+			if err := cluster.SaveImmutableConfig(); err != nil {
+				cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModConfigLoad, config.LvlWarn, "Error during save cluster immutable config: %s", err)
+				return err
+			}
 
-		// Save the cache configuration file
-		if err := cluster.SaveCacheConfig(); err != nil {
-			cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModConfigLoad, config.LvlWarn, "Error during save cluster cache config: %s", err)
-			return err
+			if !ok2 || !bytes.Equal(old_sh.Sum(nil), new_sh.Sum(nil)) {
+				cluster.CheckSumConfig["plain-secret"] = new_sh
+
+				// Save the cache configuration file
+				if err := cluster.SaveCacheConfig(); err != nil {
+					cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModConfigLoad, config.LvlWarn, "Error during save cluster cache config: %s", err)
+					return err
+				}
+			}
 		}
 
 		// Final overwrite based on whether configuration has changed
@@ -1099,52 +1119,36 @@ func (cluster *Cluster) CheckForChanges() bool {
 	return false
 }
 
-func (cluster *Cluster) PushConfigToGit(tok string, user string, dir string, name string) {
+func (cluster *Cluster) PushConfigToGit() {
+	var err error
+
 	// Prevent concurrent
-	cluster.IsGitPush = true
+	cluster.GitRepo.IsPush = true
 	defer func() {
-		cluster.IsGitPush = false
+		cluster.GitRepo.IsPush = false
 	}()
 
-	if cluster.Conf.LogGit {
-		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGit, config.LvlInfo, "Push to git : tok %s, dir %s, user %s, name %s\n", cluster.Conf.PrintSecret(tok), dir, user, name)
-	}
-	auth := &git_https.BasicAuth{
-		Username: user, // yes, this can be anything except an empty string
-		Password: tok,
-	}
-	path := dir
-	r, err := git.PlainOpen(path)
-	if err != nil {
-		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGit, config.LvlErr, "Git error : cannot PlainOpen : %s", err)
-		return
-	}
+	cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGit, config.LvlInfo, "Push to git : tok %s, dir %s, user %s, name %s\n", cluster.Conf.PrintSecret(cluster.GitRepo.Auth.Password), cluster.GitRepo.Path, cluster.GitRepo.Auth.Username, cluster.Name)
 
-	w, err := r.Worktree()
-	if err != nil {
-		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGit, config.LvlErr, "Git error : cannot Worktree : %s", err)
-		return
-	}
-
-	msg := "Update " + name + ".toml file"
+	msg := "Update " + cluster.Name + ".toml file"
 
 	// Adds the new file to the staging area.
-	err = w.AddGlob(name + "/*.toml")
+	err = cluster.GitRepo.AddGlob(cluster.Name + "/*.toml")
 	if err != nil && cluster.Conf.LogGit {
-		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGit, config.LvlErr, "Git error : cannot Add %s : %s", name+"/*.toml", err)
+		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGit, config.LvlErr, "Git error : cannot Add %s : %s", cluster.Name+"/*.toml", err)
 	}
 
-	_, err = w.Add(name + "/agents.json")
+	_, err = cluster.GitRepo.Add(cluster.Name + "/agents.json")
 	if err != nil && cluster.Conf.LogGit {
-		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGit, config.LvlErr, "Git error : cannot Add %s : %s", name+"/*.json", err)
+		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGit, config.LvlErr, "Git error : cannot Add %s : %s", cluster.Name+"/*.json", err)
 	}
-	_, err = w.Add(name + "/queryrules.json")
+	_, err = cluster.GitRepo.Add(cluster.Name + "/queryrules.json")
 	if err != nil && cluster.Conf.LogGit {
-		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGit, config.LvlErr, "Git error : cannot Add %s : %s", name+"/*.json", err)
+		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGit, config.LvlErr, "Git error : cannot Add %s : %s", cluster.Name+"/*.json", err)
 	}
 
-	if ws, err := w.Status(); err == nil && !ws.IsClean() {
-		_, err = w.Commit(msg, &git.CommitOptions{
+	if cluster.GitRepo.HasStagedFiles() {
+		_, err = cluster.GitRepo.Commit(msg, &git.CommitOptions{
 			Author: &git_obj.Signature{
 				Name: "Replication-manager",
 				When: time.Now(),
@@ -1157,13 +1161,15 @@ func (cluster *Cluster) PushConfigToGit(tok string, user string, dir string, nam
 	}
 
 	// push using default options
-	err = r.Push(&git.PushOptions{Auth: auth})
-	if err != nil && err.Error() != "already up-to-date" {
+	err = cluster.GitRepo.Push()
+	if err != nil {
 		if strings.Contains(err.Error(), git.ErrNonFastForwardUpdate.Error()) {
 			cluster.SetState("WARN0132", state.State{ErrType: config.LvlWarn, ErrDesc: fmt.Sprintf(config.ClusterError["WARN0132"], cluster.Conf.GitUrl, err.Error()), ErrFrom: "GIT"})
 		} else {
 			cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGit, config.LvlErr, "Git error : cannot Push : %s", err)
 		}
+	} else {
+		cluster.GitRepo.Pull(true)
 	}
 }
 
