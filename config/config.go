@@ -1575,17 +1575,19 @@ func (conf *Config) PushConfigToGit(url string, tok string, user string, dir str
 		}
 	}
 
-	// Commit the changes
-	msg := "Update file"
-	if _, err := w.Commit(msg, &git.CommitOptions{
-		Author: &git_obj.Signature{
-			Name: "Replication-manager",
-			When: time.Now(),
-		},
-		All:               true,
-		AllowEmptyCommits: false,
-	}); err != nil {
-		return fmt.Errorf("git error: cannot commit changes: %w", err)
+	if ws, err := w.Status(); err == nil && !ws.IsClean() {
+		// Commit the changes
+		msg := "Update file"
+		if _, err := w.Commit(msg, &git.CommitOptions{
+			Author: &git_obj.Signature{
+				Name: "Replication-manager",
+				When: time.Now(),
+			},
+			All:               true,
+			AllowEmptyCommits: false,
+		}); err != nil {
+			return fmt.Errorf("git error: cannot commit changes: %w", err)
+		}
 	}
 
 	// Pull the latest changes from the remote repository
@@ -1607,7 +1609,7 @@ func (conf *Config) PushConfigToGit(url string, tok string, user string, dir str
 	}
 
 	// Push the changes to the remote repository
-	if err := r.Push(&git.PushOptions{Auth: auth}); err != nil {
+	if err := r.Push(&git.PushOptions{Auth: auth}); err != nil && err.Error() != "already up-to-date" {
 		if err != git.ErrNonFastForwardUpdate {
 			return err
 		}

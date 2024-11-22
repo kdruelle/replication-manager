@@ -1115,13 +1115,13 @@ func (cluster *Cluster) PushConfigToGit(tok string, user string, dir string, nam
 	}
 	path := dir
 	r, err := git.PlainOpen(path)
-	if err != nil && cluster.Conf.LogGit {
+	if err != nil {
 		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGit, config.LvlErr, "Git error : cannot PlainOpen : %s", err)
 		return
 	}
 
 	w, err := r.Worktree()
-	if err != nil && cluster.Conf.LogGit {
+	if err != nil {
 		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGit, config.LvlErr, "Git error : cannot Worktree : %s", err)
 		return
 	}
@@ -1143,21 +1143,22 @@ func (cluster *Cluster) PushConfigToGit(tok string, user string, dir string, nam
 		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGit, config.LvlErr, "Git error : cannot Add %s : %s", name+"/*.json", err)
 	}
 
-	_, err = w.Commit(msg, &git.CommitOptions{
-		Author: &git_obj.Signature{
-			Name: "Replication-manager",
-			When: time.Now(),
-		},
-		AllowEmptyCommits: false,
-	})
-
-	if err != nil && cluster.Conf.LogGit {
-		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGit, config.LvlErr, "Git error : cannot Commit : %s", err)
+	if ws, err := w.Status(); err == nil && !ws.IsClean() {
+		_, err = w.Commit(msg, &git.CommitOptions{
+			Author: &git_obj.Signature{
+				Name: "Replication-manager",
+				When: time.Now(),
+			},
+			AllowEmptyCommits: false,
+		})
+		if err != nil && cluster.Conf.LogGit {
+			cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGit, config.LvlErr, "Git error : cannot Commit : %s", err)
+		}
 	}
 
 	// push using default options
 	err = r.Push(&git.PushOptions{Auth: auth})
-	if err != nil && cluster.Conf.LogGit {
+	if err != nil && err.Error() != "already up-to-date" {
 		if strings.Contains(err.Error(), git.ErrNonFastForwardUpdate.Error()) {
 			cluster.SetState("WARN0132", state.State{ErrType: config.LvlWarn, ErrDesc: fmt.Sprintf(config.ClusterError["WARN0132"], cluster.Conf.GitUrl, err.Error()), ErrFrom: "GIT"})
 		} else {
