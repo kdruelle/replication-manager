@@ -12,11 +12,153 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 
+	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
+	git_https "github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/sirupsen/logrus"
 )
+
+var Logrus = logrus.New()
+
+type GitRepository struct {
+	R      *git.Repository
+	WT     *git.Worktree
+	Auth   *git_https.BasicAuth
+	Path   string
+	URL    string
+	IsPush bool
+}
+
+func InitGitRepo(url string, tok string, user string, path string) (*GitRepository, error) {
+
+	auth := &git_https.BasicAuth{
+		Username: user, // can be any non-empty string
+		Password: tok,
+	}
+
+	// Open the repository
+	r, err := git.PlainOpen(path)
+	if err != nil {
+		return nil, fmt.Errorf("git error: cannot open repository: %w", err)
+	}
+
+	// Get the working tree
+	w, err := r.Worktree()
+	if err != nil {
+		return nil, fmt.Errorf("git error: cannot get worktree: %w", err)
+	}
+
+	gr := &GitRepository{
+		R:    r,
+		WT:   w,
+		Auth: auth,
+		Path: path,
+		URL:  url,
+	}
+
+	// Pull the latest changes from the remote repository
+	err = gr.Pull(true)
+
+	return gr, err
+}
+
+func InitGitClone(url string, tok string, user string, path string) (*GitRepository, error) {
+
+	auth := &git_https.BasicAuth{
+		Username: user, // can be any non-empty string
+		Password: tok,
+	}
+
+	// Clone the repository to the given directory
+	r, err := git.PlainClone(path, false, &git.CloneOptions{
+		URL:               url,
+		RecurseSubmodules: git.DefaultSubmoduleRecursionDepth,
+		Auth:              auth,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("git error: cannot clone repository %s: %w", url, err)
+	}
+
+	// Get the working tree
+	w, err := r.Worktree()
+	if err != nil {
+		return nil, fmt.Errorf("git error: cannot get worktree: %w", err)
+	}
+
+	gr := &GitRepository{
+		R:    r,
+		WT:   w,
+		Auth: auth,
+		Path: path,
+		URL:  url,
+	}
+
+	// Pull the latest changes from the remote repository
+	err = gr.Pull(true)
+
+	return gr, err
+}
+
+func CloneConfigFromGit(url string, user string, tok string, path string) (*GitRepository, error) {
+	if _, err := os.Stat(path + "/.git"); err == nil {
+		return InitGitRepo(url, tok, user, path)
+	} else {
+		return InitGitClone(url, tok, user, path)
+
+	}
+}
+
+func (gr *GitRepository) Pull(force bool) error {
+	// Pull the latest changes from the remote repository
+	err := gr.WT.Pull(&git.PullOptions{
+		RemoteName: "origin",
+		Auth:       gr.Auth,
+		RemoteURL:  gr.URL,
+		Force:      force,
+	})
+	if err != nil && err != git.NoErrAlreadyUpToDate {
+		return err
+	}
+	return nil
+}
+
+func (gr *GitRepository) Push() error {
+	// Pull the latest changes from the remote repository
+	err := gr.R.Push(&git.PushOptions{Auth: gr.Auth})
+	if err != nil && err.Error() != "already up-to-date" {
+		return err
+	}
+	return nil
+}
+
+func (gr *GitRepository) AddGlob(pattern string) error {
+	return gr.WT.AddGlob(pattern)
+}
+
+func (gr *GitRepository) Add(pattern string) (plumbing.Hash, error) {
+	return gr.WT.Add(pattern)
+}
+
+func (gr *GitRepository) HasStagedFiles() bool {
+	ws, err := gr.WT.Status()
+	if err == nil {
+		for _, gf := range ws {
+			if gf.Staging == git.Added || gf.Staging == git.Modified || gf.Staging == git.Deleted {
+				// Logrus.Debugf("%s is %d", name, gf.Staging)
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func (gr *GitRepository) Commit(msg string, opts *git.CommitOptions) (plumbing.Hash, error) {
+	return gr.WT.Commit(msg, opts)
+}
 
 type TokenInfo struct {
 	ID     int    `json:"id"`
@@ -62,8 +204,6 @@ type DuplicateRequest struct {
 type RequestUserId struct {
 	UserId []string `json:"user_id"`
 }
-
-var Logrus = logrus.New()
 
 func GetGitLabTokenOAuth(acces_token string, log_git bool) (string, int) {
 

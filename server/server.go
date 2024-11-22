@@ -36,7 +36,6 @@ import (
 
 	"github.com/go-git/go-git/v5"
 	git_obj "github.com/go-git/go-git/v5/plumbing/object"
-	git_https "github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/pelletier/go-toml"
 	"github.com/spf13/viper"
@@ -142,6 +141,7 @@ type ReplicationManager struct {
 	globalScheduler                                  *cron.Cron                        `json:"-"`
 	CheckSumConfig                                   map[string]hash.Hash              `json:"-"`
 	peerClientMap                                    map[string]*peerclient.PeerClient `json:"-"`
+	GitRepo                                          *githelper.GitRepository          `json:"-"`
 	fileHook                                         log.Hook
 	repmanv3.UnimplementedClusterPublicServiceServer `json:"-"`
 	repmanv3.UnimplementedClusterServiceServer       `json:"-"`
@@ -836,6 +836,7 @@ func (repman *ReplicationManager) AddFlags(flags *pflag.FlagSet, conf *config.Co
 	flags.StringVar(&conf.Cloud18GitUser, "cloud18-gitlab-user", "", "Cloud 18 GitLab user")
 	flags.StringVar(&conf.Cloud18GitPassword, "cloud18-gitlab-password", "", "Cloud 18 GitLab password")
 	flags.StringVar(&conf.Cloud18PlatformDescription, "cloud18-platform-description", "", "Marketing banner display on the cloud18 portal describing the infrastucture")
+	flags.BoolVar(&conf.GitForceSyncFromRepo, "git-force-sync-from-repo", false, "Always replace local with the latest value from repo")
 
 	if WithProvisioning == "ON" {
 		flags.StringVar(&conf.ProvDatadirVersion, "prov-db-datadir-version", "10.2", "Empty datadir to deploy for localtest")
@@ -1326,9 +1327,23 @@ func (repman *ReplicationManager) InitConfig(conf config.Config) {
 			tok = conf.GetDecryptedValue("git-acces-token")
 		}
 
-		err := conf.CloneConfigFromGit(conf.GitUrl, conf.GitUsername, tok, conf.WorkingDir)
+		repman.GitRepo, err = githelper.CloneConfigFromGit(conf.GitUrl, conf.GitUsername, tok, conf.WorkingDir)
 		if err != nil {
-			repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlErr, err.Error())
+			if strings.Contains(err.Error(), git.ErrNonFastForwardUpdate.Error()) {
+				for _, cl := range repman.Clusters {
+					if cl != nil {
+						cl.SetState("WARN0132", state.State{ErrType: config.LvlWarn, ErrDesc: fmt.Sprintf(config.ClusterError["WARN0132"], conf.GitUrl, err.Error()), ErrFrom: "GIT"})
+					}
+				}
+			} else {
+				repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlErr, err.Error())
+			}
+		} else {
+			for _, cl := range repman.Clusters {
+				if cl != nil && cl.GetStateMachine() != nil && cl.GetStateMachine().IsInState("WARN0132") {
+					cl.GetStateMachine().DeleteState("WARN0132")
+				}
+			}
 		}
 	}
 
@@ -1908,16 +1923,43 @@ func (repman *ReplicationManager) Run() error {
 			case <-ticker_GitPull.C:
 				//to do it only when using github
 				if repman.Conf.GitUrl != "" {
-					err = repman.Conf.CloneConfigFromGit(repman.Conf.GitUrl, repman.Conf.GitUsername, repman.Conf.Secrets["git-acces-token"].Value, repman.Conf.WorkingDir)
+					if repman.GitRepo == nil {
+						repman.GitRepo, err = githelper.CloneConfigFromGit(repman.Conf.GitUrl, repman.Conf.GitUsername, repman.Conf.Secrets["git-acces-token"].Value, repman.Conf.WorkingDir)
+					} else {
+						err = repman.GitRepo.Pull(true)
+					}
 					if err != nil {
-						repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlErr, err.Error())
+						if strings.Contains(err.Error(), git.ErrNonFastForwardUpdate.Error()) {
+							for _, cl := range repman.Clusters {
+								if cl != nil {
+									cl.SetState("WARN0132", state.State{ErrType: config.LvlWarn, ErrDesc: fmt.Sprintf(config.ClusterError["WARN0132"], conf.GitUrl, err.Error()), ErrFrom: "GIT"})
+								}
+							}
+						} else {
+							repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlErr, err.Error())
+						}
+					} else {
+						for _, cl := range repman.Clusters {
+							if cl != nil && cl.GetStateMachine() != nil && cl.GetStateMachine().IsInState("WARN0132") {
+								cl.GetStateMachine().DeleteState("WARN0132")
+							}
+						}
 					}
 
-					err = repman.Conf.PushConfigToGit(repman.Conf.GitUrl, repman.Conf.Secrets["git-acces-token"].Value, repman.Conf.GitUsername, repman.Conf.WorkingDir, repman.ClusterList)
+					err = repman.PushConfigToGit(repman.Conf.GitUrl, repman.Conf.Secrets["git-acces-token"].Value, repman.Conf.GitUsername, repman.Conf.WorkingDir)
 					if err != nil {
-						repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlErr, err.Error())
+						if strings.Contains(err.Error(), git.ErrNonFastForwardUpdate.Error()) {
+							for _, cl := range repman.Clusters {
+								if cl != nil {
+									cl.SetState("WARN0132", state.State{ErrType: config.LvlWarn, ErrDesc: fmt.Sprintf(config.ClusterError["WARN0132"], conf.GitUrl, err.Error()), ErrFrom: "GIT"})
+								}
+							}
+						} else {
+							repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlErr, err.Error())
+						}
 					}
 
+					repman.IsGitPull = true
 					for _, cluster := range repman.Clusters {
 						cluster.IsGitPull = true
 					}
@@ -2058,6 +2100,7 @@ func (repman *ReplicationManager) StartCluster(clusterName string) (*cluster.Clu
 
 	repman.currentCluster = new(cluster.Cluster)
 	repman.currentCluster.Logrus = repman.Logrus
+	repman.currentCluster.GitRepo = repman.GitRepo
 
 	myClusterConf := repman.Confs[clusterName]
 	if myClusterConf.MonitorAddress == "localhost" {
@@ -2237,6 +2280,13 @@ func (repman *ReplicationManager) Stop() {
 	}
 
 	repman.Save()
+	if repman.Conf.GitUrl != "" {
+		go repman.PushConfigToGit(repman.Conf.GitUrl, repman.Conf.Secrets["git-acces-token"].Value, repman.Conf.GitUsername, repman.Conf.WorkingDir)
+	}
+
+	if !repman.IsExportPush {
+		go repman.PushConfigToBackupDir()
+	}
 }
 
 func (repman *ReplicationManager) DownloadFile(url string, file string) error {
@@ -2441,70 +2491,59 @@ func IsDefault(p string, v *viper.Viper) bool {
 	return false
 }
 
-func (repman *ReplicationManager) PushConfigToGit(tok string, user string, dir string) {
+func (repman *ReplicationManager) PushConfigToGit(url string, tok string, user string, path string) error {
+	var err error
+	repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlDbg, "Push default to git : tok %s, dir %s, user %s\n", repman.Conf.PrintSecret(tok), path, user)
 
-	repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlDbg, "Push default to git : tok %s, dir %s, user %s\n", repman.Conf.PrintSecret(tok), dir, user)
-	auth := &git_https.BasicAuth{
-		Username: user, // yes, this can be anything except an empty string
-		Password: tok,
+	if repman.GitRepo == nil {
+		repman.GitRepo, err = githelper.CloneConfigFromGit(url, user, tok, path)
+		if err != nil {
+			return err
+		}
 	}
 
-	path := dir
-	r, err := git.PlainOpen(path)
-	if err != nil {
-		repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlWarn, "Git error : cannot PlainOpen : %s", err)
-		return
+	for repman.GitRepo.IsPush {
+		time.Sleep(time.Second)
 	}
 
-	// Fetch the latest changes from the remote repository
-	err = r.Fetch(&git.FetchOptions{
-		RemoteName: "origin",
-		Force:      true, // this ensures that even if it's a non-fast-forward update, it will fetch the changes
-		Auth:       auth,
-	})
-	if err != nil && err != git.NoErrAlreadyUpToDate {
-		repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlErr, "failed to fetch latest changes: %w", err)
-		return
-	}
-
-	w, err := r.Worktree()
-	if err != nil {
-		repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlWarn, "Git error : cannot Worktree : %s", err)
-		return
-	}
-
-	msg := "Update default.toml file"
+	repman.GitRepo.Pull(true)
 
 	// Adds the new file to the staging area.
-	err = w.AddGlob("*.toml")
+	err = repman.GitRepo.AddGlob("*.toml")
 	if err != nil {
 		repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlWarn, "Git error : cannot Add %s : %s", "*.toml", err)
 	}
 
 	keyFilename, _ := repman.Conf.WriteKeyToWorkingDir()
 	// Adds the new file to the staging area.
-	err = w.AddGlob(keyFilename)
+	_, err = repman.GitRepo.Add(keyFilename)
 	if err != nil {
 		repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlWarn, "Git error : cannot Add %s : %s", "*.toml", err)
 	}
 
-	_, err = w.Commit(msg, &git.CommitOptions{
-		Author: &git_obj.Signature{
-			Name: "Replication-manager",
-			When: time.Now(),
-		},
-	})
-
-	if err != nil {
-		repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlWarn, "Git error : cannot Commit : %s", err)
+	if repman.GitRepo.HasStagedFiles() {
+		msg := "Update file"
+		_, err = repman.GitRepo.Commit(msg, &git.CommitOptions{
+			Author: &git_obj.Signature{
+				Name: "Replication-manager",
+				When: time.Now(),
+			},
+			AllowEmptyCommits: false,
+		})
+		if err != nil {
+			repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlWarn, "Git error : cannot Commit : %s", err)
+			return err
+		}
 	}
 
 	// push using default options
-	err = r.Push(&git.PushOptions{Auth: auth})
+	err = repman.GitRepo.Push()
 	if err != nil {
 		repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlWarn, "Git error : cannot Push : %s", err)
-
 	}
+
+	repman.GitRepo.Pull(true)
+	return nil
 }
 
 func (repman *ReplicationManager) GetEncryptedValueFromMemory(key string) string {
@@ -2857,10 +2896,10 @@ func (repman *ReplicationManager) SaveImmutable() (hash.Hash, error) {
 }
 
 func (repman *ReplicationManager) Save() error {
-	// //Needed to preserve diretory before Pull
-	// if !repman.IsGitPull && repman.Conf.Cloud18 {
-	// 	return nil
-	// }
+	if !repman.IsGitPull && repman.Conf.Cloud18 {
+		repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModConfigLoad, config.LvlDbg, "Cannot save cluster config, cloud18 active but config is not pulled yet.")
+		return nil
+	}
 
 	if repman.IsSavingConfig {
 		return nil
@@ -2878,6 +2917,17 @@ func (repman *ReplicationManager) Save() error {
 	has_changed := false
 
 	if repman.Conf.ConfRewrite {
+		new_ih, err := repman.Conf.GetImmutableChecksum()
+		if err != nil {
+			repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModConfigLoad, config.LvlErr, "error while generate immutable checksum: %v", err)
+		}
+		old_ih, pok := repman.CheckSumConfig["plain-immutable"]
+
+		new_sh, err := repman.Conf.GetSecretChecksum()
+		if err != nil {
+			repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModConfigLoad, config.LvlErr, "error while generate secret checksum: %v", err)
+		}
+		old_sh, pok2 := repman.CheckSumConfig["plain-secret"]
 
 		// Dynamic
 		new_h, err := repman.SaveDynamic()
@@ -2896,39 +2946,38 @@ func (repman *ReplicationManager) Save() error {
 
 		repman.CheckSumConfig["saved"] = new_h
 
-		// Immutable
-		new_h, err = repman.SaveImmutable()
-		if err != nil {
-			repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModConfigLoad, config.LvlErr, "error while saving immutable params: %v", err)
-			return err
-		}
+		if !pok || !pok2 || !bytes.Equal(old_ih.Sum(nil), new_ih.Sum(nil)) || !bytes.Equal(old_sh.Sum(nil), new_sh.Sum(nil)) {
+			if !pok || !bytes.Equal(old_ih.Sum(nil), new_ih.Sum(nil)) {
+				repman.CheckSumConfig["plain-immutable"] = new_ih
+			}
+			if !pok2 || !bytes.Equal(old_sh.Sum(nil), new_sh.Sum(nil)) {
+				repman.CheckSumConfig["plain-secret"] = new_sh
+			}
 
-		h, ok = repman.CheckSumConfig["immutable"]
-		if !ok {
-			has_changed = true
-		}
+			// Immutable
+			new_h, err = repman.SaveImmutable()
+			if err != nil {
+				repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModConfigLoad, config.LvlErr, "error while saving immutable params: %v", err)
+				return err
+			}
 
-		if ok && !bytes.Equal(h.Sum(nil), new_h.Sum(nil)) {
-			has_changed = true
-		}
+			h, ok = repman.CheckSumConfig["immutable"]
+			if !ok {
+				has_changed = true
+			}
 
-		repman.CheckSumConfig["immutable"] = new_h
+			if ok && !bytes.Equal(h.Sum(nil), new_h.Sum(nil)) {
+				has_changed = true
+			}
+
+			repman.CheckSumConfig["immutable"] = new_h
+		}
 
 		err = repman.Overwrite(has_changed)
 		if err != nil {
 			repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModConfigLoad, config.LvlWarn, "Error during Overwriting: %s", err)
 		}
-
-		repman.PushConfigs()
 	}
 
 	return nil
-}
-
-func (repman *ReplicationManager) PushConfigs() {
-	if repman.Conf.GitUrl != "" && !repman.IsGitPush {
-		go repman.PushConfigToGit(repman.Conf.Secrets["git-acces-token"].Value, repman.Conf.GitUsername, repman.Conf.WorkingDir)
-	} else if !repman.IsExportPush {
-		go repman.PushConfigToBackupDir()
-	}
 }

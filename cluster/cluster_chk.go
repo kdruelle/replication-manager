@@ -853,9 +853,10 @@ func (cluster *Cluster) CheckInjectConfig() {
 }
 
 func (cluster *Cluster) PushConfigs() {
-	if cluster.Conf.GitUrl != "" && !cluster.IsGitPush {
-		go cluster.PushConfigToGit(cluster.Conf.Secrets["git-acces-token"].Value, cluster.Conf.GitUsername, cluster.GetConf().WorkingDir, cluster.Name)
-	} else if !cluster.IsExportPush {
+	if cluster.GitRepo != nil && !cluster.GitRepo.IsPush {
+		go cluster.PushConfigToGit()
+	}
+	if !cluster.IsExportPush {
 		go cluster.PushConfigToBackupDir()
 	}
 }
