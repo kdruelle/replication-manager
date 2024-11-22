@@ -1390,6 +1390,8 @@ func (repman *ReplicationManager) switchClusterSettings(mycluster *cluster.Clust
 		mycluster.SwitchCloud18SubscribedDbops()
 	case "cloud18-open-sysops":
 		mycluster.SwitchCloud18OpenSysops()
+	case "git-force-sync-from-repo":
+		mycluster.SwitchGitForceSyncFromRepo()
 	default:
 		return errors.New("Setting not found")
 	}

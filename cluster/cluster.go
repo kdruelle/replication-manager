@@ -670,6 +670,7 @@ func (cluster *Cluster) Run() {
 						} else {
 							// Preserve tools if not installed or has problem
 							cluster.StateMachine.PreserveState("WARN0094", "WARN0117", "WARN0118", "WARN0119", "WARN0120", "WARN0121")
+							cluster.StateMachine.PreserveState("WARN0132")
 						}
 						if cluster.SlavesOldestMasterFile.Suffix == 0 {
 							go cluster.CheckSlavesReplicationsPurge()
@@ -1147,6 +1148,7 @@ func (cluster *Cluster) PushConfigToGit(tok string, user string, dir string, nam
 			Name: "Replication-manager",
 			When: time.Now(),
 		},
+		AllowEmptyCommits: false,
 	})
 
 	if err != nil && cluster.Conf.LogGit {
@@ -1156,8 +1158,11 @@ func (cluster *Cluster) PushConfigToGit(tok string, user string, dir string, nam
 	// push using default options
 	err = r.Push(&git.PushOptions{Auth: auth})
 	if err != nil && cluster.Conf.LogGit {
-		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGit, config.LvlErr, "Git error : cannot Push : %s", err)
-
+		if strings.Contains(err.Error(), git.ErrNonFastForwardUpdate.Error()) {
+			cluster.SetState("WARN0132", state.State{ErrType: config.LvlWarn, ErrDesc: fmt.Sprintf(config.ClusterError["WARN0132"], cluster.Conf.GitUrl, err.Error()), ErrFrom: "GIT"})
+		} else {
+			cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGit, config.LvlErr, "Git error : cannot Push : %s", err)
+		}
 	}
 }
 
@@ -1810,11 +1815,16 @@ func (cluster *Cluster) ResetStates() {
 }
 
 func (cluster *Cluster) DecryptSecretsFromVault() {
+	// Only proceed if Vault is being used
+	if !cluster.Conf.IsVaultUsed() {
+		return
+	}
+
 	for k, v := range cluster.Conf.Secrets {
 		origin_value := v.Value
 		var secret config.Secret
 		secret.Value = fmt.Sprintf("%v", origin_value)
-		if cluster.Conf.IsVaultUsed() && cluster.Conf.IsPath(secret.Value) {
+		if cluster.Conf.IsPath(secret.Value) {
 			//	cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModVault,LvlInfo, "Decrypting all the secret variables on Vault")
 			vault_config := vault.DefaultConfig()
 			vault_config.Address = cluster.Conf.VaultServerAddr

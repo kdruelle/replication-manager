@@ -25,6 +25,7 @@ import (
 
 	masker "github.com/ggwhite/go-masker"
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
 	git_obj "github.com/go-git/go-git/v5/plumbing/object"
 	git_https "github.com/go-git/go-git/v5/plumbing/transport/http"
 	vault "github.com/hashicorp/vault/api"
@@ -665,6 +666,7 @@ type Config struct {
 	GitUsername                               string                 `scope:"server" mapstructure:"git-username" toml:"git-username" json:"gitUsername"`
 	GitAccesToken                             string                 `scope:"server" mapstructure:"git-acces-token" toml:"git-acces-token" json:"-"`
 	GitMonitoringTicker                       int                    `scope:"server" mapstructure:"git-monitoring-ticker" toml:"git-monitoring-ticker" json:"gitMonitoringTicker"`
+	GitForceSyncFromRepo                      bool                   `scope:"server" mapstructure:"git-force-sync-from-repo"  toml:"git-force-sync-from-repo" json:"gitForceSyncFromRepo"`
 	Cloud18                                   bool                   `scope:"server" mapstructure:"cloud18"  toml:"cloud18" json:"cloud18"`
 	Cloud18Domain                             string                 `scope:"server" mapstructure:"cloud18-domain" toml:"cloud18-domain" json:"cloud18Domain"`
 	Cloud18SubDomain                          string                 `scope:"server" mapstructure:"cloud18-sub-domain" toml:"cloud18-sub-domain" json:"cloud18SubDomain"`
@@ -1502,12 +1504,14 @@ func (conf *Config) CloneConfigFromGit(url string, user string, tok string, dir 
 
 		// Pull the latest changes from origin
 		err = w.Pull(&git.PullOptions{
-			RemoteName:   "origin",
-			Auth:         auth,
-			SingleBranch: true,
-			Force:        true,
+			RemoteName: "origin",
+			Auth:       auth,
+			Force:      true,
 		})
 		if err != nil && err.Error() != "already up-to-date" {
+			if strings.Contains(err.Error(), git.ErrNonFastForwardUpdate.Error()) {
+				return err
+			}
 			fmt.Printf("git error: cannot pull from repository: %w", err)
 		}
 
@@ -1578,7 +1582,8 @@ func (conf *Config) PushConfigToGit(url string, tok string, user string, dir str
 			Name: "Replication-manager",
 			When: time.Now(),
 		},
-		All: true,
+		All:               true,
+		AllowEmptyCommits: false,
 	}); err != nil {
 		return fmt.Errorf("git error: cannot commit changes: %w", err)
 	}
@@ -1590,12 +1595,64 @@ func (conf *Config) PushConfigToGit(url string, tok string, user string, dir str
 		RemoteURL:  url,
 		Force:      true,
 	}); err != nil && err.Error() != "already up-to-date" && conf.IsEligibleForPrinting(ConstLogModGit, LvlWarn) {
-		fmt.Printf("git error: cannot pull from repository %s: %w", url, err)
+		if strings.Contains(err.Error(), git.ErrNonFastForwardUpdate.Error()) {
+			if conf.GitForceSyncFromRepo {
+				if err = ForcePullFromRepo(r, url, auth); err != nil {
+					fmt.Printf("git error: %s", err.Error())
+				}
+			}
+		} else {
+			fmt.Printf("git error: cannot pull from repository %s: %w", url, err)
+		}
 	}
 
 	// Push the changes to the remote repository
 	if err := r.Push(&git.PushOptions{Auth: auth}); err != nil {
+		if err != git.ErrNonFastForwardUpdate {
+			return err
+		}
 		return fmt.Errorf("git error: cannot push to remote repository: %w", err)
+	}
+
+	return nil
+}
+
+// PullAndMergeWithConflictResolution pulls and merges changes, handling conflicts manually.
+func ForcePullFromRepo(r *git.Repository, url string, auth *git_https.BasicAuth) error {
+	// Fetch the changes from the remote repository
+	err := r.Fetch(&git.FetchOptions{
+		RemoteName: "origin",
+		Auth:       auth,
+		RemoteURL:  url,
+		Force:      true,
+	})
+	if err != nil && err.Error() != "already up-to-date" {
+		return fmt.Errorf("cannot fetch from repository %s: %w", url, err)
+	}
+
+	// Get the local and remote references
+	localRef, err := r.Head()
+	if err != nil {
+		return fmt.Errorf("cannot get local HEAD reference: %w", err)
+	}
+
+	// Get the remote reference for the same branch (assuming you are pulling from the same branch)
+	remoteRefName := plumbing.NewRemoteReferenceName("origin", localRef.Name().Short())
+	remoteRef, err := r.Reference(remoteRefName, true)
+	if err != nil {
+		return fmt.Errorf("cannot get remote reference: %w", err)
+	}
+
+	w, _ := r.Worktree()
+	if err = w.Reset(&git.ResetOptions{Commit: remoteRef.Hash(), Mode: git.HardReset}); err == nil {
+		if err := w.Pull(&git.PullOptions{
+			RemoteName: "origin",
+			Auth:       auth,
+			RemoteURL:  url,
+			Force:      true,
+		}); err != nil {
+			fmt.Printf("git error: %s", err.Error())
+		}
 	}
 
 	return nil

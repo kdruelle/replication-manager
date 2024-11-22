@@ -836,6 +836,7 @@ func (repman *ReplicationManager) AddFlags(flags *pflag.FlagSet, conf *config.Co
 	flags.StringVar(&conf.Cloud18GitUser, "cloud18-gitlab-user", "", "Cloud 18 GitLab user")
 	flags.StringVar(&conf.Cloud18GitPassword, "cloud18-gitlab-password", "", "Cloud 18 GitLab password")
 	flags.StringVar(&conf.Cloud18PlatformDescription, "cloud18-platform-description", "", "Marketing banner display on the cloud18 portal describing the infrastucture")
+	flags.BoolVar(&conf.GitForceSyncFromRepo, "git-force-sync-from-repo", false, "Always replace local with the latest value from repo")
 
 	if WithProvisioning == "ON" {
 		flags.StringVar(&conf.ProvDatadirVersion, "prov-db-datadir-version", "10.2", "Empty datadir to deploy for localtest")
@@ -1328,7 +1329,21 @@ func (repman *ReplicationManager) InitConfig(conf config.Config) {
 
 		err := conf.CloneConfigFromGit(conf.GitUrl, conf.GitUsername, tok, conf.WorkingDir)
 		if err != nil {
-			repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlErr, err.Error())
+			if strings.Contains(err.Error(), git.ErrNonFastForwardUpdate.Error()) {
+				for _, cl := range repman.Clusters {
+					if cl != nil {
+						cl.SetState("WARN0132", state.State{ErrType: config.LvlWarn, ErrDesc: fmt.Sprintf(config.ClusterError["WARN0132"], conf.GitUrl, err.Error()), ErrFrom: "GIT"})
+					}
+				}
+			} else {
+				repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlErr, err.Error())
+			}
+		} else {
+			for _, cl := range repman.Clusters {
+				if cl != nil && cl.GetStateMachine() != nil && cl.GetStateMachine().IsInState("WARN0132") {
+					cl.GetStateMachine().DeleteState("WARN0132")
+				}
+			}
 		}
 	}
 
@@ -1910,12 +1925,34 @@ func (repman *ReplicationManager) Run() error {
 				if repman.Conf.GitUrl != "" {
 					err = repman.Conf.CloneConfigFromGit(repman.Conf.GitUrl, repman.Conf.GitUsername, repman.Conf.Secrets["git-acces-token"].Value, repman.Conf.WorkingDir)
 					if err != nil {
-						repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlErr, err.Error())
+						if strings.Contains(err.Error(), git.ErrNonFastForwardUpdate.Error()) {
+							for _, cl := range repman.Clusters {
+								if cl != nil {
+									cl.SetState("WARN0132", state.State{ErrType: config.LvlWarn, ErrDesc: fmt.Sprintf(config.ClusterError["WARN0132"], conf.GitUrl, err.Error()), ErrFrom: "GIT"})
+								}
+							}
+						} else {
+							repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlErr, err.Error())
+						}
+					} else {
+						for _, cl := range repman.Clusters {
+							if cl != nil && cl.GetStateMachine() != nil && cl.GetStateMachine().IsInState("WARN0132") {
+								cl.GetStateMachine().DeleteState("WARN0132")
+							}
+						}
 					}
 
 					err = repman.Conf.PushConfigToGit(repman.Conf.GitUrl, repman.Conf.Secrets["git-acces-token"].Value, repman.Conf.GitUsername, repman.Conf.WorkingDir, repman.ClusterList)
 					if err != nil {
-						repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlErr, err.Error())
+						if strings.Contains(err.Error(), git.ErrNonFastForwardUpdate.Error()) {
+							for _, cl := range repman.Clusters {
+								if cl != nil {
+									cl.SetState("WARN0132", state.State{ErrType: config.LvlWarn, ErrDesc: fmt.Sprintf(config.ClusterError["WARN0132"], conf.GitUrl, err.Error()), ErrFrom: "GIT"})
+								}
+							}
+						} else {
+							repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlErr, err.Error())
+						}
 					}
 
 					for _, cluster := range repman.Clusters {
@@ -2493,6 +2530,7 @@ func (repman *ReplicationManager) PushConfigToGit(tok string, user string, dir s
 			Name: "Replication-manager",
 			When: time.Now(),
 		},
+		AllowEmptyCommits: false,
 	})
 
 	if err != nil {
@@ -2928,7 +2966,8 @@ func (repman *ReplicationManager) Save() error {
 func (repman *ReplicationManager) PushConfigs() {
 	if repman.Conf.GitUrl != "" && !repman.IsGitPush {
 		go repman.PushConfigToGit(repman.Conf.Secrets["git-acces-token"].Value, repman.Conf.GitUsername, repman.Conf.WorkingDir)
-	} else if !repman.IsExportPush {
+	}
+	if !repman.IsExportPush {
 		go repman.PushConfigToBackupDir()
 	}
 }

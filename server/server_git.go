@@ -2,9 +2,12 @@ package server
 
 import (
 	"fmt"
+	"strings"
 
+	"github.com/go-git/go-git/v5"
 	"github.com/signal18/replication-manager/config"
 	"github.com/signal18/replication-manager/utils/githelper"
+	"github.com/signal18/replication-manager/utils/state"
 )
 
 func (repman *ReplicationManager) InitGitConfig(conf *config.Config) error {
@@ -58,8 +61,22 @@ func (repman *ReplicationManager) InitGitConfig(conf *config.Config) error {
 		}
 		err := conf.CloneConfigFromGit(conf.GitUrl, conf.GitUsername, conf.GitAccesToken, conf.WorkingDir)
 		if err != nil {
-			if conf.Verbose || conf.IsEligibleForPrinting(config.ConstLogModGit, config.LvlErr) {
-				repman.Logrus.Errorf(err.Error() + "\n")
+			if strings.Contains(err.Error(), git.ErrNonFastForwardUpdate.Error()) {
+				for _, cl := range repman.Clusters {
+					if cl != nil {
+						cl.SetState("WARN0132", state.State{ErrType: config.LvlWarn, ErrDesc: fmt.Sprintf(config.ClusterError["WARN0132"], conf.GitUrl, err.Error()), ErrFrom: "GIT"})
+					}
+				}
+			} else {
+				if conf.Verbose || conf.IsEligibleForPrinting(config.ConstLogModGit, config.LvlErr) {
+					repman.Logrus.Errorf(err.Error() + "\n")
+				}
+			}
+		} else {
+			for _, cl := range repman.Clusters {
+				if cl != nil && cl.GetStateMachine() != nil && cl.GetStateMachine().IsInState("WARN0132") {
+					cl.GetStateMachine().DeleteState("WARN0132")
+				}
 			}
 		}
 
@@ -68,7 +85,13 @@ func (repman *ReplicationManager) InitGitConfig(conf *config.Config) error {
 		}
 		err = conf.PushConfigToGit(conf.GitUrl, conf.GitAccesToken, conf.GitUsername, conf.WorkingDir, []string{})
 		if err != nil {
-			if conf.Verbose || conf.IsEligibleForPrinting(config.ConstLogModGit, config.LvlErr) {
+			if strings.Contains(err.Error(), git.ErrNonFastForwardUpdate.Error()) {
+				for _, cl := range repman.Clusters {
+					if cl != nil {
+						cl.SetState("WARN0132", state.State{ErrType: config.LvlWarn, ErrDesc: fmt.Sprintf(config.ClusterError["WARN0132"], conf.GitUrl, err.Error()), ErrFrom: "GIT"})
+					}
+				}
+			} else if conf.Verbose || conf.IsEligibleForPrinting(config.ConstLogModGit, config.LvlErr) {
 				repman.Logrus.Errorf(err.Error() + "\n")
 			}
 		}
