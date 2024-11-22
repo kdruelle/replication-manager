@@ -76,7 +76,7 @@ function PeerClusterList({ mode }) {
                   as='button'
                   className={styles.btnHeading}
                   onClick={() => {
-                    fetch(`https://${clusterItem['api-plublic-url']}/api/login`, {
+                    fetch(`https://${clusterItem['api-public-url']}/api/login`, {
                       method: 'POST'
                     })
                       .then((res) => res.json())

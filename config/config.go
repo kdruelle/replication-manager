@@ -729,7 +729,7 @@ type Secret struct {
 type PeerCluster struct {
 	ClusterName                      string   `json:"cluster-name"`
 	PeerUsers                        []string `json:"peer-users"`
-	ApiPublicUrl                     string   `json:"api-plublic-url"`
+	ApiPublicUrl                     string   `json:"api-public-url"`
 	Cloud18Domain                    string   `json:"cloud18-domain"`
 	Cloud18PlatformDescription       string   `json:"cloud18-platfom-desciption"`
 	Cloud18Shared                    bool     `json:"cloud18-share"`
@@ -852,6 +852,11 @@ type ServicePlan struct {
 	DbaCost      float64 `json:"dbacost,string"`
 	SysCost      float64 `json:"syscost,string"`
 	Devise       string  `json:"devise"`
+	CPU          string  `json:"cpu"`
+	Infra        string  `json:"infra"`
+	Zone         string  `json:"zone"`
+	DC           string  `json:"dc"`
+	BP           float64 `json:"bp,string"`
 }
 
 type DockerTag struct {
