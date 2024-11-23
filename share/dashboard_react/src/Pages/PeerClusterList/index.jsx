@@ -10,6 +10,7 @@ import styles from './styles.module.scss'
 import CheckOrCrossIcon from '../../components/Icons/CheckOrCrossIcon'
 import CustomIcon from '../../components/Icons/CustomIcon'
 import TagPill from '../../components/TagPill'
+import PeerMenu from './PeerMenu'
 
 function PeerClusterList({ mode }) {
   const dispatch = useDispatch()
@@ -86,6 +87,7 @@ function PeerClusterList({ mode }) {
                   <span className={styles.cardHeaderText}>{headerText}</span>
 
                   <TagPill text='Cloud18' colorScheme='blue' />
+                  <PeerMenu colorScheme='blue' clusterItem={clusterItem} className={styles.btnAddUser} labelClassName={styles.rowLabel} valueClassName={styles.rowValue} />
                 </HStack>
               }
               body={
