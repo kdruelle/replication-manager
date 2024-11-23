@@ -116,6 +116,9 @@ func (repman *ReplicationManager) httpserver() {
 	router.Handle("/api/clusters", negroni.New(
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxClusters)),
 	))
+	router.Handle("/api/clusters/peers", negroni.New(
+		negroni.Wrap(http.HandlerFunc(repman.handlerMuxPeerClusters)),
+	))
 	router.Handle("/api/status", negroni.New(
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxStatus)),
 	))
