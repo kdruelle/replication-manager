@@ -2367,12 +2367,15 @@ func (repman *ReplicationManager) InitServicePlans(u *user.User) error {
 func (repman *ReplicationManager) LoadPeerJson() error {
 	filePath := repman.Conf.WorkingDir + "/peer.json"
 
+	if _, err := os.Stat(filePath); err != nil && os.IsNotExist(err) {
+		repman.PeerClusters = make([]config.PeerCluster, 0)
+		return err
+	}
+
 	// Open the peer.json file
 	file, err := os.Open(filePath)
 	if err != nil {
-		if !os.IsNotExist(err) {
-			repman.Logrus.Errorf("failed opening peer file: %s", err)
-		}
+		repman.Logrus.Errorf("failed opening peer file: %s", err)
 		return err
 	}
 	defer file.Close()
