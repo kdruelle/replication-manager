@@ -754,16 +754,19 @@ func (repman *ReplicationManager) handlerMuxClusters(w http.ResponseWriter, r *h
 }
 
 func (repman *ReplicationManager) handlerMuxPeerClusters(w http.ResponseWriter, r *http.Request) {
+	ok, err := repman.isValidRequest(r)
+	if !ok {
+		http.Error(w, "Unauthenticated resource: "+err.Error(), 401)
+		return
+	}
 
-	peerclusters := repman.Conf.GetCloud18PeerClusters()
-	cl, err := json.MarshalIndent(peerclusters, "", "\t")
+	cl, err := json.MarshalIndent(repman.PeerClusters, "", "\t")
 	if err != nil {
 		http.Error(w, "Error Marshal", 500)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(cl)
-
 }
 
 func (repman *ReplicationManager) handlerMuxPeerRoutes(w http.ResponseWriter, r *http.Request) {
