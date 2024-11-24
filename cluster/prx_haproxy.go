@@ -310,7 +310,7 @@ func (proxy *HaproxyProxy) Refresh() error {
 			cluster.SetState("WARN0078", state.State{ErrType: "WARNING", ErrDesc: fmt.Sprintf(clusterError["WARN0078"], err), ErrFrom: "MON"})
 			return errors.New(clusterError["WARN0078"])
 		}
-		if strings.Contains(strings.ToLower(line[0]), "write") {
+		if strings.Contains(strings.ToLower(line[0]), cluster.Conf.HaproxyAPIWriteBackend) {
 			host := line[73]
 			if proxy.HasDNS() {
 				// After provisioning the stats may arrive with IP:Port while sometime not
@@ -349,7 +349,7 @@ func (proxy *HaproxyProxy) Refresh() error {
 				}
 			}
 		}
-		if strings.Contains(strings.ToLower(line[0]), "read") {
+		if strings.Contains(strings.ToLower(line[0]), cluster.Conf.HaproxyAPIReadBackend) {
 			host := line[73]
 			if proxy.HasDNS() {
 				// After provisioning the stats may arrive with  IP:Port while sometime not
