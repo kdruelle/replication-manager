@@ -1,4 +1,4 @@
-import { getRequest, postRequest } from './apiHelper'
+import { getApi } from './apiHelper'
 
 export const settingsService = {
   switchSettings,
@@ -8,32 +8,32 @@ export const settingsService = {
   updateGraphiteBlackList
 }
 
-function switchSettings(clusterName, setting) {
-  return getRequest(`clusters/${clusterName}/settings/actions/switch/${setting}`)
+function switchSettings(clusterName, setting, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/settings/actions/switch/${setting}`)
 }
 
-function changeTopology(clusterName, topology) {
-  return getRequest(`clusters/${clusterName}/settings/actions/set/topology-target/${topology}`)
+function changeTopology(clusterName, topology, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/settings/actions/set/topology-target/${topology}`)
 }
 
-function setSetting(clusterName, setting, value) {
+function setSetting(clusterName, setting, value, baseURL) {
   if (setting === 'reset-graphite-filterlist') {
-    return getRequest(`clusters/${clusterName}/settings/actions/${setting}/${value}`)
+    return getApi(baseURL).get(`clusters/${clusterName}/settings/actions/${setting}/${value}`)
   } else if (setting.includes('-cron')) {
-    return getRequest(`clusters/${clusterName}/settings/actions/set-cron/${setting}/${encodeURIComponent(value)}`)
+    return getApi(baseURL).get(`clusters/${clusterName}/settings/actions/set-cron/${setting}/${encodeURIComponent(value)}`)
   } else {
-    return getRequest(`clusters/${clusterName}/settings/actions/set/${setting}/${encodeURIComponent(value)}`)
+    return getApi(baseURL).get(`clusters/${clusterName}/settings/actions/set/${setting}/${encodeURIComponent(value)}`)
   }
 }
 
-function updateGraphiteWhiteList(clusterName, whiteListValue) {
-  return postRequest(`clusters/${clusterName}/settings/actions/set-graphite-filterlist/whitelist`, {
+function updateGraphiteWhiteList(clusterName, whiteListValue, baseURL) {
+  return getApi(baseURL).post(`clusters/${clusterName}/settings/actions/set-graphite-filterlist/whitelist`, {
     whitelist: whiteListValue
   })
 }
 
-function updateGraphiteBlackList(clusterName, blackListValue) {
-  return postRequest(`clusters/${clusterName}/settings/actions/set-graphite-filterlist/blacklist`, {
+function updateGraphiteBlackList(clusterName, blackListValue, baseURL) {
+  return getApi(baseURL).post(`clusters/${clusterName}/settings/actions/set-graphite-filterlist/blacklist`, {
     blacklist: blackListValue
   })
 }

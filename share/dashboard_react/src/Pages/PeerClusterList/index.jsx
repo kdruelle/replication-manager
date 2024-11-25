@@ -11,15 +11,47 @@ import CheckOrCrossIcon from '../../components/Icons/CheckOrCrossIcon'
 import CustomIcon from '../../components/Icons/CustomIcon'
 import TagPill from '../../components/TagPill'
 import PeerMenu from './PeerMenu'
+import { peerLogin, setBaseURL } from '../../redux/authSlice'
+import PeerLoginModal from '../../components/Modals/PeerLoginModal'
+import { getClusterData, setCluster } from '../../redux/clusterSlice'
 
-function PeerClusterList({ mode }) {
+function PeerClusterList({ onClick, mode }) {
   const dispatch = useDispatch()
 
+  const [isPeerLoginModalOpen, setIsPeerLoginModalOpen] = useState(false)
   const [clusters, setClusters] = useState([])
+  const [url, setURL] = useState("")
 
   const {
-    globalClusters: { loading, clusterPeers }
+    globalClusters: { loading, clusterPeers },
   } = useSelector((state) => state)
+
+  const openPeerLoginModal = () => {
+    setIsPeerLoginModalOpen(true)
+  }
+
+  const closePeerLoginModal = () => {
+    setIsPeerLoginModalOpen(false)
+  }
+
+  const handleEnterCluster = (clusterItem) => {
+    dispatch(getClusterData({ clusterName: clusterItem['cluster-name']}))
+    if (onClick) {
+      onClick(clusterItem)
+    }
+  }
+
+  const handlePeerLogin = (item) => {
+    const token = localStorage.getItem(`user_token_${btoa(item['api-public-url'])}`)
+    if (token) {
+      dispatch(setBaseURL({ baseURL: item['api-public-url'] }))
+      dispatch()
+      handleEnterCluster(item)
+    } else {
+      setURL(item['api-public-url'])
+      openPeerLoginModal()
+    }
+  }
 
   useEffect(() => {
     dispatch(getClusterPeers({}))
@@ -39,70 +71,67 @@ function PeerClusterList({ mode }) {
   return !loading && clusters?.length === 0 ? (
     <NotFound text={mode === 'shared' ? 'No shared peer cluster found!' : 'No peer cluster found!'} />
   ) : (
-    <Flex className={styles.clusterList}>
-      {clusters?.map((clusterItem) => {
-        const headerText = `${clusterItem['cluster-name']}@${clusterItem['cloud18-domain']}-${clusterItem['cloud18-sub-domain']}-${clusterItem['cloud18-sub-domain-zone']}`
+    <>
+      <Flex className={styles.clusterList}>
+        {clusters?.map((clusterItem) => {
+          const headerText = `${clusterItem['cluster-name']}@${clusterItem['cloud18-domain']}-${clusterItem['cloud18-sub-domain']}-${clusterItem['cloud18-sub-domain-zone']}`
 
-        const dataObject = [
-          { key: 'Domain', value: clusterItem['cloud18-domain'] },
-          { key: 'Platfom Desciption', value: clusterItem['cloud18-platfom-desciption'] },
+          const dataObject = [
+            { key: 'Domain', value: clusterItem['cloud18-domain'] },
+            { key: 'Platfom Desciption', value: clusterItem['cloud18-platfom-desciption'] },
 
-          {
-            key: 'Share',
-            value: (
-              <HStack spacing='4'>
-                {clusterItem['cloud18-share'] ? (
-                  <>
-                    <CheckOrCrossIcon isValid={true} />
-                    <Text>Yes</Text>
-                  </>
-                ) : (
-                  <>
-                    <CheckOrCrossIcon isValid={false} />
-                    <Text>No</Text>
-                  </>
-                )}
-              </HStack>
-            )
-          }
-        ]
-
-        return (
-          <Box key={clusterItem['cluster-name']} className={styles.cardWrapper}>
-            <Card
-              className={styles.card}
-              width={'400px'}
-              header={
-                <HStack
-                  as='button'
-                  className={styles.btnHeading}
-                  onClick={() => {
-                    fetch(`https://${clusterItem['api-public-url']}/api/login`, {
-                      method: 'POST'
-                    })
-                      .then((res) => res.json())
-                      .then((data) => console.log('data::', data))
-                  }}>
-                  <CustomIcon icon={AiOutlineCluster} />
-                  <span className={styles.cardHeaderText}>{headerText}</span>
-
-                  <TagPill text='Cloud18' colorScheme='blue' />
-                  <PeerMenu colorScheme='blue' clusterItem={clusterItem} className={styles.btnAddUser} labelClassName={styles.rowLabel} valueClassName={styles.rowValue} />
+            {
+              key: 'Share',
+              value: (
+                <HStack spacing='4'>
+                  {clusterItem['cloud18-share'] ? (
+                    <>
+                      <CheckOrCrossIcon isValid={true} />
+                      <Text>Yes</Text>
+                    </>
+                  ) : (
+                    <>
+                      <CheckOrCrossIcon isValid={false} />
+                      <Text>No</Text>
+                    </>
+                  )}
                 </HStack>
-              }
-              body={
-                <TableType2
-                  dataArray={dataObject}
-                  className={styles.table}
-                  labelClassName={styles.rowLabel}
-                  valueClassName={styles.rowValue}
-                />
-              }
-            />
-          </Box>
-        )
-      })}
-    </Flex>
+              )
+            }
+          ]
+
+          return (
+            <Box key={clusterItem['cluster-name']} className={styles.cardWrapper}>
+              <Card
+                className={styles.card}
+                width={'400px'}
+                header={
+                  <HStack
+                    as='button'
+                    className={styles.btnHeading}
+                    onClick={() => handlePeerLogin(clusterItem)}>
+                    <CustomIcon icon={AiOutlineCluster} />
+                    <span className={styles.cardHeaderText}>{headerText}</span>
+
+                    <TagPill text='Cloud18' colorScheme='blue' />
+                    <PeerMenu colorScheme='blue' clusterItem={clusterItem} className={styles.btnAddUser} labelClassName={styles.rowLabel} valueClassName={styles.rowValue} />
+                  </HStack>
+                }
+                body={
+                  <TableType2
+                    dataArray={dataObject}
+                    className={styles.table}
+                    labelClassName={styles.rowLabel}
+                    valueClassName={styles.rowValue}
+                  />
+                }
+              />
+            </Box>
+          )
+        })}
+      </Flex>
+      {isPeerLoginModalOpen && <PeerLoginModal baseURL={url} isOpen={isPeerLoginModalOpen} closeModal={closePeerLoginModal} />}
+    </>
   )
 }
 

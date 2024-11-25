@@ -1,4 +1,4 @@
-import { getRequest, postRequest } from './apiHelper'
+import { getApi } from './apiHelper'
 
 export const globalClustersService = {
   getClusters,
@@ -10,25 +10,25 @@ export const globalClustersService = {
 }
 
 function getClusterPeers() {
-  return getRequest('clusters/peers')
+  return getApi().get('clusters/peers')
 }
 
 function getClusters() {
-  return getRequest('clusters')
+  return getApi().get('clusters')
 }
 
 function getMonitoredData() {
-  return getRequest('monitor')
+  return getApi().get('monitor')
 }
 
 function switchGlobalSetting(setting) {
-  return getRequest(`clusters/settings/actions/switch/${setting}`)
+  return getApi().get(`clusters/settings/actions/switch/${setting}`)
 }
 
 function setGlobalSetting(setting, value) {
-  return getRequest(`clusters/settings/actions/set/${setting}/${value}`)
+  return getApi().get(`clusters/settings/actions/set/${setting}/${value}`)
 }
 
 function addCluster(clusterName, formdata) {
-  return postRequest(`clusters/actions/add/${clusterName}`, formdata)
+  return getApi().post(`clusters/actions/add/${clusterName}`, formdata)
 }

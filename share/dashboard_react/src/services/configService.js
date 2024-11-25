@@ -1,4 +1,4 @@
-import { getRequest, postRequest } from './apiHelper'
+import { getApi } from './apiHelper'
 
 export const configService = {
   addDBTag,
@@ -7,18 +7,18 @@ export const configService = {
   dropProxyTag
 }
 
-function addDBTag(clusterName, tag) {
-  return getRequest(`clusters/${clusterName}/settings/actions/add-db-tag/${tag}`)
+function addDBTag(clusterName, tag, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/settings/actions/add-db-tag/${tag}`)
 }
 
-function dropDBTag(clusterName, tag) {
-  return getRequest(`clusters/${clusterName}/settings/actions/drop-db-tag/${tag}`)
+function dropDBTag(clusterName, tag, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/settings/actions/drop-db-tag/${tag}`)
 }
 
-function addProxyTag(clusterName, tag) {
-  return getRequest(`clusters/${clusterName}/settings/actions/add-proxy-tag/${tag}`)
+function addProxyTag(clusterName, tag, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/settings/actions/add-proxy-tag/${tag}`)
 }
 
-function dropProxyTag(clusterName, tag) {
-  return getRequest(`clusters/${clusterName}/settings/actions/drop-proxy-tag/${tag}`)
+function dropProxyTag(clusterName, tag, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/settings/actions/drop-proxy-tag/${tag}`)
 }

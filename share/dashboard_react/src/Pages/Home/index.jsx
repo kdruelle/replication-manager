@@ -41,6 +41,7 @@ import ClustersGlobalSettings from '../ClustersGlobalSettings'
 import NewClusterModal from '../../components/Modals/NewClusterModal'
 import { FaPlus } from 'react-icons/fa'
 import RMIconButton from '../../components/RMIconButton'
+import { setBaseURL } from '../../redux/authSlice'
 
 function Home() {
   const dispatch = useDispatch()
@@ -188,6 +189,7 @@ function Home() {
     if (tabIndex === 0) {
       isClusterOpenRef.current = false
       dispatch(setCluster({ data: null }))
+      dispatch(setBaseURL({ baseURL: '' }))
       selectedClusterNameRef.current = ''
     }
   }
@@ -245,7 +247,7 @@ function Home() {
                 ...(user?.grants['db-show-schema'] ? [<Shards selectedCluster={selectedCluster} />] : [])
               ]
               : globalTabsRef.current.includes('Clusters Peer') // monitor?.config?.cloud18 is false, do not show "Peer Clusters" tab
-                ? [<PeerClusterList />, <PeerClusterList mode='shared' />, <ClustersGlobalSettings />]
+                ? [<PeerClusterList onClick={setDashboardTab} />, <PeerClusterList mode='shared' />, <ClustersGlobalSettings />]
                 : [<ClustersGlobalSettings />])
           ]}
         />

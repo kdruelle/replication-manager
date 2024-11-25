@@ -2549,7 +2549,7 @@ func (repman *ReplicationManager) handlerMuxClusterWaitDatabases(w http.Response
 }
 
 func (repman *ReplicationManager) handlerMuxCluster(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Origin", "null")
 
 	vars := mux.Vars(r)
 	mycluster := repman.getClusterByName(vars["clusterName"])

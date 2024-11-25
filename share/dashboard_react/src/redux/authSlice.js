@@ -4,6 +4,7 @@ import { authService } from '../services/authService'
 export const login = createAsyncThunk('auth/login', async ({ username, password }, thunkAPI) => {
   try {
     const response = await authService.login(username, password)
+    console.log('response::', response)
     return response
   } catch (error) {
     const errorMessage = error.message || 'Request failed'
@@ -26,9 +27,31 @@ export const gitLogin = createAsyncThunk('auth/gitLogin', async ({ username, pas
   }
 })
 
+export const peerLogin = createAsyncThunk('auth/peerLogin', async ({  password, baseURL }, thunkAPI) => {
+  const state = thunkAPI.getState()
+  try {
+    const response = await authService.gitLogin(state.auth.username, password, baseURL)
+    setBaseURL({baseURL})
+    return response
+  } catch (error) {
+    const errorMessage = error.message || 'Request failed'
+    const errorStatus = error.errorStatus || 500 // Default error status if not provided
+    // Handle errors (including custom errorStatus)
+    return thunkAPI.rejectWithValue({ errorMessage, errorStatus }) // Pass the entire Error object to the rejected action
+  }
+})
+
 export const authSlice = createSlice({
   name: 'auth',
-  initialState: { user: null, loading: false, loadingGitLogin: false, error: null, isLogged: false },
+  initialState: { 
+    user: null, 
+    loading: false, 
+    loadingGitLogin: false, 
+    loadingPeerLogin: false, 
+    error: null, 
+    isLogged: false, 
+    baseURL: '',
+  },
   reducers: {
     logout: (state, action) => {
       localStorage.removeItem('user_token')
@@ -41,12 +64,20 @@ export const authSlice = createSlice({
       state.user = {
         username: username
       }
-    }
+    },
+    setBaseURL: (state, action) => {
+      state.baseURL = action.payload.baseURL
+    },
+    clearBaseURL: (state) => {
+      state.baseURL = ''
+    },
   },
   extraReducers: (builder) => {
-    builder.addMatcher(isAnyOf(login.pending, gitLogin.pending), (state, action) => {
+    builder.addMatcher(isAnyOf(login.pending, gitLogin.pending, peerLogin.pending), (state, action) => {
       if (action.type === 'login') {
         state.loading = true
+      } else if (action.type === 'peerLogin') {
+        state.loadingPeerLogin = false
       } else {
         state.loadingGitLogin = true
       }
@@ -56,7 +87,7 @@ export const authSlice = createSlice({
       const { data } = payload
       const { arg } = meta
 
-      localStorage.setItem('user_token', JSON.parse(data)?.token)
+      localStorage.setItem('user_token', typeof variable === 'object' ? JSON.parse(data)?.token : data?.token)
       localStorage.setItem('username', arg.username)
       state.isLogged = true
       state.user = {
@@ -68,9 +99,21 @@ export const authSlice = createSlice({
         state.loadingGitLogin = false
       }
     })
+    builder.addMatcher(isAnyOf(peerLogin.fulfilled), (state, action) => {
+      const { payload, meta } = action
+      const { data } = payload
+      const { arg } = meta
+
+      const encodedBaseUrl = btoa(state.baseURL)
+
+      localStorage.setItem(`user_token_${encodedBaseUrl}`, typeof variable === 'object' ? JSON.parse(data)?.token : data?.token)
+      state.loadingPeerLogin = false
+    })
     builder.addMatcher(isAnyOf(login.rejected, gitLogin.rejected), (state, action) => {
       if (action.type === 'login') {
         state.loading = false
+      } else if (action.type === 'peerLogin') {
+        state.loadingPeerLogin = false
       } else {
         state.loadingGitLogin = false
       }
@@ -80,7 +123,7 @@ export const authSlice = createSlice({
 })
 
 // this is for dispatch
-export const { logout, setUserData } = authSlice.actions
+export const { logout, setUserData, setBaseURL, clearBaseURL } = authSlice.actions
 
 // this is for configureStore
 export default authSlice.reducer

@@ -1,6 +1,7 @@
-import { getRequest, postRequest } from './apiHelper'
+import { getApi } from './apiHelper'
 
 export const clusterService = {
+  // Cluster data APIs
   getClusterData,
   getClusterAlerts,
   getClusterMaster,
@@ -13,7 +14,7 @@ export const clusterService = {
   getShardSchema,
   getQueryRules,
 
-  //cluster apis
+  // Cluster management APIs
   checksumAllTables,
   switchOverCluster,
   failOverCluster,
@@ -40,7 +41,7 @@ export const clusterService = {
   configDiscoverDB,
   configDynamic,
 
-  //db server apis
+  // Server management APIs
   setMaintenanceMode,
   promoteToLeader,
   setAsUnrated,
@@ -58,7 +59,7 @@ export const clusterService = {
   unprovisionDatabase,
   runRemoteJobs,
   optimizeServer,
-  skip1ReplicationEvent,
+  skipReplicationEvent,
   toggleInnodbMonitor,
   toggleSlowQueryCapture,
   startSlave,
@@ -67,324 +68,329 @@ export const clusterService = {
   resetMaster,
   resetSlave,
   cancelServerJob,
-  //proxy apis
+
+  // Proxy management APIs
   provisionProxy,
   unprovisionProxy,
   startProxy,
   stopProxy,
-  //database apis
+
+  // Database service APIs
   getDatabaseService,
   updateLongQueryTime,
   toggleDatabaseActions,
   checksumTable,
-  //tests run
+
+  // Test run APIs
   runSysbench,
   runRegressionTests,
-  //user
+
+  // User management APIs
   addUser
 }
 
-//#region cluster apis
-function getClusterData(clusterName) {
-  return getRequest(`clusters/${clusterName}`)
+//#region Cluster data APIs
+function getClusterData(clusterName, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}`)
 }
 
-function getClusterAlerts(clusterName) {
-  return getRequest(`clusters/${clusterName}/topology/alerts`)
+function getClusterAlerts(clusterName, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/topology/alerts`)
 }
 
-function getClusterMaster(clusterName) {
-  return getRequest(`clusters/${clusterName}/topology/master`)
+function getClusterMaster(clusterName, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/topology/master`)
 }
 
-function getClusterServers(clusterName) {
-  return getRequest(`clusters/${clusterName}/topology/servers`)
+function getClusterServers(clusterName, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/topology/servers`)
 }
 
-function getClusterProxies(clusterName) {
-  return getRequest(`clusters/${clusterName}/topology/proxies`)
+function getClusterProxies(clusterName, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/topology/proxies`)
 }
 
-function getClusterCertificates(clusterName) {
-  return getRequest(`clusters/${clusterName}/certificates`)
+function getClusterCertificates(clusterName, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/certificates`)
 }
 
-function getTopProcess(clusterName) {
-  return getRequest(`clusters/${clusterName}/top`)
+function getTopProcess(clusterName, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/top`)
 }
 
-function getBackupSnapshot(clusterName) {
-  return getRequest(`clusters/${clusterName}/backups`)
+function getBackupSnapshot(clusterName, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/backups`)
 }
 
-function getJobs(clusterName) {
-  return getRequest(`clusters/${clusterName}/jobs`)
+function getJobs(clusterName, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/jobs`)
 }
 
-function getShardSchema(clusterName) {
-  return getRequest(`clusters/${clusterName}/schema`)
+function getShardSchema(clusterName, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/schema`)
 }
-function getQueryRules(clusterName) {
-  return getRequest(`clusters/${clusterName}/queryrules`)
-}
 
-function checksumAllTables(clusterName) {
-  return getRequest(`clusters/${clusterName}/actions/checksum-all-tables`)
+function getQueryRules(clusterName, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/queryrules`)
 }
+//#endregion Cluster data APIs
 
-function switchOverCluster(clusterName) {
-  return getRequest(`clusters/${clusterName}/actions/switchover`)
+//#region Cluster management APIs
+function checksumAllTables(clusterName, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/actions/checksum-all-tables`)
 }
-function failOverCluster(clusterName) {
-  return getRequest(`clusters/${clusterName}/actions/failover`)
-}
 
-function resetFailOverCounter(clusterName) {
-  return getRequest(`clusters/${clusterName}/actions/reset-failover-control`)
-}
-function resetSLA(clusterName) {
-  return getRequest(`clusters/${clusterName}/actions/reset-sla`)
+function switchOverCluster(clusterName, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/actions/switchover`)
 }
 
-function toggleTraffic(clusterName) {
-  return getRequest(`clusters/${clusterName}/actions/switch/database-heartbeat`)
+function failOverCluster(clusterName, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/actions/failover`)
 }
 
-function addServer(clusterName, host, port, dbType) {
-  return getRequest(`clusters/${clusterName}/actions/addserver/${host}/${port}/${dbType}`)
+function resetFailOverCounter(clusterName, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/actions/reset-failover-control`)
 }
 
-function provisionCluster(clusterName) {
-  return getRequest(`clusters/${clusterName}/services/actions/provision`)
+function resetSLA(clusterName, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/actions/reset-sla`)
 }
 
-function unProvisionCluster(clusterName) {
-  return getRequest(`clusters/${clusterName}/services/actions/unprovision`)
+function toggleTraffic(clusterName, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/actions/switch/database-heartbeat`)
 }
 
-function setCredentials(clusterName, credentialType, credential) {
-  return getRequest(`clusters/${clusterName}/settings/actions/set/${credentialType}/${credential}`)
+function addServer(clusterName, host, port, dbType, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/actions/addserver/${host}/${port}/${dbType}`)
 }
 
-function rotateDBCredential(clusterName) {
-  return getRequest(`clusters/${clusterName}/actions/rotate-passwords`)
+function provisionCluster(clusterName, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/services/actions/provision`)
 }
 
-function rollingOptimize(clusterName) {
-  return getRequest(`clusters/${clusterName}/actions/optimize`)
+function unProvisionCluster(clusterName, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/services/actions/unprovision`)
 }
 
-function rollingRestart(clusterName) {
-  return getRequest(`clusters/${clusterName}/actions/rolling`)
+function setCredentials(clusterName, credentialType, credential, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/settings/actions/set/${credentialType}/${credential}`)
 }
 
-function rotateCertificates(clusterName) {
-  return getRequest(`clusters/${clusterName}/actions/certificates-rotate`)
+function rotateDBCredential(clusterName, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/actions/rotate-passwords`)
 }
 
-function reloadCertificates(clusterName) {
-  return getRequest(`clusters/${clusterName}/actions/certificates-reload`)
+function rollingOptimize(clusterName, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/actions/optimize`)
 }
 
-function cancelRollingRestart(clusterName) {
-  return getRequest(`clusters/${clusterName}/actions/cancel-rolling-restart`)
+function rollingRestart(clusterName, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/actions/rolling`)
 }
 
-function cancelRollingReprov(clusterName) {
-  return getRequest(`clusters/${clusterName}/actions/cancel-rolling-reprov`)
+function rotateCertificates(clusterName, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/actions/certificates-rotate`)
 }
 
-function bootstrapMasterSlave(clusterName) {
-  return getRequest(`clusters/${clusterName}/actions/replication/bootstrap/master-slave`)
+function reloadCertificates(clusterName, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/actions/certificates-reload`)
 }
 
-function bootstrapMasterSlaveNoGtid(clusterName) {
-  return getRequest(`clusters/${clusterName}/actions/replication/bootstrap/master-slave-no-gtid`)
+function cancelRollingRestart(clusterName, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/actions/cancel-rolling-restart`)
 }
 
-function bootstrapMultiMaster(clusterName) {
-  return getRequest(`clusters/${clusterName}/actions/replication/bootstrap/multi-master`)
+function cancelRollingReprov(clusterName, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/actions/cancel-rolling-reprov`)
 }
 
-function bootstrapMultiMasterRing(clusterName) {
-  return getRequest(`clusters/${clusterName}/actions/replication/bootstrap/multi-master-ring`)
+function bootstrapMasterSlave(clusterName, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/actions/replication/bootstrap/master-slave`)
 }
 
-function bootstrapMultiTierSlave(clusterName) {
-  return getRequest(`clusters/${clusterName}/actions/replication/bootstrap/multi-tier-slave`)
+function bootstrapMasterSlaveNoGtid(clusterName, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/actions/replication/bootstrap/master-slave-no-gtid`)
 }
 
-function configReload(clusterName) {
-  return getRequest(`clusters/${clusterName}/settings/actions/reload`)
+function bootstrapMultiMaster(clusterName, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/actions/replication/bootstrap/multi-master`)
 }
 
-function configDiscoverDB(clusterName) {
-  return getRequest(`clusters/${clusterName}/settings/actions/discover`)
+function bootstrapMultiMasterRing(clusterName, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/actions/replication/bootstrap/multi-master-ring`)
 }
 
-function configDynamic(clusterName) {
-  return getRequest(`clusters/${clusterName}/settings/actions/apply-dynamic-config`)
+function bootstrapMultiTierSlave(clusterName, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/actions/replication/bootstrap/multi-tier-slave`)
 }
 
-//#endregion cluster apis
-
-//#region cluster>servers apis
-function setMaintenanceMode(clusterName, serverId) {
-  return getRequest(`clusters/${clusterName}/servers/${serverId}/actions/maintenance`)
+function configReload(clusterName, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/settings/actions/reload`)
 }
 
-function promoteToLeader(clusterName, serverId) {
-  return getRequest(`clusters/${clusterName}/servers/${serverId}/actions/switchover`)
+function configDiscoverDB(clusterName, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/settings/actions/discover`)
 }
 
-function setAsUnrated(clusterName, serverId) {
-  return getRequest(`clusters/${clusterName}/servers/${serverId}/actions/set-unrated`)
+function configDynamic(clusterName, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/settings/actions/apply-dynamic-config`)
 }
+//#endregion Cluster management APIs
 
-function setAsPreferred(clusterName, serverId) {
-  return getRequest(`clusters/${clusterName}/servers/${serverId}/actions/set-prefered`)
+//#region Server management APIs
+function setMaintenanceMode(clusterName, serverId, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/servers/${serverId}/actions/maintenance`)
 }
 
-function setAsIgnored(clusterName, serverId) {
-  return getRequest(`clusters/${clusterName}/servers/${serverId}/actions/set-ignored`)
+function promoteToLeader(clusterName, serverId, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/servers/${serverId}/actions/switchover`)
 }
 
-function reseedLogicalFromBackup(clusterName, serverId) {
-  return getRequest(`clusters/${clusterName}/servers/${serverId}/actions/reseed/logicalbackup`)
+function setAsUnrated(clusterName, serverId, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/servers/${serverId}/actions/set-unrated`)
 }
 
-function reseedLogicalFromMaster(clusterName, serverId) {
-  return getRequest(`clusters/${clusterName}/servers/${serverId}/actions/reseed/logicalmaster`)
+function setAsPreferred(clusterName, serverId, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/servers/${serverId}/actions/set-prefered`)
 }
 
-function reseedPhysicalFromBackup(clusterName, serverId) {
-  return getRequest(`clusters/${clusterName}/servers/${serverId}/actions/reseed/physicalbackup`)
+function setAsIgnored(clusterName, serverId, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/servers/${serverId}/actions/set-ignored`)
 }
 
-function flushLogs(clusterName, serverId) {
-  return getRequest(`clusters/${clusterName}/servers/${serverId}/actions/flush-logs`)
+function reseedLogicalFromBackup(clusterName, serverId, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/servers/${serverId}/actions/reseed/logicalbackup`)
 }
 
-function physicalBackupMaster(clusterName, serverId) {
-  return getRequest(`clusters/${clusterName}/servers/${serverId}/actions/backup-physical`)
+function reseedLogicalFromMaster(clusterName, serverId, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/servers/${serverId}/actions/reseed/logicalmaster`)
 }
 
-function logicalBackup(clusterName, serverId) {
-  return getRequest(`clusters/${clusterName}/servers/${serverId}/actions/backup-logical`)
+function reseedPhysicalFromBackup(clusterName, serverId, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/servers/${serverId}/actions/reseed/physicalbackup`)
 }
 
-function stopDatabase(clusterName, serverId) {
-  return getRequest(`clusters/${clusterName}/servers/${serverId}/actions/stop`)
+function flushLogs(clusterName, serverId, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/servers/${serverId}/actions/flush-logs`)
 }
 
-function startDatabase(clusterName, serverId) {
-  return getRequest(`clusters/${clusterName}/servers/${serverId}/actions/start`)
+function physicalBackupMaster(clusterName, serverId, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/servers/${serverId}/actions/backup-physical`)
 }
 
-function provisionDatabase(clusterName, serverId) {
-  return getRequest(`clusters/${clusterName}/servers/${serverId}/actions/provision`)
+function logicalBackup(clusterName, serverId, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/servers/${serverId}/actions/backup-logical`)
 }
 
-function unprovisionDatabase(clusterName, serverId) {
-  return getRequest(`clusters/${clusterName}/servers/${serverId}/actions/unprovision`)
+function stopDatabase(clusterName, serverId, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/servers/${serverId}/actions/stop`)
 }
 
-function runRemoteJobs(clusterName, serverId) {
-  return getRequest(`clusters/${clusterName}/servers/${serverId}/actions/run-jobs`)
+function startDatabase(clusterName, serverId, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/servers/${serverId}/actions/start`)
 }
 
-function optimizeServer(clusterName, serverId) {
-  return getRequest(`clusters/${clusterName}/servers/${serverId}/actions/optimize`)
+function provisionDatabase(clusterName, serverId, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/servers/${serverId}/actions/provision`)
 }
 
-function skip1ReplicationEvent(clusterName, serverId) {
-  return getRequest(`clusters/${clusterName}/servers/${serverId}/actions/skip-replication-event`)
+function unprovisionDatabase(clusterName, serverId, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/servers/${serverId}/actions/unprovision`)
 }
 
-function toggleInnodbMonitor(clusterName, serverId) {
-  return getRequest(`clusters/${clusterName}/servers/${serverId}/actions/toogle-innodb-monitor`)
+function runRemoteJobs(clusterName, serverId, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/servers/${serverId}/actions/run-jobs`)
 }
 
-function toggleSlowQueryCapture(clusterName, serverId) {
-  return getRequest(`clusters/${clusterName}/servers/${serverId}/actions/toogle-slow-query-capture`)
+function optimizeServer(clusterName, serverId, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/servers/${serverId}/actions/optimize`)
 }
 
-function startSlave(clusterName, serverId) {
-  return getRequest(`clusters/${clusterName}/servers/${serverId}/actions/start-slave`)
+function skipReplicationEvent(clusterName, serverId, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/servers/${serverId}/actions/skip-replication-event`)
 }
 
-function stopSlave(clusterName, serverId) {
-  return getRequest(`clusters/${clusterName}/servers/${serverId}/actions/stop-slave`)
+function toggleInnodbMonitor(clusterName, serverId, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/servers/${serverId}/actions/toggle-innodb-monitor`)
 }
 
-function toggleReadOnly(clusterName, serverId) {
-  return getRequest(`clusters/${clusterName}/servers/${serverId}/actions/toogle-read-only`)
+function toggleSlowQueryCapture(clusterName, serverId, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/servers/${serverId}/actions/toggle-slow-query-capture`)
 }
 
-function resetMaster(clusterName, serverId) {
-  return getRequest(`clusters/${clusterName}/servers/${serverId}/actions/reset-master`)
+function startSlave(clusterName, serverId, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/servers/${serverId}/actions/start-slave`)
 }
 
-function resetSlave(clusterName, serverId) {
-  return getRequest(`clusters/${clusterName}/servers/${serverId}/actions/reset-slave-all`)
+function stopSlave(clusterName, serverId, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/servers/${serverId}/actions/stop-slave`)
 }
 
-function cancelServerJob(clusterName, serverId, taskId) {
-  return getRequest(`clusters/${clusterName}/servers/${serverId}/actions/job-cancel/${taskId}`)
+function toggleReadOnly(clusterName, serverId, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/servers/${serverId}/actions/set-readonly`)
 }
-//#endregion cluster>servers apis
 
-//#region cluster>proxy apis
-function provisionProxy(clusterName, proxyId) {
-  return getRequest(`clusters/${clusterName}/proxies/${proxyId}/actions/provision`)
+function resetMaster(clusterName, serverId, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/servers/${serverId}/actions/reset-master`)
 }
 
-function unprovisionProxy(clusterName, proxyId) {
-  return getRequest(`clusters/${clusterName}/proxies/${proxyId}/actions/unprovision`)
+function resetSlave(clusterName, serverId, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/servers/${serverId}/actions/reset-slave`)
 }
 
-function startProxy(clusterName, proxyId) {
-  return getRequest(`clusters/${clusterName}/proxies/${proxyId}/actions/start`)
+function cancelServerJob(clusterName, serverId, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/servers/${serverId}/actions/cancel-job`)
 }
+//#endregion Server management APIs
 
-function stopProxy(clusterName, proxyId) {
-  return getRequest(`clusters/${clusterName}/proxies/${proxyId}/actions/stop`)
+//#region Proxy management APIs
+function provisionProxy(clusterName, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/proxies/actions/provision`)
 }
 
-//#endregion cluster>proxy apis
+function unprovisionProxy(clusterName, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/proxies/actions/unprovision`)
+}
 
-//#region cluster>database apis
-function getDatabaseService(clusterName, serviceName, dbId) {
-  return getRequest(`clusters/${clusterName}/servers/${dbId}/${serviceName}`)
+function startProxy(clusterName, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/proxies/actions/start`)
 }
 
-function updateLongQueryTime(clusterName, dbId, time) {
-  return getRequest(`clusters/${clusterName}/servers/${dbId}/actions/set-long-query-time/${time}`)
+function stopProxy(clusterName, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/proxies/actions/stop`)
 }
+//#endregion Proxy management APIs
 
-function toggleDatabaseActions(clusterName, serviceName, dbId) {
-  return getRequest(`clusters/${clusterName}/servers/${dbId}/actions/${serviceName}`)
+//#region Database service APIs
+function getDatabaseService(clusterName, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/services`)
 }
 
-function checksumTable(clusterName, schema, table) {
-  return getRequest(`clusters/${clusterName}/schema/${schema}/${table}/actions/checksum-table`)
+function updateLongQueryTime(clusterName, time, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/services/actions/long-query-time/${time}`)
 }
 
-//#endregion cluster>database apis
+function toggleDatabaseActions(clusterName, action, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/services/actions/${action}`)
+}
 
-//#region cluster> run tests
-function runSysbench(clusterName, thread) {
-  return getRequest(`clusters/${clusterName}/actions/sysbench?threads=${thread}`)
+function checksumTable(clusterName, table, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/services/actions/checksum-table/${table}`)
 }
+//#endregion Database service APIs
 
-function runRegressionTests(clusterName, testName) {
-  return getRequest(`clusters/${clusterName}/tests/actions/run/${testName}`)
+//#region Test run APIs
+function runSysbench(clusterName, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/actions/sysbench`)
 }
-//#endregion cluster>run tests
 
-//#region cluster> add user
-function addUser(clusterName, username, grants, roles) {
-  return postRequest(`clusters/${clusterName}/users/add`, { username, grants, roles })
+function runRegressionTests(clusterName, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/actions/regression-tests`)
 }
+//#endregion Test run APIs
 
-//#endregion cluster>add user
+//#region User management APIs
+function addUser(user, baseURL) {
+  return getApi(baseURL).post('/users', user)
+}
+//#endregion User management APIs

@@ -1,9 +1,9 @@
-import { getRequest, postRequest } from './apiHelper'
+import { meetApi } from './apiHelper'
 
 export const meetService = {
-  getMeet
+  loginMeet
 }
 
-function getMeet() {
-  return getRequest('meet', null, 1, true)
+function loginMeet() {
+  return meetApi.post('users/login', null, 1, true)
 }
