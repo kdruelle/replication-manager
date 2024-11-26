@@ -214,7 +214,7 @@ func (repman *ReplicationManager) httpserver() {
 		handlers.AllowCredentials(),
 		handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"}),
 		handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"}),
-		handlers.AllowedOrigins([]string{"*"}),
+		handlers.AllowedOriginValidator(repman.handleOriginValidator),
 	)(router)))
 
 }
