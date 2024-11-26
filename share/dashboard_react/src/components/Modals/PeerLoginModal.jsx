@@ -30,7 +30,6 @@ function PeerLoginModal({ baseURL, isOpen, closeModal }) {
   },[baseURL])
 
   const handleSave = () => {
-    setUserNameError('')
     setPasswordError('')
 
     if (!password) {

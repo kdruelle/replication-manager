@@ -6,9 +6,9 @@ export const authService = {
 }
 
 function login(username, password, baseURL) {
-  return getApi(0, baseURL).post('login', { username, password })
+  return getApi(baseURL).post('login', { username, password })
 }
 
 function gitLogin(username, password, baseURL) {
-  return getApi(0, baseURL).post('login-git', { username, password })
+  return getApi(baseURL).post('login-git', { username, password })
 }

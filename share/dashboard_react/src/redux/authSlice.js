@@ -28,9 +28,8 @@ export const gitLogin = createAsyncThunk('auth/gitLogin', async ({ username, pas
 })
 
 export const peerLogin = createAsyncThunk('auth/peerLogin', async ({  password, baseURL }, thunkAPI) => {
-  const state = thunkAPI.getState()
   try {
-    const response = await authService.gitLogin(state.auth.username, password, baseURL)
+    const response = await authService.gitLogin(thunkAPI.getState().auth.user.username, password, baseURL)
     setBaseURL({baseURL})
     return response
   } catch (error) {
