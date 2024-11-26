@@ -44,16 +44,7 @@ function AddUserModal({ clusterName, isOpen, closeModal }) {
   const [allRoles, setAllRoles] = useState([])
   const [firstLoad, setFirstLoad] = useState(true)
   const { theme } = useTheme()
-  const emailRegex = /^[a-zA-Z0-9](\.?[a-zA-Z0-9]){5,50}@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-  /*
-    Usage examples
-    emailRegex.test("first.last@domain.com");      // true
-    emailRegex.test("firstname@domain.com");       // true
-    emailRegex.test("user123@domain.co.uk");       // true
-    emailRegex.test("first..last@domain.com");     // false, consecutive dots
-    emailRegex.test("plainaddress");               // false, no domain
-    emailRegex.test("missing@dotcom");             // false, invalid TLD
-  */
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
   useEffect(() => {
     if (monitor === null) {
@@ -127,6 +118,21 @@ function AddUserModal({ clusterName, isOpen, closeModal }) {
     }
   }
 
+  // const handleSelectAllRoles = (e) => {
+  //   const isChecked = e.target.checked
+  //   const updatedRoles = allRoles.map((x) => ({ ...x, selected: isChecked }))
+  //   setRoles(updatedRoles)
+  //   setAllRoles(updatedRoles)
+  // }
+
+  const handleSelectAllGrants = (e) => {
+    const isChecked = e.target.checked
+    const updatedAcls = allAcls.map((x) => ({ ...x, selected: isChecked }))
+    setAcls(updatedAcls)
+    setAllAcls(updatedAcls)
+  }
+
+
   const handleAddUser = () => {
     setUserNameError('')
     // setPasswordError('')
@@ -144,13 +150,13 @@ function AddUserModal({ clusterName, isOpen, closeModal }) {
 
     const selectedRoles = roles.filter((x) => x.selected).map((x) => x.role)
     if (selectedRoles.length === 0) {
-      setRolesError('Please select atleast one role')
+      setRolesError('Please select at least one role')
       return
     }
-    
+
     const selectedGrants = acls.filter((x) => x.selected).map((x) => x.grant)
     if (selectedGrants.length === 0) {
-      setGrantsError('Please select atleast one grant')
+      setGrantsError('Please select at least one grant')
       return
     }
 
@@ -185,11 +191,17 @@ function AddUserModal({ clusterName, isOpen, closeModal }) {
             <VStack className={parentStyles.roleContainer}>
               <Input id='searchRole' type='search' onChange={handleSearchRoles} placeholder='Search ROLE' />
               <List className={parentStyles.roleList}>
+                {/* <ListItem className={parentStyles.roleListItem}>
+                  <Checkbox
+                    onChange={handleSelectAllRoles}
+                    isChecked={roles.length > 0 && roles.every((x) => x.selected)}>
+                    Select All Roles
+                  </Checkbox>
+                </ListItem> */}
                 {roles.length > 0 &&
                   roles.map((role) => (
                     <ListItem className={parentStyles.roleListItem}>
                       <Checkbox
-                        size='lg'
                         isChecked={!!roles.find((x) => x.role === role.role && x.selected)}
                         onChange={(e) => handleCheckRoles(e, role)}>
                         {role.role}
@@ -202,11 +214,17 @@ function AddUserModal({ clusterName, isOpen, closeModal }) {
             <VStack className={parentStyles.aclContainer}>
               <Input id='searchAcl' type='search' onChange={handleSearch} placeholder='Search ACL' />
               <List className={parentStyles.aclList}>
+                <ListItem className={parentStyles.aclListItem}>
+                  <Checkbox
+                    onChange={handleSelectAllGrants}
+                    isChecked={acls.length > 0 && acls.every((x) => x.selected)}>
+                    Select All Grants
+                  </Checkbox>
+                </ListItem>
                 {acls.length > 0 &&
                   acls.map((acl) => (
                     <ListItem className={parentStyles.aclListItem}>
                       <Checkbox
-                        size='lg'
                         isChecked={!!acls.find((x) => x.grant === acl.grant && x.selected)}
                         onChange={(e) => handleCheck(e, acl)}>
                         {acl.grant}
