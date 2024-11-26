@@ -48,7 +48,7 @@ function PeerLoginModal({ baseURL, isOpen, closeModal }) {
     <Modal isOpen={isOpen} onClose={closeModal}>
       <ModalOverlay />
       <ModalContent className={theme === 'light' ? parentStyles.modalLightContent : parentStyles.modalDarkContent}>
-        <ModalHeader>{type}</ModalHeader>
+        <ModalHeader>Login to Peer Cluster</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
           <Stack spacing='5'>

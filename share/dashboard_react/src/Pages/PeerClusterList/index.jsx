@@ -45,7 +45,6 @@ function PeerClusterList({ onClick, mode }) {
     const token = localStorage.getItem(`user_token_${btoa(item['api-public-url'])}`)
     if (token) {
       dispatch(setBaseURL({ baseURL: item['api-public-url'] }))
-      dispatch()
       handleEnterCluster(item)
     } else {
       setURL(item['api-public-url'])
