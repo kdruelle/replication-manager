@@ -333,6 +333,15 @@ func (repman *ReplicationManager) apiserver() {
 /////////////ENDPOINT HANDLERS////////////
 /////////////////////////////////////////
 
+func (repman *ReplicationManager) handleOriginValidator(origin string) bool {
+	for _, cl := range repman.PeerClusters {
+		if cl.ApiPublicUrl == origin {
+			return true
+		}
+	}
+	return false
+}
+
 func (repman *ReplicationManager) isValidRequest(r *http.Request) (bool, error) {
 
 	_, err := request.ParseFromRequest(r, request.AuthorizationHeaderExtractor, func(token *jwt.Token) (interface{}, error) {

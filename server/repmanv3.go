@@ -136,9 +136,10 @@ func (s *ReplicationManager) StartServerV3(debug bool, router *mux.Router) error
 		Handler: grpcHandlerFunc(s,
 			httpmux,
 			handlers.CORS(
+				handlers.AllowCredentials(),
 				handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"}),
 				handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"}),
-				handlers.AllowedOrigins([]string{"*"}),
+				handlers.AllowedOriginValidator(s.handleOriginValidator),
 			)(router),
 		),
 
