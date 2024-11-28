@@ -2280,6 +2280,12 @@ func (repman *ReplicationManager) Stop() {
 	}
 
 	repman.Save()
+
+	// Wait for previous save since this is the last push
+	for repman.Conf.Cloud18 && repman.GitRepo != nil && repman.GitRepo.IsPushing {
+		time.Sleep(time.Second)
+	}
+
 	if repman.Conf.GitUrl != "" {
 		go repman.PushConfigToGit(repman.Conf.GitUrl, repman.Conf.Secrets["git-acces-token"].Value, repman.Conf.GitUsername, repman.Conf.WorkingDir)
 	}
@@ -2505,8 +2511,8 @@ func (repman *ReplicationManager) PushConfigToGit(url string, tok string, user s
 		}
 	}
 
-	for repman.GitRepo.IsPush {
-		time.Sleep(time.Second)
+	if repman.GitRepo.IsPushing {
+		return nil
 	}
 
 	repman.GitRepo.Pull(true)
@@ -2900,6 +2906,12 @@ func (repman *ReplicationManager) Save() error {
 	if !repman.IsGitPull && repman.Conf.Cloud18 {
 		repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModConfigLoad, config.LvlDbg, "Cannot save cluster config, cloud18 active but config is not pulled yet.")
 		return nil
+	}
+
+	if repman.Conf.Cloud18 {
+		if repman.GitRepo == nil || repman.GitRepo.IsPushing {
+			return nil
+		}
 	}
 
 	if repman.IsSavingConfig {

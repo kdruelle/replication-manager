@@ -863,6 +863,13 @@ func (cluster *Cluster) Save() error {
 		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModConfigLoad, config.LvlDbg, "Cannot save cluster config, cloud18 active but config is not pulled yet.")
 		return nil
 	}
+
+	if cluster.Conf.Cloud18 {
+		if cluster.GitRepo == nil || cluster.GitRepo.IsPushing {
+			return nil
+		}
+	}
+
 	_, file, no, ok := runtime.Caller(1)
 	if ok {
 		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModConfigLoad, config.LvlDbg, "Saved called from %s#%d\n", file, no)
@@ -1126,9 +1133,9 @@ func (cluster *Cluster) PushConfigToGit() {
 	var err error
 
 	// Prevent concurrent
-	cluster.GitRepo.IsPush = true
+	cluster.GitRepo.IsPushing = true
 	defer func() {
-		cluster.GitRepo.IsPush = false
+		cluster.GitRepo.IsPushing = false
 	}()
 
 	cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGit, config.LvlInfo, "Push to git : tok %s, dir %s, user %s, name %s\n", cluster.Conf.PrintSecret(cluster.GitRepo.Auth.Password), cluster.GitRepo.Path, cluster.GitRepo.Auth.Username, cluster.Name)

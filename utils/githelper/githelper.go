@@ -25,12 +25,12 @@ import (
 var Logrus = logrus.New()
 
 type GitRepository struct {
-	R      *git.Repository
-	WT     *git.Worktree
-	Auth   *git_https.BasicAuth
-	Path   string
-	URL    string
-	IsPush bool
+	R         *git.Repository
+	WT        *git.Worktree
+	Auth      *git_https.BasicAuth
+	Path      string
+	URL       string
+	IsPushing bool
 }
 
 func InitGitRepo(url string, tok string, user string, path string) (*GitRepository, error) {
