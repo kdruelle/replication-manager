@@ -735,14 +735,15 @@ type PeerCluster struct {
 	ClusterName                      string   `json:"cluster-name"`
 	PeerUsers                        []string `json:"peer-users"`
 	ApiPublicUrl                     string   `json:"api-public-url"`
-	ProvDbMemory                     int      `json:"prov-db-memory"`
-	ProvDbCpuCores                   int      `json:"prov-db-cpu-cores"`
-	ProvDbDiskIops                   int64    `json:"prov-db-disk-iops"`
-	ProvDbDiskSize                   int64    `json:"prov-db-disk-size"`
+	ApiCredentialsAclAllow           string   `json:"api-credentials-acl-allow"`
+	ProvDbMemory                     int      `json:"prov-db-memory,string"`
+	ProvDbCpuCores                   int      `json:"prov-db-cpu-cores,string"`
+	ProvDbDiskIops                   int64    `json:"prov-db-disk-iops,string"`
+	ProvDbDiskSize                   int64    `json:"prov-db-disk-size,string"`
 	ProvServicePlan                  string   `json:"prov-service-plan"`
 	Cloud18Domain                    string   `json:"cloud18-domain"`
 	Cloud18PlatformDescription       string   `json:"cloud18-platfom-desciption"`
-	Cloud18Shared                    string   `json:"cloud18-shared"`
+	Cloud18Shared                    bool     `json:"cloud18-shared,string"`
 	Cloud18Plan                      string   `json:"cloud18-plan"`
 	Cloud18SubDomain                 string   `json:"cloud18-sub-domain"`
 	Cloud18SubDomainZone             string   `json:"cloud18-sub-domain-zone"`
@@ -751,9 +752,9 @@ type PeerCluster struct {
 	Cloud18MonthlySysopsCost         float64  `json:"cloud18-montly-sysops-cost"`
 	Cloud18MonthlyDbopsCost          float64  `json:"cloud18-montly-dbops-cost"`
 	Cloud18CostCurency               string   `json:"cloud18-cost-currency"`
-	Cloud18OpenDbops                 bool     `json:"cloud18-open-dbops"`
-	Cloud18SubscribedDbops           bool     `json:"cloud18-subscribed-dbops"`
-	Cloud18OpenSysops                bool     `json:"cloud18-open-sysops"`
+	Cloud18OpenDbops                 bool     `json:"cloud18-open-dbops,string"`
+	Cloud18SubscribedDbops           bool     `json:"cloud18-subscribed-dbops,string"`
+	Cloud18OpenSysops                bool     `json:"cloud18-open-sysops,string"`
 	Cloud18DatabseWriteSrvRecord     string   `json:"cloud18-database-write-srv-record"`
 	Cloud18DatabseReadSrvRecord      string   `json:"cloud18-database-read-srv-record"`
 	Cloud18DatabseReadWriteSrvRecord string   `json:"cloud18-database-read-write-srv-record"`
@@ -1741,7 +1742,7 @@ func (conf *Config) GetCloud18PeerClusters() []PeerCluster {
 			PeerUsers:                  []string{"stephane@signal18.io", "ahmad@signal18.io", "guillaume@signal18.io"},
 			Cloud18Domain:              "signal18",
 			Cloud18PlatformDescription: "Stephane dev Small 3xMariaDB 2xProxySQL MasterSlave",
-			Cloud18Shared:              "false",
+			Cloud18Shared:              false,
 			Cloud18SubDomain:           "ovh-1",
 			Cloud18SubDomainZone:       "fr",
 			ApiPublicUrl:               "10.8.0.50:10005",
@@ -1751,7 +1752,7 @@ func (conf *Config) GetCloud18PeerClusters() []PeerCluster {
 			PeerUsers:                  []string{"stephane@signal18.io", "ahmad@signal18.io", "guillaume@signal18.io"},
 			Cloud18Domain:              "signal18",
 			Cloud18PlatformDescription: "Priyanka dev 3xMariaDB 2xProxySQL MasterSlave",
-			Cloud18Shared:              "false",
+			Cloud18Shared:              false,
 			Cloud18SubDomain:           "ovh-1",
 			Cloud18SubDomainZone:       "fr",
 			ApiPublicUrl:               "repman.marie-dev.svc.cloud18:10005",
@@ -1761,7 +1762,7 @@ func (conf *Config) GetCloud18PeerClusters() []PeerCluster {
 			PeerUsers:                  []string{"stephane@signal18.io", "ahmad@signal18.io", "guillaume@signal18.io"},
 			Cloud18Domain:              "signal18",
 			Cloud18PlatformDescription: "Ahamd dev 3xMariaDB 2xProxySQL MasterSlave",
-			Cloud18Shared:              "false",
+			Cloud18Shared:              false,
 			Cloud18SubDomain:           "ovh-1",
 			Cloud18SubDomainZone:       "fr",
 			ApiPublicUrl:               "repman.ahmad.svc.cloud18:10005",
@@ -1771,7 +1772,7 @@ func (conf *Config) GetCloud18PeerClusters() []PeerCluster {
 			PeerUsers:                  []string{"stephane@signal18.io", "ahmad@signal18.io", "guillaume@signal18.io"},
 			Cloud18Domain:              "signal18",
 			Cloud18PlatformDescription: "Small 16G RAM NVME 4cores 3xMariaDB 2xProxySQL MasterSlave",
-			Cloud18Shared:              "false",
+			Cloud18Shared:              false,
 			Cloud18SubDomain:           "ovh-1",
 			Cloud18SubDomainZone:       "fr",
 			ApiPublicUrl:               "repman.ahmad.svc.cloud18:10005",

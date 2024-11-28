@@ -18,7 +18,10 @@ function PeerClusterList({ mode }) {
   const [clusters, setClusters] = useState([])
 
   const {
-    globalClusters: { loading, clusterPeers }
+    globalClusters: { loading, clusterPeers },
+    auth: {
+      user
+    }
   } = useSelector((state) => state)
 
   useEffect(() => {
@@ -28,10 +31,11 @@ function PeerClusterList({ mode }) {
   useEffect(() => {
     if (clusterPeers?.length > 0) {
       if (mode === 'shared') {
-        const shared = clusterPeers.filter((cluster) => cluster['cloud18-share'] == "true")
+        const shared = clusterPeers.filter((cluster) => cluster['cloud18-shared'])
         setClusters(shared)
       } else {
-        setClusters(clusterPeers)
+        const peers = user?.username ? clusterPeers.filter((cluster) => cluster['api-credentials-acl-allow'].contains(user.username)) : []
+        setClusters(peers)
       }
     }
   }, [clusterPeers])
