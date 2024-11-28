@@ -2524,19 +2524,17 @@ func (repman *ReplicationManager) PushConfigToGit(url string, tok string, user s
 		repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlWarn, "Git error : cannot Add %s : %s", "*.toml", err)
 	}
 
-	if repman.GitRepo.HasStagedFiles() {
-		msg := "Update file"
-		_, err = repman.GitRepo.Commit(msg, &git.CommitOptions{
-			Author: &git_obj.Signature{
-				Name: "Replication-manager",
-				When: time.Now(),
-			},
-			AllowEmptyCommits: false,
-		})
-		if err != nil {
-			repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlWarn, "Git error : cannot Commit : %s", err)
-			return err
-		}
+	msg := "Update file"
+	_, err = repman.GitRepo.Commit(msg, &git.CommitOptions{
+		Author: &git_obj.Signature{
+			Name: "Replication-manager",
+			When: time.Now(),
+		},
+		AllowEmptyCommits: false,
+	})
+	if err != nil {
+		repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlWarn, "Git error : cannot Commit : %s", err)
+		return err
 	}
 
 	// push using default options

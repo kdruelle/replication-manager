@@ -1150,17 +1150,15 @@ func (cluster *Cluster) PushConfigToGit() {
 		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGit, config.LvlErr, "Git error : cannot Add %s : %s", cluster.Name+"/*.json", err)
 	}
 
-	if cluster.GitRepo.HasStagedFiles() {
-		_, err = cluster.GitRepo.Commit(msg, &git.CommitOptions{
-			Author: &git_obj.Signature{
-				Name: "Replication-manager",
-				When: time.Now(),
-			},
-			AllowEmptyCommits: false,
-		})
-		if err != nil && cluster.Conf.LogGit {
-			cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGit, config.LvlErr, "Git error : cannot Commit : %s", err)
-		}
+	_, err = cluster.GitRepo.Commit(msg, &git.CommitOptions{
+		Author: &git_obj.Signature{
+			Name: "Replication-manager",
+			When: time.Now(),
+		},
+		AllowEmptyCommits: false,
+	})
+	if err != nil && cluster.Conf.LogGit {
+		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGit, config.LvlErr, "Git error : cannot Commit : %s", err)
 	}
 
 	// push using default options
