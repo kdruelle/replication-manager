@@ -735,9 +735,14 @@ type PeerCluster struct {
 	ClusterName                      string   `json:"cluster-name"`
 	PeerUsers                        []string `json:"peer-users"`
 	ApiPublicUrl                     string   `json:"api-public-url"`
+	ProvDbMemory                     int      `json:"prov-db-memory"`
+	ProvDbCpuCores                   int      `json:"prov-db-cpu-cores"`
+	ProvDbDiskIops                   int64    `json:"prov-db-disk-iops"`
+	ProvDbDiskSize                   int64    `json:"prov-db-disk-size"`
+	ProvServicePlan                  string   `json:"prov-service-plan"`
 	Cloud18Domain                    string   `json:"cloud18-domain"`
 	Cloud18PlatformDescription       string   `json:"cloud18-platfom-desciption"`
-	Cloud18Shared                    bool     `json:"cloud18-share"`
+	Cloud18Shared                    bool     `json:"cloud18-shared"`
 	Cloud18Plan                      string   `json:"cloud18-plan"`
 	Cloud18SubDomain                 string   `json:"cloud18-sub-domain"`
 	Cloud18SubDomainZone             string   `json:"cloud18-sub-domain-zone"`
