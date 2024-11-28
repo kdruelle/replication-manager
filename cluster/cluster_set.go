@@ -870,6 +870,19 @@ func (cluster *Cluster) SetAgentsCpuCoreMem() {
 	}
 }
 
+func (cluster *Cluster) SetAgentsMaxCpuFreq() {
+	if len(cluster.Agents) != 0 {
+		for _, a := range cluster.Agents {
+			old, ok := cluster.AgentMaxFreq[a.Id]
+			if ok && a.CpuFreq < old {
+				a.CpuFreq = old
+			} else {
+				cluster.AgentMaxFreq[a.Id] = a.CpuFreq
+			}
+		}
+	}
+}
+
 func (cluster *Cluster) SetBackupKeepYearly(keep string) error {
 	numkeep, err := strconv.Atoi(keep)
 	if err != nil {

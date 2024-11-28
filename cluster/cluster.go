@@ -139,6 +139,7 @@ type Cluster struct {
 	DiskType                      map[string]string    `json:"diskType"`
 	VMType                        map[string]bool      `json:"vmType"`
 	Agents                        []Agent              `json:"agents"`
+	AgentMaxFreq                  map[string]int64     `json:"-"`
 	hostList                      []string             `json:"-"`
 	proxyList                     []string             `json:"-"`
 	clusterList                   map[string]*Cluster  `json:"-"`
@@ -324,6 +325,7 @@ type ClusterForm struct {
 func (cluster *Cluster) Init(confs *config.ConfVersion, cfgGroup string, tlog *s18log.TermLog, loghttp *s18log.HttpLog, termlength int, runUUID string, RepMgrVersion string, RepMgrHostname string) error {
 	cluster.Confs = confs
 	cluster.debugLineMap = make(map[string]int)
+	cluster.AgentMaxFreq = make(map[string]int64)
 
 	cluster.Conf = confs.ConfInit
 
@@ -538,6 +540,7 @@ func (cluster *Cluster) initOrchetratorNodes() {
 	}
 
 	cluster.SetAgentsCpuCoreMem()
+	cluster.SetAgentsMaxCpuFreq()
 	cluster.inInitNodes = false
 
 }
