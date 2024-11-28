@@ -202,6 +202,9 @@ func (repman *ReplicationManager) apiserver() {
 
 	router.PathPrefix("/meet/").Handler(http.StripPrefix("/meet/", repman.proxyToURL("https://meet.signal18.io/api/v4")))
 
+	// Define the dynamic proxy route with Base64-encoded peer URL and arbitrary route
+	router.HandleFunc("/peer/{encodedpeer}/{route:.*}", repman.DynamicPeerHandler)
+
 	if repman.Conf.Test {
 		router.HandleFunc("/", repman.handlerApp)
 		router.PathPrefix("/images/").Handler(http.FileServer(http.Dir(repman.Conf.HttpRoot)))
@@ -1104,4 +1107,77 @@ func (repman *ReplicationManager) RecoveryMiddleware(next http.Handler) http.Han
 		}()
 		next.ServeHTTP(w, r)
 	})
+}
+
+// isAllowedPeer checks if a given peer URL is in the allowed list
+func (repman *ReplicationManager) IsAllowedPeer(peerURL string) bool {
+	for _, pcl := range repman.PeerClusters {
+		if peerURL == pcl.ApiPublicUrl {
+			return true
+		}
+	}
+	return false
+}
+
+// isAllowedPeer checks if a given peer URL is in the allowed list
+func (repman *ReplicationManager) IsAllowedPeerRoute(route string) bool {
+	prefixes := []string{"api"}
+	for _, prefix := range prefixes {
+		if strings.HasPrefix(route, prefix) {
+			return true
+		}
+	}
+	return false
+}
+
+// DynamicPeerHandler forwards requests to the specified peer URL
+func (repman *ReplicationManager) DynamicPeerHandler(w http.ResponseWriter, r *http.Request) {
+	// Extract the Base64-encoded peer URL and the route from the path
+	vars := mux.Vars(r)
+	encodedPeer := vars["encodedpeer"]
+	route := vars["route"]
+
+	// Decode the Base64-encoded peer URL
+	peer, err := base64.StdEncoding.DecodeString(encodedPeer)
+	if err != nil {
+		http.Error(w, "Invalid peer URL encoding", http.StatusBadRequest)
+		log.Printf("Error decoding peer URL: %v", err)
+		return
+	}
+
+	// Convert the decoded URL to string
+	peerURL := string(peer)
+
+	// Validate the peer URL
+	if !repman.IsAllowedPeer(peerURL) {
+		http.Error(w, "Peer URL not allowed", http.StatusForbidden)
+		log.Printf("Blocked forwarding to disallowed peer: %s", peerURL)
+		return
+	}
+
+	// Parse the peer URL
+	parsedPeerURL, err := url.Parse(peerURL)
+	if err != nil {
+		http.Error(w, "Invalid peer URL", http.StatusBadRequest)
+		log.Printf("Error parsing peer URL: %v", err)
+		return
+	}
+
+	// Attach the specific route from the URL to the peer URL
+	parsedPeerURL.Path = parsedPeerURL.Path + "/" + route
+
+	// Create a reverse proxy for the peer
+	proxy := httputil.NewSingleHostReverseProxy(parsedPeerURL)
+
+	// Modify the response to add "X-Processed-By" header
+	proxy.ModifyResponse = func(resp *http.Response) error {
+		resp.Header.Set("X-Processed-By", "Replication Manager Peer")
+		return nil
+	}
+
+	// Log the forwarding request
+	log.Printf("Forwarding request to: %s", parsedPeerURL.String())
+
+	// Serve the request using the proxy
+	proxy.ServeHTTP(w, r)
 }

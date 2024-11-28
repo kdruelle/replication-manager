@@ -84,6 +84,9 @@ func (repman *ReplicationManager) httpserver() {
 
 	router.PathPrefix("/meet/").Handler(http.StripPrefix("/meet/", repman.proxyToURL("https://meet.signal18.io/api/v4")))
 
+	// Define the dynamic proxy route with Base64-encoded peer URL and arbitrary route
+	router.HandleFunc("/peer/{encodedpeer}/{route:.*}", repman.DynamicPeerHandler)
+
 	//router.HandleFunc("/", repman.handlerApp)
 	// page to view which does not need authorization
 	if repman.Conf.Test {
