@@ -120,8 +120,8 @@ type Config struct {
 	LogSQLInMonitoring                        bool                   `mapstructure:"log-sql-in-monitoring"  toml:"log-sql-in-monitoring" json:"logSqlInMonitoring"`
 	LogWriterElection                         bool                   `mapstructure:"log-writer-election"  toml:"log-writer-election" json:"logWriterElection"`
 	LogWriterElectionLevel                    int                    `mapstructure:"log-writer-election-level"  toml:"log-writer-election-level" json:"logWriterElectionLevel"`
-	LogGit                                    bool                   `mapstructure:"log-git" toml:"log-git" json:"logGit"`
-	LogGitLevel                               int                    `mapstructure:"log-git-level" toml:"log-git-level" json:"logGitLevel"`
+	LogGit                                    bool                   `scope:"server" mapstructure:"log-git" toml:"log-git" json:"logGit"`
+	LogGitLevel                               int                    `scope:"server" mapstructure:"log-git-level" toml:"log-git-level" json:"logGitLevel"`
 	LogConfigLoad                             bool                   `mapstructure:"log-config-load" toml:"log-config-load" json:"logConfigLoad"`
 	LogConfigLoadLevel                        int                    `mapstructure:"log-config-load-level" toml:"log-config-load-level" json:"logConfigLoadLevel"`
 	LogBackupStream                           bool                   `mapstructure:"log-backup-stream" toml:"log-backup-stream" json:"logBackupStream"`
@@ -2613,6 +2613,21 @@ func (conf *Config) SwitchCloud18() {
 
 func (conf *Config) SwitchGitForceSyncFromRepo() {
 	conf.GitForceSyncFromRepo = !conf.GitForceSyncFromRepo
+}
+
+func (conf *Config) SetLogGitLevel(value int) {
+	conf.LogGitLevel = value
+	if value > 0 {
+		conf.LogGit = true
+	} else {
+		conf.LogGit = false
+	}
+
+	if value == 4 {
+		conf.GitMonitoringTicker = 30
+	} else {
+		conf.GitMonitoringTicker = 300
+	}
 }
 
 func (conf *Config) GetImmutableChecksum() (hash.Hash, error) {

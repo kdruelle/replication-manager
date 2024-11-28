@@ -13,6 +13,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -136,11 +137,53 @@ func (gr *GitRepository) Push() error {
 }
 
 func (gr *GitRepository) AddGlob(pattern string) error {
-	return gr.WT.AddGlob(pattern)
+	// Get the working tree status
+	wStatus, err := gr.WT.Status()
+	if err != nil {
+		return err // Return error if status retrieval fails
+	}
+
+	var filteredFiles []string
+
+	// Iterate over the working tree status
+	for filePath, fileStatus := range wStatus {
+		// Match files with the glob pattern
+		matched, err := filepath.Match(pattern, filePath)
+		if err != nil {
+			return err // Return error if the pattern matching fails
+		}
+
+		// Check if the file has changes and matches the pattern
+		if matched && fileStatus.Worktree != git.Unmodified {
+			if _, err := gr.WT.Add(filePath); err != nil {
+				return err // Return error if adding the file fails
+			}
+			filteredFiles = append(filteredFiles, filePath)
+		}
+	}
+
+	// If no files matched the pattern, return a "no matches" error
+	if len(filteredFiles) == 0 {
+		return git.ErrGlobNoMatches
+	}
+
+	return nil
 }
 
 func (gr *GitRepository) Add(pattern string) (plumbing.Hash, error) {
-	return gr.WT.Add(pattern)
+	wStatus, _ := gr.WT.Status()
+	// Check the status of the target file
+	fileStatus, exists := wStatus[pattern]
+	if !exists {
+		return gr.WT.Add(pattern)
+	}
+
+	// Check if the file is unmodified
+	if fileStatus.Worktree != git.Unmodified {
+		return gr.WT.Add(pattern)
+	}
+
+	return plumbing.ZeroHash, nil
 }
 
 func (gr *GitRepository) HasStagedFiles() bool {

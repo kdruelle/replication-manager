@@ -1659,7 +1659,7 @@ func (repman *ReplicationManager) setClusterSetting(mycluster *cluster.Cluster, 
 		mycluster.SetLogConfigLoadLevel(val)
 	case "log-git-level":
 		val, _ := strconv.Atoi(value)
-		mycluster.SetLogGitLevel(val)
+		mycluster.Conf.SetLogGitLevel(val)
 	case "log-backup-stream-level":
 		val, _ := strconv.Atoi(value)
 		mycluster.SetLogBackupStreamLevel(val)
@@ -1970,6 +1970,9 @@ func (repman *ReplicationManager) setRepmanSetting(name string, value string) er
 		val, _ := strconv.Atoi(value)
 		repman.Conf.LogFileLevel = val
 		repman.UpdateFileHookLogLevel(repman.fileHook.(*s18log.RotateFileHook), val)
+	case "log-git-level":
+		val, _ := strconv.Atoi(value)
+		repman.Conf.SetLogGitLevel(val)
 	default:
 		return errors.New("Setting not found")
 	}

@@ -520,7 +520,7 @@ func (repman *ReplicationManager) AddFlags(flags *pflag.FlagSet, conf *config.Co
 	flags.StringVar(&conf.GitUrl, "git-url", "", "GitHub URL repository to store config file")
 	flags.StringVar(&conf.GitUsername, "git-username", "", "GitHub username")
 	flags.StringVar(&conf.GitAccesToken, "git-acces-token", "", "GitHub personnal acces token")
-	flags.IntVar(&conf.GitMonitoringTicker, "git-monitoring-ticker", 60, "Git monitoring interval in seconds")
+	flags.IntVar(&conf.GitMonitoringTicker, "git-monitoring-ticker", 300, "Git monitoring interval in seconds")
 	flags.BoolVar(&conf.LogGit, "log-git", true, "To log clone/push/pull from git")
 	flags.IntVar(&conf.LogGitLevel, "log-git-level", 2, "Log GIT Level")
 
@@ -2524,6 +2524,7 @@ func (repman *ReplicationManager) PushConfigToGit(url string, tok string, user s
 	}
 
 	keyFilename, _ := repman.Conf.WriteKeyToWorkingDir()
+
 	// Adds the new file to the staging area.
 	_, err = repman.GitRepo.Add(keyFilename)
 	if err != nil {
