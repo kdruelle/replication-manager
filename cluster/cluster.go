@@ -1144,17 +1144,17 @@ func (cluster *Cluster) PushConfigToGit() {
 
 	// Adds the new file to the staging area.
 	err = cluster.GitRepo.AddGlob(cluster.Name + "/*.toml")
-	if err != nil && cluster.Conf.LogGit {
-		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGit, config.LvlErr, "Git error : cannot Add %s : %s", cluster.Name+"/*.toml", err)
+	if err != nil {
+		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGit, config.LvlWarn, "Git error : cannot Add %s : %s", cluster.Name+"/*.toml", err)
 	}
 
 	_, err = cluster.GitRepo.Add(cluster.Name + "/agents.json")
-	if err != nil && cluster.Conf.LogGit {
-		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGit, config.LvlErr, "Git error : cannot Add %s : %s", cluster.Name+"/*.json", err)
+	if err != nil {
+		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGit, config.LvlWarn, "Git error : cannot Add %s : %s", cluster.Name+"/*.json", err)
 	}
 	_, err = cluster.GitRepo.Add(cluster.Name + "/queryrules.json")
-	if err != nil && cluster.Conf.LogGit {
-		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGit, config.LvlErr, "Git error : cannot Add %s : %s", cluster.Name+"/*.json", err)
+	if err != nil {
+		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGit, config.LvlWarn, "Git error : cannot Add %s : %s", cluster.Name+"/*.json", err)
 	}
 
 	_, err = cluster.GitRepo.Commit(msg, &git.CommitOptions{
@@ -1164,8 +1164,8 @@ func (cluster *Cluster) PushConfigToGit() {
 		},
 		AllowEmptyCommits: false,
 	})
-	if err != nil && cluster.Conf.LogGit {
-		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGit, config.LvlErr, "Git error : cannot Commit : %s", err)
+	if err != nil {
+		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGit, config.LvlWarn, "Git error : cannot Commit : %s", err)
 	}
 
 	// push using default options
@@ -1174,7 +1174,7 @@ func (cluster *Cluster) PushConfigToGit() {
 		if strings.Contains(err.Error(), git.ErrNonFastForwardUpdate.Error()) {
 			cluster.SetState("WARN0132", state.State{ErrType: config.LvlWarn, ErrDesc: fmt.Sprintf(config.ClusterError["WARN0132"], cluster.Conf.GitUrl, err.Error()), ErrFrom: "GIT"})
 		} else {
-			cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGit, config.LvlErr, "Git error : cannot Push : %s", err)
+			cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGit, config.LvlWarn, "Git error : cannot Push : %s", err)
 		}
 	} else {
 		cluster.GitRepo.Pull(true)

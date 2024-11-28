@@ -137,37 +137,37 @@ func (gr *GitRepository) Push() error {
 }
 
 func (gr *GitRepository) AddGlob(pattern string) error {
-	// Get the working tree status
-	wStatus, err := gr.WT.Status()
-	if err != nil {
-		return err // Return error if status retrieval fails
-	}
-	var found bool
-	var filteredFiles []string
+	// // Get the working tree status
+	// wStatus, err := gr.WT.Status()
+	// if err != nil {
+	// 	return err // Return error if status retrieval fails
+	// }
+	// var found bool
+	// var filteredFiles []string
 
-	// Iterate over the working tree status
-	for filePath, fileStatus := range wStatus {
+	// // Iterate over the working tree status
+	// for filePath, fileStatus := range wStatus {
 
-		// Custom matching logic for recursive patterns
-		if matchesGlobPattern(pattern, filePath) {
-			if fileStatus.Worktree == git.Unmodified {
-				found = true
-				continue // Skip unmodified files
-			}
+	// 	// Custom matching logic for recursive patterns
+	// 	if matchesGlobPattern(pattern, filePath) {
+	// 		if fileStatus.Worktree == git.Unmodified {
+	// 			found = true
+	// 			continue // Skip unmodified files
+	// 		}
 
-			if _, err := gr.WT.Add(filePath); err != nil {
-				return err // Return error if adding the file fails
-			}
-			filteredFiles = append(filteredFiles, filePath)
-		}
-	}
+	// 		if _, err := gr.WT.Add(filePath); err != nil {
+	// 			return err // Return error if adding the file fails
+	// 		}
+	// 		filteredFiles = append(filteredFiles, filePath)
+	// 	}
+	// }
 
-	// If no files matched the pattern, return a "no matches" error
-	if len(filteredFiles) == 0 && !found {
-		return git.ErrGlobNoMatches
-	}
+	// // If no files matched the pattern, return a "no matches" error
+	// if len(filteredFiles) == 0 && !found {
+	// 	return git.ErrGlobNoMatches
+	// }
 
-	return nil
+	return gr.WT.AddGlob(pattern)
 }
 
 func matchesGlobPattern(pattern, path string) bool {
