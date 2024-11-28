@@ -9,16 +9,16 @@ export const globalClustersService = {
   addCluster
 }
 
-function getClusterPeers() {
-  return getApi().get('clusters/peers')
+function getClusterPeers(baseURL) {
+  return getApi(baseURL).get('clusters/peers')
 }
 
-function getClusters() {
-  return getApi().get('clusters')
+function getClusters(baseURL) {
+  return getApi(baseURL).get('clusters')
 }
 
-function getMonitoredData() {
-  return getApi().get('monitor')
+function getMonitoredData(baseURL) {
+  return getApi(baseURL).get('monitor')
 }
 
 function switchGlobalSetting(setting) {

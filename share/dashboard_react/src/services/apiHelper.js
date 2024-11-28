@@ -6,10 +6,9 @@ const authConfig = {
     getToken: () => localStorage.getItem('user_token')
   },
   2: { // Peer calls
-    resolveUrl: (apiUrl, baseUrl) => `https://${baseUrl}/api/${apiUrl}`,
+    resolveUrl: (apiUrl, baseUrl) => `/peer/${baseUrl}/api/${apiUrl}`,
     getToken: (baseUrl) => {
-      const encodedBaseUrl = toBase64(baseUrl);
-      return localStorage.getItem(`user_token_${encodedBaseUrl}`);
+      return localStorage.getItem(`user_token_${baseUrl}`);
     }
   },
   3: { // Mattermost API
@@ -21,8 +20,9 @@ const authConfig = {
 const getContentType = (type) => type === 'json' ? { 'Content-Type': 'application/json; charset="utf-8"' } : {};
 
 const buildHeaders = (authValue, contentType, baseUrl) => {
+  const encodedBaseUrl = toBase64(baseUrl);
   const { getToken } = authConfig[authValue] || {};
-  const token = getToken ? getToken(baseUrl) : null;
+  const token = getToken ? getToken(encodedBaseUrl) : null;
 
   return {
     ...getContentType(contentType),
@@ -32,8 +32,9 @@ const buildHeaders = (authValue, contentType, baseUrl) => {
 };
 
 const resolveUrl = (apiUrl, authValue, baseUrl) => {
+  const encodedBaseUrl = toBase64(baseUrl);
   const { resolveUrl } = authConfig[authValue] || {};
-  return resolveUrl ? resolveUrl(apiUrl, baseUrl) : apiUrl;
+  return resolveUrl ? resolveUrl(apiUrl, encodedBaseUrl) : apiUrl;
 };
 
 const handleResponse = async (response) => {
