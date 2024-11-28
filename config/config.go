@@ -742,7 +742,7 @@ type PeerCluster struct {
 	ProvServicePlan                  string   `json:"prov-service-plan"`
 	Cloud18Domain                    string   `json:"cloud18-domain"`
 	Cloud18PlatformDescription       string   `json:"cloud18-platfom-desciption"`
-	Cloud18Shared                    bool     `json:"cloud18-shared"`
+	Cloud18Shared                    string   `json:"cloud18-shared"`
 	Cloud18Plan                      string   `json:"cloud18-plan"`
 	Cloud18SubDomain                 string   `json:"cloud18-sub-domain"`
 	Cloud18SubDomainZone             string   `json:"cloud18-sub-domain-zone"`
@@ -1741,7 +1741,7 @@ func (conf *Config) GetCloud18PeerClusters() []PeerCluster {
 			PeerUsers:                  []string{"stephane@signal18.io", "ahmad@signal18.io", "guillaume@signal18.io"},
 			Cloud18Domain:              "signal18",
 			Cloud18PlatformDescription: "Stephane dev Small 3xMariaDB 2xProxySQL MasterSlave",
-			Cloud18Shared:              false,
+			Cloud18Shared:              "false",
 			Cloud18SubDomain:           "ovh-1",
 			Cloud18SubDomainZone:       "fr",
 			ApiPublicUrl:               "10.8.0.50:10005",
@@ -1751,7 +1751,7 @@ func (conf *Config) GetCloud18PeerClusters() []PeerCluster {
 			PeerUsers:                  []string{"stephane@signal18.io", "ahmad@signal18.io", "guillaume@signal18.io"},
 			Cloud18Domain:              "signal18",
 			Cloud18PlatformDescription: "Priyanka dev 3xMariaDB 2xProxySQL MasterSlave",
-			Cloud18Shared:              false,
+			Cloud18Shared:              "false",
 			Cloud18SubDomain:           "ovh-1",
 			Cloud18SubDomainZone:       "fr",
 			ApiPublicUrl:               "repman.marie-dev.svc.cloud18:10005",
@@ -1761,7 +1761,7 @@ func (conf *Config) GetCloud18PeerClusters() []PeerCluster {
 			PeerUsers:                  []string{"stephane@signal18.io", "ahmad@signal18.io", "guillaume@signal18.io"},
 			Cloud18Domain:              "signal18",
 			Cloud18PlatformDescription: "Ahamd dev 3xMariaDB 2xProxySQL MasterSlave",
-			Cloud18Shared:              false,
+			Cloud18Shared:              "false",
 			Cloud18SubDomain:           "ovh-1",
 			Cloud18SubDomainZone:       "fr",
 			ApiPublicUrl:               "repman.ahmad.svc.cloud18:10005",
@@ -1771,7 +1771,7 @@ func (conf *Config) GetCloud18PeerClusters() []PeerCluster {
 			PeerUsers:                  []string{"stephane@signal18.io", "ahmad@signal18.io", "guillaume@signal18.io"},
 			Cloud18Domain:              "signal18",
 			Cloud18PlatformDescription: "Small 16G RAM NVME 4cores 3xMariaDB 2xProxySQL MasterSlave",
-			Cloud18Shared:              false,
+			Cloud18Shared:              "false",
 			Cloud18SubDomain:           "ovh-1",
 			Cloud18SubDomainZone:       "fr",
 			ApiPublicUrl:               "repman.ahmad.svc.cloud18:10005",
