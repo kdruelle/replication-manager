@@ -142,19 +142,19 @@ func (gr *GitRepository) AddGlob(pattern string) error {
 	if err != nil {
 		return err // Return error if status retrieval fails
 	}
-
+	var found bool
 	var filteredFiles []string
 
 	// Iterate over the working tree status
 	for filePath, fileStatus := range wStatus {
-		// Match files with the glob pattern
-		matched, err := filepath.Match(pattern, filePath)
-		if err != nil {
-			return err // Return error if the pattern matching fails
-		}
 
-		// Check if the file has changes and matches the pattern
-		if matched && fileStatus.Worktree != git.Unmodified {
+		// Custom matching logic for recursive patterns
+		if matchesGlobPattern(pattern, filePath) {
+			if fileStatus.Worktree == git.Unmodified {
+				found = true
+				continue // Skip unmodified files
+			}
+
 			if _, err := gr.WT.Add(filePath); err != nil {
 				return err // Return error if adding the file fails
 			}
@@ -163,11 +163,23 @@ func (gr *GitRepository) AddGlob(pattern string) error {
 	}
 
 	// If no files matched the pattern, return a "no matches" error
-	if len(filteredFiles) == 0 {
+	if len(filteredFiles) == 0 && !found {
 		return git.ErrGlobNoMatches
 	}
 
 	return nil
+}
+
+func matchesGlobPattern(pattern, path string) bool {
+	// Handle recursive patterns like **/*
+	if strings.Contains(pattern, "**") {
+		basePattern := strings.ReplaceAll(pattern, "**", "")
+		return strings.HasPrefix(path, basePattern) && strings.HasSuffix(path, strings.TrimPrefix(pattern, "**/"))
+	}
+
+	// Match normal patterns using filepath.Match
+	matched, _ := filepath.Match(pattern, path)
+	return matched
 }
 
 func (gr *GitRepository) Add(pattern string) (plumbing.Hash, error) {

@@ -2528,7 +2528,7 @@ func (repman *ReplicationManager) PushConfigToGit(url string, tok string, user s
 	// Adds the new file to the staging area.
 	_, err = repman.GitRepo.Add(keyFilename)
 	if err != nil {
-		repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlWarn, "Git error : cannot Add %s : %s", "*.toml", err)
+		repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlWarn, "Git error : cannot Add %s : %s", keyFilename, err)
 	}
 
 	msg := "Update file"
