@@ -24,6 +24,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { getMonitoredData } from '../../redux/globalClustersSlice'
 import Message from '../Message'
 import { addUser } from '../../redux/clusterSlice'
+import GrantCheckList from '../GrantCheckList'
 
 function AddUserModal({ clusterName, isOpen, closeModal }) {
   const dispatch = useDispatch()
@@ -43,6 +44,7 @@ function AddUserModal({ clusterName, isOpen, closeModal }) {
   const [allAcls, setAllAcls] = useState([])
   const [allRoles, setAllRoles] = useState([])
   const [firstLoad, setFirstLoad] = useState(true)
+  const [selectedGroups, setSelectedGroups] = useState([]);
   const { theme } = useTheme()
   const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
@@ -64,44 +66,17 @@ function AddUserModal({ clusterName, isOpen, closeModal }) {
     }
   }, [monitor?.serviceAcl, monitor?.serviceRoles])
 
-  const handleCheck = (e, acl) => {
-    const isChecked = e.target.checked
-    const updatedList = allAcls.map((x) => {
-      if (x.grant === acl.grant) {
-        x.selected = isChecked
-      }
-      return x
-    })
-    setAcls(updatedList)
-    setAllAcls(updatedList)
-  }
-
   const handleCheckRoles = (e, role) => {
-    const isChecked = e.target.checked
-    const updatedList = allRoles.map((x) => {
+    const isChecked = e.target.checked;
+    const updatedList = structuredClone(allRoles).map((x) => {
       if (x.role === role.role) {
-        x.selected = isChecked
+        x.selected = isChecked;
       }
-      return x
-    })
-    setRoles(updatedList)
-    setAllRoles(updatedList)
-  }
-
-  const handleSearch = (e) => {
-    const search = e.target.value
-    if (search) {
-      const searchValue = search.toLowerCase()
-      const searchedAcls = allAcls.filter((x) => {
-        if (x.grant.toLowerCase().includes(searchValue)) {
-          return x
-        }
-      })
-      setAcls(searchedAcls)
-    } else {
-      setAcls(allAcls)
-    }
-  }
+      return x;
+    });
+    setRoles(updatedList);
+    setAllRoles(updatedList);
+  };
 
   const handleSearchRoles = (e) => {
     const search = e.target.value
@@ -125,14 +100,6 @@ function AddUserModal({ clusterName, isOpen, closeModal }) {
   //   setAllRoles(updatedRoles)
   // }
 
-  const handleSelectAllGrants = (e) => {
-    const isChecked = e.target.checked
-    const updatedAcls = allAcls.map((x) => ({ ...x, selected: isChecked }))
-    setAcls(updatedAcls)
-    setAllAcls(updatedAcls)
-  }
-
-
   const handleAddUser = () => {
     setUserNameError('')
     // setPasswordError('')
@@ -154,7 +121,7 @@ function AddUserModal({ clusterName, isOpen, closeModal }) {
       return
     }
 
-    const selectedGrants = acls.filter((x) => x.selected).map((x) => x.grant)
+    const selectedGrants = acls
     if (selectedGrants.length === 0) {
       setGrantsError('Please select at least one grant')
       return
@@ -163,6 +130,7 @@ function AddUserModal({ clusterName, isOpen, closeModal }) {
     dispatch(addUser({ clusterName, username: userName, grants: selectedGrants.join(' '), roles: selectedRoles.join(' ') }))
     closeModal()
   }
+
   return (
     <Modal isOpen={isOpen} onClose={closeModal}>
       <ModalOverlay />
@@ -211,28 +179,7 @@ function AddUserModal({ clusterName, isOpen, closeModal }) {
               </List>
             </VStack>
             <Message message={grantsError} />
-            <VStack className={parentStyles.aclContainer}>
-              <Input id='searchAcl' type='search' onChange={handleSearch} placeholder='Search ACL' />
-              <List className={parentStyles.aclList}>
-                <ListItem className={parentStyles.aclListItem}>
-                  <Checkbox
-                    onChange={handleSelectAllGrants}
-                    isChecked={acls.length > 0 && acls.every((x) => x.selected)}>
-                    Select All Grants
-                  </Checkbox>
-                </ListItem>
-                {acls.length > 0 &&
-                  acls.map((acl) => (
-                    <ListItem className={parentStyles.aclListItem}>
-                      <Checkbox
-                        isChecked={!!acls.find((x) => x.grant === acl.grant && x.selected)}
-                        onChange={(e) => handleCheck(e, acl)}>
-                        {acl.grant}
-                      </Checkbox>
-                    </ListItem>
-                  ))}
-              </List>
-            </VStack>
+            <GrantCheckList grantOptions={allAcls} onChange={setAcls} parentStyles={parentStyles} />
           </Stack>
         </ModalBody>
 
