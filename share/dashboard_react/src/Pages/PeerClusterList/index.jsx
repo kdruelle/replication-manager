@@ -28,7 +28,7 @@ function PeerClusterList({ mode }) {
   useEffect(() => {
     if (clusterPeers?.length > 0) {
       if (mode === 'shared') {
-        const shared = clusterPeers.filter((cluster) => cluster['cloud18-share'])
+        const shared = clusterPeers.filter((cluster) => cluster['cloud18-share'] == "true")
         setClusters(shared)
       } else {
         setClusters(clusterPeers)

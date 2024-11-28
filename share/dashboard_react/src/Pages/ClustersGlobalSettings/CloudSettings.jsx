@@ -108,40 +108,6 @@ function CloudSettings({ config }) {
         />
       )
     },
-    {
-      key: 'Log File Level',
-      value: (
-        <LogSlider
-          value={config?.logFileLevel}
-          confirmTitle={`Confirm change 'log-file-level' to: `}
-          onChange={(val) =>
-            dispatch(
-              setGlobalSetting({
-                setting: 'log-file-level',
-                value: val
-              })
-            )
-          }
-        />
-      )
-    },
-    {
-      key: 'Log GIT',
-      value: (
-        <LogSlider
-          value={config?.logGitLevel}
-          confirmTitle={`Confirm change 'log-git-level' to: `}
-          onChange={(val) =>
-            dispatch(
-              setGlobalSetting({
-                setting: 'log-git-level',
-                value: val
-              })
-            )
-          }
-        />
-      )
-    },
   ]
 
   return (
