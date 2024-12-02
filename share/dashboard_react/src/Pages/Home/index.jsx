@@ -68,10 +68,14 @@ function Home() {
   }, [])
 
   useEffect(() => {
+    const loggedUser = localStorage.getItem('username')
     if (monitor?.config?.cloud18) {
-      globalTabsRef.current = ['Clusters Local', 'Clusters Peer', 'Clusters For Sale', 'Settings']
+      globalTabsRef.current = ['Clusters Local', 'Clusters Peer', 'Clusters For Sale']
     } else {
-      globalTabsRef.current = ['Clusters Local', 'Settings']
+      globalTabsRef.current = ['Clusters Local']
+    }
+    if (loggedUser == "admin") {
+      globalTabsRef.current.push('Settings')
     }
   }, [monitor?.config?.cloud18])
 
