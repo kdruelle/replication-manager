@@ -2515,6 +2515,12 @@ func (repman *ReplicationManager) PushConfigToGit(url string, tok string, user s
 		return nil
 	}
 
+	// Prevent concurrent
+	repman.GitRepo.IsPushing = true
+	defer func() {
+		repman.GitRepo.IsPushing = false
+	}()
+
 	repman.GitRepo.Pull(true)
 
 	// Adds the new file to the staging area.

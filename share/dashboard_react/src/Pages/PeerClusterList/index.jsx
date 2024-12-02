@@ -45,10 +45,10 @@ function PeerClusterList({ mode }) {
   useEffect(() => {
     if (clusterPeers?.length > 0) {
       if (mode === 'shared') {
-        const shared = clusterPeers.filter((cluster) => cluster['cloud18-shared'])
+        const shared = clusterPeers.filter((cluster) => cluster["cloud18-shared"] === "true" && cluster["cloud18-peer"] === "false")
         setClusters(shared)
       } else {
-        const peers = user?.username ? clusterPeers.filter((cluster) => cluster['api-credentials-acl-allow']?.includes(checkPeerACL(user?.username, monitor?.config?.cloud18GitUser || ""))) : []
+        const peers = user?.username ? clusterPeers.filter((cluster) => cluster["cloud18-peer"] === "true").filter((cluster) => cluster['api-credentials-acl-allow']?.includes(checkPeerACL(user?.username, monitor?.config?.cloud18GitUser || ""))) : []
         setClusters(peers)
       }
     }
