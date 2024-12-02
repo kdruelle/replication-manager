@@ -18,7 +18,7 @@ function PeerClusterList({ mode }) {
   const [clusters, setClusters] = useState([])
 
   const {
-    globalClusters: { loading, clusterPeers },
+    globalClusters: { loading, clusterPeers, monitor },
     auth: {
       user
     }
@@ -28,13 +28,27 @@ function PeerClusterList({ mode }) {
     dispatch(getClusterPeers({}))
   }, [])
 
+  const checkPeerACL = (u,gituser) => {
+    // Regular expression to check if the string is an email
+    const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  
+    // Check if the string matches the email pattern or is "admin"
+    if (emailPattern.test(u)){
+      return u;
+    } else if (u.toLowerCase() === "admin") {
+      return gituser;
+    }
+    return "";
+  }
+  
+
   useEffect(() => {
     if (clusterPeers?.length > 0) {
       if (mode === 'shared') {
         const shared = clusterPeers.filter((cluster) => cluster['cloud18-shared'])
         setClusters(shared)
       } else {
-        const peers = user?.username ? clusterPeers.filter((cluster) => cluster['api-credentials-acl-allow'].contains(user.username)) : []
+        const peers = user?.username ? clusterPeers.filter((cluster) => cluster['api-credentials-acl-allow']?.includes(checkPeerACL(user?.username, monitor?.config?.cloud18GitUser || ""))) : []
         setClusters(peers)
       }
     }
