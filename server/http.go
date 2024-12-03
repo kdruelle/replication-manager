@@ -74,6 +74,7 @@ func (repman *ReplicationManager) httpserver() {
 	if repman.Conf.GraphiteEmbedded {
 		graphiteHost = "127.0.0.1"
 	}
+
 	graphiteURL, err := url.Parse(fmt.Sprintf("http://%s:%d", graphiteHost, repman.Conf.GraphiteCarbonApiPort))
 	if err == nil {
 		// Set up the reverse proxy target for Graphite API
@@ -97,6 +98,7 @@ func (repman *ReplicationManager) httpserver() {
 		}
 		if err := repman.testFile(file2test); err != nil {
 			log.Printf("ERROR: Dashboard app.html file missing - will not start http server %s\n", err)
+			repman.IsHttpListenerReady = true
 			return
 		}
 		router.HandleFunc("/", repman.handlerApp)
@@ -217,13 +219,15 @@ func (repman *ReplicationManager) httpserver() {
 	if repman.Conf.Verbose {
 		log.Printf("Starting HTTP server on " + repman.Conf.BindAddr + ":" + repman.Conf.HttpPort)
 	}
+
+	repman.IsHttpListenerReady = true
+
 	log.Fatal(http.ListenAndServe(repman.Conf.BindAddr+":"+repman.Conf.HttpPort, handlers.CORS(
 		handlers.AllowCredentials(),
 		handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"}),
 		handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"}),
 		handlers.AllowedOriginValidator(repman.handleOriginValidator),
 	)(router)))
-
 }
 
 func (repman *ReplicationManager) handlerApp(w http.ResponseWriter, r *http.Request) {

@@ -334,7 +334,7 @@ func (repman *ReplicationManager) apiserver() {
 	if err != nil {
 		log.Errorf("JWT API can't start: %s", err)
 	}
-
+	repman.IsApiListenerReady = true
 }
 
 //////////////////////////////////////////

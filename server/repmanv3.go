@@ -154,11 +154,13 @@ func (s *ReplicationManager) StartServerV3(debug bool, router *mux.Router) error
 	if s.v3Config.TLS.Enabled {
 		log.Info("starting multiplexed TLS HTTP/2.0 and HTTP/1.1 Gateway server: ", s.v3Config.Listen.AddressWithPort())
 		srv.TLSConfig = tlsConfig
+		s.IsApiListenerReady = true
 		err = srv.Serve(tls.NewListener(conn, srv.TLSConfig))
 	} else {
 		log.Info("starting multiplexed HTTP/2.0 and HTTP/1.1 Gateway server: ", s.v3Config.Listen.AddressWithPort())
 		// we need to wrap the non-tls connection inside h2c because http2 in Go enforces TLS
 		srv.Handler = h2c.NewHandler(srv.Handler, &http2.Server{})
+		s.IsApiListenerReady = true
 		err = srv.Serve(conn)
 	}
 
