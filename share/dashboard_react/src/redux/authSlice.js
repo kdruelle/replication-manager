@@ -49,6 +49,7 @@ export const authSlice = createSlice({
     loadingPeerLogin: false, 
     error: null, 
     isLogged: false, 
+    isPeerLogged: false, 
     baseURL: '',
   },
   reducers: {
@@ -76,7 +77,7 @@ export const authSlice = createSlice({
       if (action.type === 'login') {
         state.loading = true
       } else if (action.type === 'peerLogin') {
-        state.loadingPeerLogin = false
+        state.loadingPeerLogin = true
       } else {
         state.loadingGitLogin = true
       }
@@ -103,20 +104,25 @@ export const authSlice = createSlice({
       const { data } = payload
       const { arg } = meta
 
-      const encodedBaseUrl = btoa(state.baseURL)
-
+      state.baseURL = arg.baseURL
+      const encodedBaseUrl = btoa(arg.baseURL)
+      
       localStorage.setItem(`user_token_${encodedBaseUrl}`, typeof variable === 'object' ? JSON.parse(data)?.token : data?.token)
+      state.isPeerLogged = true 
+      
       state.loadingPeerLogin = false
     })
-    builder.addMatcher(isAnyOf(login.rejected, gitLogin.rejected), (state, action) => {
+    builder.addMatcher(isAnyOf(login.rejected, gitLogin.rejected,peerLogin.rejected), (state, action) => {
       if (action.type === 'login') {
         state.loading = false
       } else if (action.type === 'peerLogin') {
         state.loadingPeerLogin = false
+        state.isPeerLogged = false 
       } else {
         state.loadingGitLogin = false
       }
       state.error = action?.payload?.errorMessage
+      
     })
   }
 })
