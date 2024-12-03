@@ -853,7 +853,7 @@ func (cluster *Cluster) CheckInjectConfig() {
 }
 
 func (cluster *Cluster) PushConfigs() {
-	if cluster.GitRepo != nil && !cluster.GitRepo.IsPush {
+	if cluster.GitRepo != nil && !cluster.GitRepo.IsPushing {
 		go cluster.PushConfigToGit()
 	}
 	if !cluster.IsExportPush {

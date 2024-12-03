@@ -120,8 +120,8 @@ type Config struct {
 	LogSQLInMonitoring                        bool                   `mapstructure:"log-sql-in-monitoring"  toml:"log-sql-in-monitoring" json:"logSqlInMonitoring"`
 	LogWriterElection                         bool                   `mapstructure:"log-writer-election"  toml:"log-writer-election" json:"logWriterElection"`
 	LogWriterElectionLevel                    int                    `mapstructure:"log-writer-election-level"  toml:"log-writer-election-level" json:"logWriterElectionLevel"`
-	LogGit                                    bool                   `mapstructure:"log-git" toml:"log-git" json:"logGit"`
-	LogGitLevel                               int                    `mapstructure:"log-git-level" toml:"log-git-level" json:"logGitLevel"`
+	LogGit                                    bool                   `scope:"server" mapstructure:"log-git" toml:"log-git" json:"logGit"`
+	LogGitLevel                               int                    `scope:"server" mapstructure:"log-git-level" toml:"log-git-level" json:"logGitLevel"`
 	LogConfigLoad                             bool                   `mapstructure:"log-config-load" toml:"log-config-load" json:"logConfigLoad"`
 	LogConfigLoadLevel                        int                    `mapstructure:"log-config-load-level" toml:"log-config-load-level" json:"logConfigLoadLevel"`
 	LogBackupStream                           bool                   `mapstructure:"log-backup-stream" toml:"log-backup-stream" json:"logBackupStream"`
@@ -683,6 +683,11 @@ type Config struct {
 	Cloud18MonthlySysopsCost                  float64                `mapstructure:"cloud18-monthly-sysops-cost"  toml:"cloud18-monthly-sysops-cost" json:"cloud18MonthlySysopsCost"`
 	Cloud18MonthlyDbopsCost                   float64                `mapstructure:"cloud18-monthly-dbops-cost"  toml:"cloud18-monthly-dbops-cost" json:"cloud18MonthlyDbopsCost"`
 	Cloud18CostCurrency                       string                 `mapstructure:"cloud18-cost-currency"  toml:"cloud18-cost-currency" json:"cloud18CostCurrency"`
+	Cloud18InfraCPUModel                      string                 `mapstructure:"cloud18-infra-cpu-model"  toml:"cloud18-infra-cpu-model" json:"cloud18InfraCpuModel"`
+	Cloud18InfraDescription                   string                 `mapstructure:"cloud18-infra-description"  toml:"cloud18-infra-description" json:"cloud18InfraDescription"`
+	Cloud18InfraDataCenters                   string                 `mapstructure:"cloud18-infra-data-centers"  toml:"cloud18-infra-data-centers" json:"cloud18InfraDataCenters"`
+	Cloud18InfraPublicBandwidth               float64                `mapstructure:"cloud18-infra-public-bandwidth"  toml:"cloud18-infra-public-bandwidth" json:"cloud18InfraPublicBandwidth"`
+	Cloud18InfraGeoLocalizations              string                 `mapstructure:"cloud18-infra-geo-localizations"  toml:"cloud18-infra-geo-localizations" json:"cloud18InfraGeoLocalizations"`
 	Cloud18OpenDbops                          bool                   `mapstructure:"cloud18-open-dbops"  toml:"cloud18-open-dbops" json:"cloud18OpenDbops"`
 	Cloud18SubscribedDbops                    bool                   `mapstructure:"cloud18-subscribed-dbops"  toml:"cloud18-subscribed-dbops" json:"cloud18SubscribedDbops"`
 	Cloud18OpenSysops                         bool                   `mapstructure:"cloud18-open-sysops"  toml:"cloud18-open-sysops" json:"cloud18OpenSysops"`
@@ -735,9 +740,16 @@ type PeerCluster struct {
 	ClusterName                      string   `json:"cluster-name"`
 	PeerUsers                        []string `json:"peer-users"`
 	ApiPublicUrl                     string   `json:"api-public-url"`
+	ApiCredentialsAclAllow           string   `json:"api-credentials-acl-allow"`
+	ProvDbMemory                     int      `json:"prov-db-memory,string"`
+	ProvDbCpuCores                   int      `json:"prov-db-cpu-cores,string"`
+	ProvDbDiskIops                   int64    `json:"prov-db-disk-iops,string"`
+	ProvDbDiskSize                   int64    `json:"prov-db-disk-size,string"`
+	ProvServicePlan                  string   `json:"prov-service-plan"`
 	Cloud18Domain                    string   `json:"cloud18-domain"`
-	Cloud18PlatformDescription       string   `json:"cloud18-platfom-desciption"`
-	Cloud18Shared                    bool     `json:"cloud18-share"`
+	Cloud18PlatformDescription       string   `json:"cloud18-platform-description"`
+	Cloud18Shared                    bool     `json:"cloud18-shared,string"`
+	Cloud18Peer                      bool     `json:"cloud18-peer,string"`
 	Cloud18Plan                      string   `json:"cloud18-plan"`
 	Cloud18SubDomain                 string   `json:"cloud18-sub-domain"`
 	Cloud18SubDomainZone             string   `json:"cloud18-sub-domain-zone"`
@@ -745,10 +757,10 @@ type PeerCluster struct {
 	Cloud18MonthlyLicenseCost        float64  `json:"cloud18-montly-license-cost"`
 	Cloud18MonthlySysopsCost         float64  `json:"cloud18-montly-sysops-cost"`
 	Cloud18MonthlyDbopsCost          float64  `json:"cloud18-montly-dbops-cost"`
-	Cloud18CostCurency               string   `json:"cloud18-cost-currency"`
-	Cloud18OpenDbops                 bool     `json:"cloud18-open-dbops"`
-	Cloud18SubscribedDbops           bool     `json:"cloud18-subscribed-dbops"`
-	Cloud18OpenSysops                bool     `json:"cloud18-open-sysops"`
+	Cloud18CostCurrency              string   `json:"cloud18-cost-currency"`
+	Cloud18OpenDbops                 bool     `json:"cloud18-open-dbops,string"`
+	Cloud18SubscribedDbops           bool     `json:"cloud18-subscribed-dbops,string"`
+	Cloud18OpenSysops                bool     `json:"cloud18-open-sysops,string"`
 	Cloud18DatabseWriteSrvRecord     string   `json:"cloud18-database-write-srv-record"`
 	Cloud18DatabseReadSrvRecord      string   `json:"cloud18-database-read-srv-record"`
 	Cloud18DatabseReadWriteSrvRecord string   `json:"cloud18-database-read-write-srv-record"`
@@ -2613,6 +2625,21 @@ func (conf *Config) SwitchCloud18() {
 
 func (conf *Config) SwitchGitForceSyncFromRepo() {
 	conf.GitForceSyncFromRepo = !conf.GitForceSyncFromRepo
+}
+
+func (conf *Config) SetLogGitLevel(value int) {
+	conf.LogGitLevel = value
+	if value > 0 {
+		conf.LogGit = true
+	} else {
+		conf.LogGit = false
+	}
+
+	if value == 4 {
+		conf.GitMonitoringTicker = 30
+	} else {
+		conf.GitMonitoringTicker = 300
+	}
 }
 
 func (conf *Config) GetImmutableChecksum() (hash.Hash, error) {

@@ -13,6 +13,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -25,12 +26,12 @@ import (
 var Logrus = logrus.New()
 
 type GitRepository struct {
-	R      *git.Repository
-	WT     *git.Worktree
-	Auth   *git_https.BasicAuth
-	Path   string
-	URL    string
-	IsPush bool
+	R         *git.Repository
+	WT        *git.Worktree
+	Auth      *git_https.BasicAuth
+	Path      string
+	URL       string
+	IsPushing bool
 }
 
 func InitGitRepo(url string, tok string, user string, path string) (*GitRepository, error) {
@@ -136,11 +137,65 @@ func (gr *GitRepository) Push() error {
 }
 
 func (gr *GitRepository) AddGlob(pattern string) error {
+	// // Get the working tree status
+	// wStatus, err := gr.WT.Status()
+	// if err != nil {
+	// 	return err // Return error if status retrieval fails
+	// }
+	// var found bool
+	// var filteredFiles []string
+
+	// // Iterate over the working tree status
+	// for filePath, fileStatus := range wStatus {
+
+	// 	// Custom matching logic for recursive patterns
+	// 	if matchesGlobPattern(pattern, filePath) {
+	// 		if fileStatus.Worktree == git.Unmodified {
+	// 			found = true
+	// 			continue // Skip unmodified files
+	// 		}
+
+	// 		if _, err := gr.WT.Add(filePath); err != nil {
+	// 			return err // Return error if adding the file fails
+	// 		}
+	// 		filteredFiles = append(filteredFiles, filePath)
+	// 	}
+	// }
+
+	// // If no files matched the pattern, return a "no matches" error
+	// if len(filteredFiles) == 0 && !found {
+	// 	return git.ErrGlobNoMatches
+	// }
+
 	return gr.WT.AddGlob(pattern)
 }
 
+func matchesGlobPattern(pattern, path string) bool {
+	// Handle recursive patterns like **/*
+	if strings.Contains(pattern, "**") {
+		basePattern := strings.ReplaceAll(pattern, "**", "")
+		return strings.HasPrefix(path, basePattern) && strings.HasSuffix(path, strings.TrimPrefix(pattern, "**/"))
+	}
+
+	// Match normal patterns using filepath.Match
+	matched, _ := filepath.Match(pattern, path)
+	return matched
+}
+
 func (gr *GitRepository) Add(pattern string) (plumbing.Hash, error) {
-	return gr.WT.Add(pattern)
+	wStatus, _ := gr.WT.Status()
+	// Check the status of the target file
+	fileStatus, exists := wStatus[pattern]
+	if !exists {
+		return gr.WT.Add(pattern)
+	}
+
+	// Check if the file is unmodified
+	if fileStatus.Worktree != git.Unmodified {
+		return gr.WT.Add(pattern)
+	}
+
+	return plumbing.ZeroHash, nil
 }
 
 func (gr *GitRepository) HasStagedFiles() bool {

@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/go-git/go-git/v5"
+	"github.com/signal18/replication-manager/cluster"
 	"github.com/signal18/replication-manager/config"
 	"github.com/signal18/replication-manager/utils/githelper"
 	"github.com/signal18/replication-manager/utils/state"
@@ -77,6 +78,10 @@ func (repman *ReplicationManager) InitGitConfig(conf *config.Config) error {
 			for _, cl := range repman.Clusters {
 				if cl != nil && cl.GetStateMachine() != nil && cl.GetStateMachine().IsInState("WARN0132") {
 					cl.GetStateMachine().DeleteState("WARN0132")
+				}
+
+				if _, ok := cl.APIUsers[conf.GitUsername]; !ok {
+					cl.AddUser(cluster.UserForm{Username: conf.GitUsername, Roles: "dbops sysops", Grants: "db cluster prov proxy global"})
 				}
 			}
 		}

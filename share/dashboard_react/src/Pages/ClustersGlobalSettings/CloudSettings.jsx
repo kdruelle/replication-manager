@@ -1,5 +1,5 @@
 import { Flex, Link } from '@chakra-ui/react'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
 import styles from './styles.module.scss'
 import RMSwitch from '../../components/RMSwitch'
 import { useDispatch } from 'react-redux'
@@ -107,7 +107,7 @@ function CloudSettings({ config }) {
           }}
         />
       )
-    }
+    },
   ]
 
   return (

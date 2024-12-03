@@ -32,7 +32,7 @@ function NewClusterModal({ plans, orchestrators, defaultOrchestrator, isOpen, cl
   const [plan, setPlan] = useState('')
   const [clusterNameError, setClusterNameError] = useState('')
   const [orchestratorError, setOrchestratorError] = useState('')
-  const [planError, setPlanError] = useState('') 
+  const [planError, setPlanError] = useState('')
 
   const handleCreateNewCluster = () => {
     setClusterNameError('')
@@ -119,7 +119,7 @@ function NewClusterModal({ plans, orchestrators, defaultOrchestrator, isOpen, cl
     {
       key: 'DBA Cost',
       value: planDetails?.dbacost
-    },      
+    },
     {
       key: 'Sys Cost',
       value: planDetails?.syscost

@@ -520,7 +520,7 @@ func (repman *ReplicationManager) AddFlags(flags *pflag.FlagSet, conf *config.Co
 	flags.StringVar(&conf.GitUrl, "git-url", "", "GitHub URL repository to store config file")
 	flags.StringVar(&conf.GitUsername, "git-username", "", "GitHub username")
 	flags.StringVar(&conf.GitAccesToken, "git-acces-token", "", "GitHub personnal acces token")
-	flags.IntVar(&conf.GitMonitoringTicker, "git-monitoring-ticker", 60, "Git monitoring interval in seconds")
+	flags.IntVar(&conf.GitMonitoringTicker, "git-monitoring-ticker", 300, "Git monitoring interval in seconds")
 	flags.BoolVar(&conf.LogGit, "log-git", true, "To log clone/push/pull from git")
 	flags.IntVar(&conf.LogGitLevel, "log-git-level", 2, "Log GIT Level")
 
@@ -2280,6 +2280,12 @@ func (repman *ReplicationManager) Stop() {
 	}
 
 	repman.Save()
+
+	// Wait for previous save since this is the last push
+	for repman.Conf.Cloud18 && repman.GitRepo != nil && repman.GitRepo.IsPushing {
+		time.Sleep(time.Second)
+	}
+
 	if repman.Conf.GitUrl != "" {
 		go repman.PushConfigToGit(repman.Conf.GitUrl, repman.Conf.Secrets["git-acces-token"].Value, repman.Conf.GitUsername, repman.Conf.WorkingDir)
 	}
@@ -2505,9 +2511,15 @@ func (repman *ReplicationManager) PushConfigToGit(url string, tok string, user s
 		}
 	}
 
-	for repman.GitRepo.IsPush {
-		time.Sleep(time.Second)
+	if repman.GitRepo.IsPushing {
+		return nil
 	}
+
+	// Prevent concurrent
+	repman.GitRepo.IsPushing = true
+	defer func() {
+		repman.GitRepo.IsPushing = false
+	}()
 
 	repman.GitRepo.Pull(true)
 
@@ -2518,25 +2530,24 @@ func (repman *ReplicationManager) PushConfigToGit(url string, tok string, user s
 	}
 
 	keyFilename, _ := repman.Conf.WriteKeyToWorkingDir()
+
 	// Adds the new file to the staging area.
 	_, err = repman.GitRepo.Add(keyFilename)
 	if err != nil {
-		repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlWarn, "Git error : cannot Add %s : %s", "*.toml", err)
+		repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlWarn, "Git error : cannot Add %s : %s", keyFilename, err)
 	}
 
-	if repman.GitRepo.HasStagedFiles() {
-		msg := "Update file"
-		_, err = repman.GitRepo.Commit(msg, &git.CommitOptions{
-			Author: &git_obj.Signature{
-				Name: "Replication-manager",
-				When: time.Now(),
-			},
-			AllowEmptyCommits: false,
-		})
-		if err != nil {
-			repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlWarn, "Git error : cannot Commit : %s", err)
-			return err
-		}
+	msg := "Update file"
+	_, err = repman.GitRepo.Commit(msg, &git.CommitOptions{
+		Author: &git_obj.Signature{
+			Name: "Replication-manager",
+			When: time.Now(),
+		},
+		AllowEmptyCommits: false,
+	})
+	if err != nil {
+		repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlWarn, "Git error : cannot Commit : %s", err)
+		return err
 	}
 
 	// push using default options
@@ -2902,6 +2913,12 @@ func (repman *ReplicationManager) Save() error {
 	if !repman.IsGitPull && repman.Conf.Cloud18 {
 		repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModConfigLoad, config.LvlDbg, "Cannot save cluster config, cloud18 active but config is not pulled yet.")
 		return nil
+	}
+
+	if repman.Conf.Cloud18 {
+		if repman.GitRepo == nil || repman.GitRepo.IsPushing {
+			return nil
+		}
 	}
 
 	if repman.IsSavingConfig {

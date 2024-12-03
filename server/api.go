@@ -222,6 +222,10 @@ func (repman *ReplicationManager) apiserver() {
 		router.PathPrefix("/grafana/").Handler(http.StripPrefix("/grafana/", repman.SharedirHandler("grafana")))
 	}
 
+	router.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/", http.StatusFound)
+	})
+
 	router.HandleFunc("/api/login", repman.loginHandler)
 	router.HandleFunc("/api/login-git", repman.loginHandler)
 	//router.Handle("/api", v3.NewHandler("My API", "/swagger.json", "/api"))
@@ -418,6 +422,7 @@ func (repman *ReplicationManager) loginHandler(w http.ResponseWriter, r *http.Re
 		fmt.Fprintf(w, "Error in request")
 		return
 	}
+
 	if v, ok := repman.UserAuthTry.Load(user.Username); ok {
 		auth_try := v.(authTry)
 		if auth_try.Try == 3 {
@@ -445,75 +450,81 @@ func (repman *ReplicationManager) loginHandler(w http.ResponseWriter, r *http.Re
 		repman.UserAuthTry.Store(user.Username, auth_try)
 	}
 
-	for _, cluster := range repman.Clusters {
-		//validate user credentials
-		if strings.Contains(r.URL.Path, "login-git") {
-			if u, ok := cluster.APIUsers[user.Username]; !ok {
-				http.Error(w, "Error logging in: User is not registered", http.StatusUnauthorized)
-				return
-			} else {
-				token, _ := githelper.GetGitLabTokenBasicAuth(user.Username, user.Password, false)
-				if token == "" {
-					http.Error(w, "Error logging in to gitlab: Token is empty", http.StatusUnauthorized)
-					return
-				}
+	var tok string
+	var userInfo interface{}
 
-				u.GitToken = token
-				u.Password = user.Password // Now using git-login has no profile so must use password for check
-				cluster.APIUsers[user.Username] = u
-			}
-		} else if !cluster.IsValidACL(user.Username, user.Password, r.URL.Path, "password") {
-			continue
-		}
-
-		var auth_try authTry = authTry{
-			User: user.Username,
-			Try:  1,
-			Time: time.Now(),
-		}
-		repman.UserAuthTry.Store(user.Username, auth_try)
-
-		signer := jwt.New(jwt.SigningMethodRS256)
-		claims := signer.Claims.(jwt.MapClaims)
-		//set claims
-		claims["iss"] = "https://api.replication-manager.signal18.io"
-		claims["iat"] = time.Now().Unix()
-		claims["exp"] = time.Now().Add(time.Hour * time.Duration(cluster.Conf.TokenTimeout)).Unix()
-		claims["jti"] = "1" // should be user ID(?)
-		claims["CustomUserInfo"] = struct {
-			Name     string
-			Role     string
-			Password string
-		}{user.Username, "Member", repman.Conf.GetEncryptedString(user.Password)}
-		signer.Claims = claims
-		sk, _ := jwt.ParseRSAPrivateKeyFromPEM(signingKey)
-		//sk, _ := jwt.ParseRSAPublicKeyFromPEM(signingKey)
-
-		tokenString, err := signer.SignedString(sk)
-		// log.Printf("Token expiration: %d hour\n", repman.Conf.TokenTimeout)
-
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintln(w, "Error while signing the token")
-			log.Printf("Error signing token: %v\n", err)
-		}
-
-		//create a token instance using the token string
-
-		specs := r.Header.Get("Accept")
-		resp := token{tokenString}
-		if strings.Contains(specs, "text/html") {
-			w.Write([]byte(tokenString))
+	if strings.Contains(r.URL.Path, "login-git") {
+		tok, _ = githelper.GetGitLabTokenBasicAuth(user.Username, user.Password, false)
+		if tok == "" {
+			http.Error(w, "Error logging in to gitlab: Token is empty", http.StatusUnauthorized)
 			return
 		}
 
-		repman.jsonResponse(resp, w)
+		userInfo = struct {
+			Name     string
+			Role     string
+			Password string
+			Email    string `json:"email"`
+			Profile  string `json:"profile"`
+		}{user.Username, "Member", repman.Conf.GetEncryptedString(user.Password), user.Username, repman.Conf.OAuthProvider}
+
+	} else {
+		loggedIn := false
+		for _, cl := range repman.Clusters {
+			//validate user credentials
+			if !cl.IsValidACL(user.Username, user.Password, r.URL.Path, "password") {
+				continue
+			}
+			loggedIn = true
+			userInfo = struct {
+				Name     string
+				Role     string
+				Password string
+			}{user.Username, "Member", repman.Conf.GetEncryptedString(user.Password)}
+		}
+
+		if !loggedIn {
+			http.Error(w, "Error logging in: Invalid credentials", http.StatusUnauthorized)
+			return
+		}
+	}
+
+	var auth_try authTry = authTry{
+		User: user.Username,
+		Try:  1,
+		Time: time.Now(),
+	}
+
+	repman.UserAuthTry.Store(user.Username, auth_try)
+
+	signer := jwt.New(jwt.SigningMethodRS256)
+	claims := signer.Claims.(jwt.MapClaims)
+	//set claims
+	claims["iss"] = "https://api.replication-manager.signal18.io"
+	claims["iat"] = time.Now().Unix()
+	claims["exp"] = time.Now().Add(time.Hour * time.Duration(repman.Conf.TokenTimeout)).Unix()
+	claims["jti"] = "1"   // should be user ID(?)
+	claims["token"] = tok // store gitlab token
+	claims["CustomUserInfo"] = userInfo
+	signer.Claims = claims
+	sk, _ := jwt.ParseRSAPrivateKeyFromPEM(signingKey)
+
+	tokenString, err := signer.SignedString(sk)
+	if err != nil {
+		fmt.Fprintln(w, "Error while signing the token")
+		http.Error(w, "Error signing token: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	w.WriteHeader(http.StatusForbidden)
-	fmt.Println("Error logging in")
-	fmt.Fprint(w, "Invalid credentials")
+	//create a token instance using the token string
+	specs := r.Header.Get("Accept")
+	resp := token{tokenString}
+	if strings.Contains(specs, "text/html") {
+		w.Write([]byte(tokenString))
+		return
+	}
+
+	repman.jsonResponse(resp, w)
 	return
 }
 

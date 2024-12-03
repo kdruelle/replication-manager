@@ -114,6 +114,10 @@ func (repman *ReplicationManager) httpserver() {
 		router.PathPrefix("/grafana/").Handler(http.StripPrefix("/grafana/", repman.SharedirHandler("grafana")))
 	}
 
+	router.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/", http.StatusFound)
+	})
+
 	router.HandleFunc("/api/login", repman.loginHandler)
 	router.HandleFunc("/api/login-git", repman.loginHandler)
 

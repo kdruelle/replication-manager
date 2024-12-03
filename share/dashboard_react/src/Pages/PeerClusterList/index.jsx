@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { getClusterPeers } from '../../redux/globalClustersSlice'
-import { Box, Flex, HStack, Text } from '@chakra-ui/react'
+import { Box, Flex, HStack, Text,Wrap } from '@chakra-ui/react'
 import NotFound from '../../components/NotFound'
 import { AiOutlineCluster } from 'react-icons/ai'
 import Card from '../../components/Card'
@@ -23,7 +23,10 @@ function PeerClusterList({ onClick, mode }) {
   const [url, setURL] = useState("")
 
   const {
-    globalClusters: { loading, clusterPeers },
+    globalClusters: { loading, clusterPeers, monitor },
+    auth: {
+      user
+    },
   } = useSelector((state) => state)
 
   const openPeerLoginModal = () => {
@@ -56,13 +59,28 @@ function PeerClusterList({ onClick, mode }) {
     dispatch(getClusterPeers({}))
   }, [])
 
+  const checkPeerACL = (u,gituser) => {
+    // Regular expression to check if the string is an email
+    const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  
+    // Check if the string matches the email pattern or is "admin"
+    if (emailPattern.test(u)){
+      return u;
+    } else if (u.toLowerCase() === "admin") {
+      return gituser;
+    }
+    return "";
+  }
+  
+
   useEffect(() => {
     if (clusterPeers?.length > 0) {
       if (mode === 'shared') {
-        const shared = clusterPeers.filter((cluster) => cluster['cloud18-share'])
+        const shared = clusterPeers.filter((cluster) => cluster["cloud18-shared"] === "true" && cluster["cloud18-peer"] === "false")
         setClusters(shared)
       } else {
-        setClusters(clusterPeers)
+        const peers = user?.username ? clusterPeers.filter((cluster) => cluster["cloud18-peer"] === "true").filter((cluster) => cluster['api-credentials-acl-allow']?.includes(checkPeerACL(user?.username, monitor?.config?.cloud18GitUser || ""))) : []
+        setClusters(peers)
       }
     }
   }, [clusterPeers])
@@ -73,31 +91,47 @@ function PeerClusterList({ onClick, mode }) {
     <>
       <Flex className={styles.clusterList}>
         {clusters?.map((clusterItem) => {
-          const headerText = `${clusterItem['cluster-name']}@${clusterItem['cloud18-domain']}-${clusterItem['cloud18-sub-domain']}-${clusterItem['cloud18-sub-domain-zone']}`
-
+          const headerText = `${clusterItem['cluster-name']}\n`
+        const domain =  `${clusterItem['cloud18-domain']}`
+        const subDomain = `${clusterItem['cloud18-sub-domain']}`
+        const subDomainZone =` ${clusterItem['cloud18-sub-domain-zone']}`
           const dataObject = [
-            { key: 'Domain', value: clusterItem['cloud18-domain'] },
+            {  key: 'Tags',   value: (
+            <>
+            <Wrap>
+              <TagPill text='Cloud18' colorScheme='blue' />
+              <TagPill text={domain} colorScheme='blue' />
+              <TagPill text={subDomain} colorScheme='blue' />
+              <TagPill text={subDomainZone} colorScheme='blue' />
+            </Wrap>
+            </>
+          )},
+          { key: 'Service Plan', value: clusterItem['prov-service-plan'] },
+          { key: 'Memory MB', value: clusterItem['prov-db-memory'] },
+          { key: 'I/Ops', value: clusterItem['prov-db-disk-iops'] },
+          { key: 'Disk GB', value: clusterItem['prov-db-disk-size'] },
             { key: 'Platfom Desciption', value: clusterItem['cloud18-platfom-desciption'] },
 
-            {
-              key: 'Share',
-              value: (
-                <HStack spacing='4'>
-                  {clusterItem['cloud18-share'] ? (
-                    <>
-                      <CheckOrCrossIcon isValid={true} />
-                      <Text>Yes</Text>
-                    </>
-                  ) : (
-                    <>
-                      <CheckOrCrossIcon isValid={false} />
-                      <Text>No</Text>
-                    </>
-                  )}
-                </HStack>
-              )
-            }
-          ]
+        /*  {
+            key: 'Share',
+            value: (
+              <HStack spacing='4'>
+                {clusterItem['cloud18-shared'] ? (
+                  <>
+                    <CheckOrCrossIcon isValid={true} />
+                    <Text>Yes</Text>
+                  </>
+                ) : (
+                  <>
+                    <CheckOrCrossIcon isValid={false} />
+                    <Text>No</Text>
+                  </>
+                )}
+
+              </HStack>
+            )
+          }*/
+        ]
 
           return (
             <Box key={clusterItem['cluster-name']} className={styles.cardWrapper}>
@@ -112,11 +146,12 @@ function PeerClusterList({ onClick, mode }) {
                     <CustomIcon icon={AiOutlineCluster} />
                     <span className={styles.cardHeaderText}>{headerText}</span>
 
-                    <TagPill text='Cloud18' colorScheme='blue' />
-                    <PeerMenu colorScheme='blue' clusterItem={clusterItem} className={styles.btnAddUser} labelClassName={styles.rowLabel} valueClassName={styles.rowValue} />
+                      <PeerMenu colorScheme='blue' clusterItem={clusterItem} className={styles.btnAddUser} labelClassName={styles.rowLabel} valueClassName={styles.rowValue} />
+
                   </HStack>
                 }
                 body={
+
                   <TableType2
                     dataArray={dataObject}
                     className={styles.table}

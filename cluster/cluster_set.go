@@ -438,6 +438,46 @@ func (cluster *Cluster) SetProxyDiskSize(value string) {
 	cluster.SetProxiesReprovCookie()
 }
 
+func (cluster *Cluster) SetCloud18MonthlyInfraCost(value float64) {
+	cluster.Conf.Cloud18MonthlyInfraCost = value
+}
+
+func (cluster *Cluster) SetCloud18MonthlyLicenseCost(value float64) {
+	cluster.Conf.Cloud18MonthlyLicenseCost = value
+}
+
+func (cluster *Cluster) SetCloud18MonthlySysopsCost(value float64) {
+	cluster.Conf.Cloud18MonthlySysopsCost = value
+}
+
+func (cluster *Cluster) SetCloud18MonthlyDbopsCost(value float64) {
+	cluster.Conf.Cloud18MonthlyDbopsCost = value
+}
+
+func (cluster *Cluster) SetCloud18CostCurrency(value string) {
+	cluster.Conf.Cloud18CostCurrency = value
+}
+
+func (cluster *Cluster) SetCloud18InfraCPUModel(value string) {
+	cluster.Conf.Cloud18InfraCPUModel = value
+}
+
+func (cluster *Cluster) SetCloud18InfraDescription(value string) {
+	cluster.Conf.Cloud18InfraDescription = value
+}
+
+func (cluster *Cluster) SetCloud18InfraDataCenters(value string) {
+	cluster.Conf.Cloud18InfraDataCenters = value
+}
+
+func (cluster *Cluster) SetCloud18InfraPublicBandwidth(value float64) {
+	cluster.Conf.Cloud18InfraPublicBandwidth = value
+}
+
+func (cluster *Cluster) SetCloud18InfraGeoLocalizations(value string) {
+	cluster.Conf.Cloud18InfraGeoLocalizations = value
+}
+
 func (cluster *Cluster) SetTraffic(traffic bool) {
 	cluster.Conf.TestInjectTraffic = traffic
 }
@@ -867,6 +907,19 @@ func (cluster *Cluster) SetAgentsCpuCoreMem() {
 		}
 		cluster.Conf.ImmuableFlagMap["agent-cpu-cores"] = min_cpu
 		cluster.Conf.ImmuableFlagMap["agent-memory"] = min_mem
+	}
+}
+
+func (cluster *Cluster) SetAgentsMaxCpuFreq() {
+	if len(cluster.Agents) != 0 {
+		for _, a := range cluster.Agents {
+			old, ok := cluster.AgentMaxFreq[a.Id]
+			if ok && a.CpuFreq < old {
+				a.CpuFreq = old
+			} else {
+				cluster.AgentMaxFreq[a.Id] = a.CpuFreq
+			}
+		}
 	}
 }
 
@@ -1319,6 +1372,17 @@ func (cluster *Cluster) SetServicePlan(theplan string) error {
 			cluster.SetDBDiskIOPS(strconv.Itoa(plan.DbIops))
 			cluster.SetProxyCores(strconv.Itoa(plan.PrxCores))
 			cluster.SetProxyDiskSize(strconv.Itoa(plan.PrxDataSize))
+			cluster.SetCloud18MonthlyInfraCost(plan.InfraCost)
+			cluster.SetCloud18MonthlyLicenseCost(plan.LicenceCost)
+			cluster.SetCloud18MonthlySysopsCost(plan.SysCost)
+			cluster.SetCloud18MonthlyDbopsCost(plan.DbaCost)
+	    cluster.SetCloud18CostCurrency(plan.Devise)
+			cluster.SetCloud18InfraCPUModel(plan.CPU)
+	    cluster.SetCloud18InfraDescription(plan.Infra)
+			cluster.SetCloud18InfraDataCenters(plan.DC)
+			cluster.SetCloud18InfraPublicBandwidth(plan.BP)
+			cluster.SetCloud18InfraGeoLocalizations(plan.Zone)
+
 			cluster.Save()
 			return nil
 		}
