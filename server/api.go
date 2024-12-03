@@ -31,6 +31,7 @@ import (
 	"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/go-git/go-git/v5"
 	"github.com/iancoleman/strcase"
+	"github.com/klauspost/compress/zstd"
 	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
@@ -1148,6 +1149,8 @@ func (repman *ReplicationManager) DynamicPeerHandler(w http.ResponseWriter, r *h
 	encodedPeer := vars["encodedpeer"]
 	route := vars["route"]
 
+	// logRequest(r)
+
 	// Decode the Base64-encoded peer URL
 	peer, err := base64.StdEncoding.DecodeString(encodedPeer)
 	if err != nil {
@@ -1177,18 +1180,93 @@ func (repman *ReplicationManager) DynamicPeerHandler(w http.ResponseWriter, r *h
 	// Attach the specific route from the URL to the peer URL
 	parsedPeerURL.Path = parsedPeerURL.Path + "/" + route
 
-	// Create a reverse proxy for the peer
-	proxy := httputil.NewSingleHostReverseProxy(parsedPeerURL)
-
-	// Modify the response to add "X-Processed-By" header
-	proxy.ModifyResponse = func(resp *http.Response) error {
-		resp.Header.Set("X-Processed-By", "Replication Manager Peer")
-		return nil
-	}
-
 	// Log the forwarding request
 	log.Printf("Forwarding request to: %s", parsedPeerURL.String())
 
-	// Serve the request using the proxy
-	proxy.ServeHTTP(w, r)
+	// Create a new request to forward to Peer
+	req, err := http.NewRequest(r.Method, parsedPeerURL.String(), r.Body)
+	if err != nil {
+		http.Error(w, "Failed to create request: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Copy Content-Type and other headers from the original request
+	req.Header = r.Header.Clone()
+
+	// logForwardedRequest(req)
+
+	// Send the request to GoApp 2
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		http.Error(w, "Error forwarding request: "+err.Error(), http.StatusBadGateway)
+		return
+	}
+	defer resp.Body.Close()
+
+	// logResponse(resp)
+
+	var body []byte
+	// Check if the response is compressed with zstd
+	if resp.Header.Get("Content-Encoding") == "zstd" {
+		// Decompress the zstd response
+		decoder, err := zstd.NewReader(resp.Body)
+		if err != nil {
+			log.Fatalf("Failed to create zstd decoder: %v", err)
+		}
+		defer decoder.Close()
+
+		// Read the decompressed data
+		body, err = io.ReadAll(decoder)
+		if err != nil {
+			log.Fatalf("Failed to read decompressed body: %v", err)
+		}
+
+		fmt.Printf("Decompressed Response: %s\n", body)
+	} else {
+		// Handle uncompressed response
+		body, err = io.ReadAll(resp.Body)
+		if err != nil {
+			log.Fatalf("Failed to read response body: %v", err)
+		}
+
+		fmt.Printf("Response: %s\n", body)
+	}
+
+	// Forward the response back to the React client
+	w.WriteHeader(resp.StatusCode)
+	w.Write(body)
+}
+
+// logRequest logs details of the incoming HTTP request
+func logRequest(r *http.Request) {
+	log.Printf("Incoming Request -> Method: %s, URL: %s", r.Method, r.URL.String())
+	log.Printf("Incoming Headers: %v", r.Header)
+	if r.Body != nil {
+		body, _ := io.ReadAll(r.Body)
+		log.Printf("Incoming Body: %s", string(body))
+		r.Body = io.NopCloser(bytes.NewReader(body)) // Reset the body for further use
+	}
+}
+
+// logForwardedRequest logs details of the request sent to GoApp 2
+func logForwardedRequest(req *http.Request) {
+	log.Printf("Forwarding Request -> Method: %s, URL: %s", req.Method, req.URL.String())
+	log.Printf("Forwarding Headers: %v", req.Header)
+	if req.Body != nil {
+		body, _ := io.ReadAll(req.Body)
+		log.Printf("Forwarding Body: %s", string(body))
+		req.Body = io.NopCloser(bytes.NewReader(body)) // Reset the body for sending
+	}
+}
+
+// logResponse logs details of the HTTP response received from GoApp 2
+func logResponse(resp *http.Response) {
+	log.Printf("Response Status: %s", resp.Status)
+	log.Printf("Response Headers: %v", resp.Header)
+	if resp.Body != nil {
+		body, _ := io.ReadAll(resp.Body)
+		log.Printf("Response Body: %s", string(body))
+		resp.Body = io.NopCloser(bytes.NewReader(body)) // Reset the body for further use
+	}
 }
