@@ -892,6 +892,16 @@ func (repman *ReplicationManager) handlerMuxPeerRegister(w http.ResponseWriter, 
 		http.Error(w, "Peer does not have cloud18 setup!", 500)
 		return
 	}
+
+	_, ok := mycluster.APIUsers[userform.Username]
+	if ok {
+		http.Error(w, "User already registered on peer cluster!", http.StatusConflict)
+		return
+	}
+
+	userform.Roles = "pending"
+	mycluster.AddUser(userform)
+
 	msg := fmt.Sprintf(`
 Subject: New Peer User Registration Request for Cluster %s: %s
 
