@@ -86,7 +86,8 @@ export const clusterService = {
   runRegressionTests,
 
   // User management APIs
-  addUser
+  addUser,
+  peerRegister,
 }
 
 //#region Cluster data APIs
@@ -393,4 +394,9 @@ function runRegressionTests(clusterName, baseURL) {
 function addUser(user, baseURL) {
   return getApi(baseURL).post('/users', user)
 }
+
+function peerRegister(username, password, clusterName, baseURL) {
+  return getApi(baseURL).post(`clusters/${clusterName}/peer-register`,{username, password})
+}
+
 //#endregion User management APIs

@@ -12,22 +12,15 @@ import {
   ModalOverlay,
   Stack
 } from '@chakra-ui/react'
-import React, { useEffect, useState } from 'react'
-import { useDispatch } from 'react-redux'
+import React, { useState } from 'react'
 import RMButton from '../RMButton'
 import { useTheme } from '../../ThemeProvider'
 import parentStyles from './styles.module.scss'
-import { peerLogin } from '../../redux/authSlice'
 
-function PeerLoginModal({ baseURL, isOpen, closeModal }) {
-  const dispatch = useDispatch()
+function PeerLoginModal({ title, isOpen, closeModal, onSaveModal }) {
   const { theme } = useTheme()
   const [password, setPassword] = useState('')
   const [passwordError, setPasswordError] = useState('')
-
-  useEffect(() => {
-
-  },[baseURL])
 
   const handleSave = () => {
     setPasswordError('')
@@ -37,17 +30,14 @@ function PeerLoginModal({ baseURL, isOpen, closeModal }) {
       return
     }
 
-    dispatch(peerLogin({password,baseURL}))
-
-    
-    closeModal()
+    onSaveModal(password)
   }
 
   return (
     <Modal isOpen={isOpen} onClose={closeModal}>
       <ModalOverlay />
       <ModalContent className={theme === 'light' ? parentStyles.modalLightContent : parentStyles.modalDarkContent}>
-        <ModalHeader>Login to Peer Cluster</ModalHeader>
+        <ModalHeader>{title}</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
           <Stack spacing='5'>

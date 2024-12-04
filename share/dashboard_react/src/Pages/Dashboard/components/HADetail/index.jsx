@@ -25,7 +25,7 @@ function HADetail({ selectedCluster }) {
     if (selectedCluster) {
       setFailOverData([
         { key: 'Checks', value: selectedCluster.monitorSpin },
-        { key: 'Failed', value: `${selectedCluster.failoverCounter} / ${selectedCluster.config.failoverLimit}` },
+        { key: 'Failed', value: `${selectedCluster.failoverCounter} / ${selectedCluster?.config?.failoverLimit}` },
         { key: 'Last Time', value: selectedCluster.failoverLastTime }
       ])
 

@@ -982,6 +982,20 @@ export const addUser = createAsyncThunk(
   }
 )
 
+export const peerRegister = createAsyncThunk('auth/peerRegister', async ({  password, clusterName, baseURL }, thunkAPI) => {
+  try {
+    const { data, status } = await clusterService.peerRegister(thunkAPI.getState().auth.user.username, password, clusterName, baseURL)
+    showSuccessBanner(`Register user to peer cluster sent!`, status, thunkAPI)
+    return { data, status }
+  } catch (error) {
+    showErrorBanner(`Register user to peer cluster failed!`, error, thunkAPI)
+    const errorMessage = error.message || 'Request failed'
+    const errorStatus = error.errorStatus || 500 // Default error status if not provided
+    // Handle errors (including custom errorStatus)
+    return thunkAPI.rejectWithValue({ errorMessage, errorStatus }) // Pass the entire Error object to the rejected action
+  }
+})
+
 const initialState = {
   loading: false,
   error: null,
