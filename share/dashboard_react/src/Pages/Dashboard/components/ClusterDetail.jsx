@@ -354,32 +354,32 @@ function ClusterDetail({ selectedCluster }) {
   ]
 
   const dataObject = [
-    { key: 'Name', value: selectedCluster.name },
-    { key: 'Orchestrator', value: selectedCluster.config.provOrchestrator },
+    { key: 'Name', value: selectedCluster?.name },
+    { key: 'Orchestrator', value: selectedCluster?.config?.provOrchestrator },
     {
       key: 'Status',
       value: (
         <Wrap>
           {
             <>
-              {selectedCluster.config.testInjectTraffic && <TagPill type='success' text='PrxTraffic' />}
-              {selectedCluster.isProvision ? (
+              {selectedCluster?.config?.testInjectTraffic && <TagPill type='success' text='PrxTraffic' />}
+              {selectedCluster?.isProvision ? (
                 <TagPill colorScheme='green' text='IsProvision' />
               ) : (
                 <TagPill colorScheme='orange' text='NeedProvision' />
               )}
-              {selectedCluster.isNeedDatabasesRollingRestart && (
+              {selectedCluster?.isNeedDatabasesRollingRestart && (
                 <TagPill colorScheme='orange' text='NeedRollingRestart' />
               )}
-              {selectedCluster.isNeedDatabasesRollingReprov && (
+              {selectedCluster?.isNeedDatabasesRollingReprov && (
                 <TagPill colorScheme='orange' text='NeedRollingReprov' />
               )}
-              {selectedCluster.isNeedDatabasesRestart && <TagPill colorScheme='orange' text='NeedDabaseRestart' />}
-              {selectedCluster.isNeedDatabasesReprov && <TagPill colorScheme='orange' text='NeedDatabaseReprov' />}
-              {selectedCluster.isNeedProxiesRestart && <TagPill colorScheme='orange' text='NeedProxyRestart' />}
-              {selectedCluster.isNeedProxiesReprov && <TagPill colorScheme='orange' text='NeedProxyReprov' />}
-              {selectedCluster.isNotMonitoring && <TagPill colorScheme='orange' text='UnMonitored' />}
-              {selectedCluster.isCapturing && <TagPill colorScheme='orange' text='Capturing' />}
+              {selectedCluster?.isNeedDatabasesRestart && <TagPill colorScheme='orange' text='NeedDabaseRestart' />}
+              {selectedCluster?.isNeedDatabasesReprov && <TagPill colorScheme='orange' text='NeedDatabaseReprov' />}
+              {selectedCluster?.isNeedProxiesRestart && <TagPill colorScheme='orange' text='NeedProxyRestart' />}
+              {selectedCluster?.isNeedProxiesReprov && <TagPill colorScheme='orange' text='NeedProxyReprov' />}
+              {selectedCluster?.isNotMonitoring && <TagPill colorScheme='orange' text='UnMonitored' />}
+              {selectedCluster?.isCapturing && <TagPill colorScheme='orange' text='Capturing' />}
             </>
           }
         </Wrap>

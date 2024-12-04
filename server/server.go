@@ -142,6 +142,8 @@ type ReplicationManager struct {
 	CheckSumConfig                                   map[string]hash.Hash              `json:"-"`
 	peerClientMap                                    map[string]*peerclient.PeerClient `json:"-"`
 	GitRepo                                          *githelper.GitRepository          `json:"-"`
+	IsHttpListenerReady                              bool                              `json:"-"`
+	IsApiListenerReady                               bool                              `json:"-"`
 	fileHook                                         log.Hook
 	repmanv3.UnimplementedClusterPublicServiceServer `json:"-"`
 	repmanv3.UnimplementedClusterServiceServer       `json:"-"`
@@ -1600,6 +1602,10 @@ func (repman *ReplicationManager) LimitPrivileges() {
 	var err error
 	var targetUser *user.User
 
+	for !repman.IsHttpListenerReady || !repman.IsApiListenerReady {
+		time.Sleep(100 * time.Millisecond)
+	}
+
 	// Check if the current user is root (UID 0)
 	if repman.OsUser.Uid == "0" {
 		if repman.Conf.MonitoringSystemUser != "" {
@@ -1891,10 +1897,16 @@ func (repman *ReplicationManager) Run() error {
 	//	repman.currentCluster.SetCfgGroupDisplay(strClusters)
 	if repman.Conf.ApiServ {
 		go repman.apiserver()
+	} else {
+		// No need to wait for API listener to limit privilege
+		repman.IsApiListenerReady = true
 	}
 	// HTTP server should start after Cluster Init or may lead to various nil pointer if clients still requesting
 	if repman.Conf.HttpServ {
 		go repman.httpserver()
+	} else {
+		// No need to wait for API listener to limit privilege
+		repman.IsHttpListenerReady = true
 	}
 
 	repman.globalScheduler.Start()

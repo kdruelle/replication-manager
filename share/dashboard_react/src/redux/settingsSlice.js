@@ -4,7 +4,8 @@ import { settingsService } from '../services/settingsService'
 
 export const switchSetting = createAsyncThunk('settings/switchSetting', async ({ clusterName, setting }, thunkAPI) => {
   try {
-    const { data, status } = await settingsService.switchSettings(clusterName, setting)
+    const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+    const { data, status } = await settingsService.switchSettings(clusterName, setting, baseURL)
     // if (setting === 'monitoring-scheduler') {
     //   await clusterService.getClusterData(clusterName)
     // }
@@ -20,7 +21,8 @@ export const changeTopology = createAsyncThunk(
   'settings/changeTopology',
   async ({ clusterName, topology }, thunkAPI) => {
     try {
-      const { data, status } = await settingsService.changeTopology(clusterName, topology)
+      const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+      const { data, status } = await settingsService.changeTopology(clusterName, topology, baseURL)
       showSuccessBanner(`Topology changed to ${topology} successfully!`, status, thunkAPI)
       return { data, status }
     } catch (error) {
@@ -33,7 +35,8 @@ export const changeTopology = createAsyncThunk(
 export const setSetting = createAsyncThunk('settings/setSetting', async ({ clusterName, setting, value }, thunkAPI) => {
   try {
     // showLoaderBanner(`${setting} `, thunkAPI)
-    const { data, status } = await settingsService.setSetting(clusterName, setting, value)
+    const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+    const { data, status } = await settingsService.setSetting(clusterName, setting, value, baseURL)
     showSuccessBanner(`${setting} changed successfully!`, status, thunkAPI)
     return { data, status }
   } catch (error) {
@@ -46,7 +49,8 @@ export const updateGraphiteWhiteList = createAsyncThunk(
   'settings/updateGraphiteWhiteList',
   async ({ clusterName, whiteListValue }, thunkAPI) => {
     try {
-      const { data, status } = await settingsService.updateGraphiteWhiteList(clusterName, whiteListValue)
+      const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+      const { data, status } = await settingsService.updateGraphiteWhiteList(clusterName, whiteListValue, baseURL)
       showSuccessBanner(`Graphite Whitelist Regexp updated successfully!`, status, thunkAPI)
       return { data, status }
     } catch (error) {
@@ -60,7 +64,8 @@ export const updateGraphiteBlackList = createAsyncThunk(
   'settings/updateGraphiteBlackList',
   async ({ clusterName, blackListValue }, thunkAPI) => {
     try {
-      const { data, status } = await settingsService.updateGraphiteBlackList(clusterName, blackListValue)
+      const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+      const { data, status } = await settingsService.updateGraphiteBlackList(clusterName, blackListValue, baseURL)
       showSuccessBanner(`Graphite BlackList Regexp updated successfully!`, status, thunkAPI)
       return { data, status }
     } catch (error) {

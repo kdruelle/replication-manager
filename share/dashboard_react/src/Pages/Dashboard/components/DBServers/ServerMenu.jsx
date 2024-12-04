@@ -18,7 +18,7 @@ import {
   setAsPreferred,
   setAsUnrated,
   setMaintenanceMode,
-  skip1ReplicationEvent,
+  skipReplicationEvent,
   startDatabase,
   startSlave,
   stopDatabase,
@@ -296,7 +296,7 @@ function ServerMenu({
                         openConfirmModal()
                         setConfirmTitle(`Confirm skip replication event for ${serverName}?`)
                         setConfirmHandler(
-                          () => () => dispatch(skip1ReplicationEvent({ clusterName, serverId: row.id }))
+                          () => () => dispatch(skipReplicationEvent({ clusterName, serverId: row.id }))
                         )
                       }
                     }

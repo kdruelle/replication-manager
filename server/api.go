@@ -31,6 +31,7 @@ import (
 	"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/go-git/go-git/v5"
 	"github.com/iancoleman/strcase"
+	"github.com/klauspost/compress/zstd"
 	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
@@ -44,6 +45,7 @@ import (
 	"github.com/signal18/replication-manager/config"
 	"github.com/signal18/replication-manager/regtest"
 	"github.com/signal18/replication-manager/share"
+	"github.com/signal18/replication-manager/utils/alert"
 	"github.com/signal18/replication-manager/utils/githelper"
 	"github.com/signal18/replication-manager/utils/peerclient"
 	"github.com/signal18/replication-manager/utils/state"
@@ -223,7 +225,14 @@ func (repman *ReplicationManager) apiserver() {
 	}
 
 	router.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		http.Redirect(w, r, "/", http.StatusFound)
+		// Check if the path starts with "/api"
+		if len(r.URL.Path) >= 4 && r.URL.Path[:4] == "/api" {
+			// Return 404 for /api paths
+			http.NotFound(w, r)
+		} else {
+			// Redirect non /api paths to "/"
+			http.Redirect(w, r, "/", http.StatusFound)
+		}
 	})
 
 	router.HandleFunc("/api/login", repman.loginHandler)
@@ -243,6 +252,9 @@ func (repman *ReplicationManager) apiserver() {
 	))
 	router.Handle("/api/clusters/peers", negroni.New(
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxPeerClusters)),
+	))
+	router.Handle("/api/clusters/{clusterName}/peer-register", negroni.New(
+		negroni.Wrap(http.HandlerFunc(repman.handlerMuxPeerRegister)),
 	))
 	router.Handle("/api/prometheus", negroni.New(
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxPrometheus)),
@@ -333,7 +345,7 @@ func (repman *ReplicationManager) apiserver() {
 	if err != nil {
 		log.Errorf("JWT API can't start: %s", err)
 	}
-
+	repman.IsApiListenerReady = true
 }
 
 //////////////////////////////////////////
@@ -851,6 +863,76 @@ func (repman *ReplicationManager) handlerMuxPeerRoutes(w http.ResponseWriter, r 
 	w.Write(res)
 }
 
+func (repman *ReplicationManager) handlerMuxPeerRegister(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	vars := mux.Vars(r)
+
+	var userform cluster.UserForm
+	//decode request into UserCredentials struct
+	err := json.NewDecoder(r.Body).Decode(&userform)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "Error in request")
+		return
+	}
+
+	mycluster := repman.getClusterByName(vars["clusterName"])
+	if mycluster == nil {
+		http.Error(w, "No valid cluster", 500)
+		return
+	}
+
+	tok, _ := githelper.GetGitLabTokenBasicAuth(userform.Username, userform.Password, false)
+	if tok == "" {
+		http.Error(w, "Error logging in to gitlab: Token is empty", http.StatusUnauthorized)
+		return
+	}
+
+	if repman.Conf.Cloud18GitUser != "" {
+		http.Error(w, "Peer does not have cloud18 setup!", 500)
+		return
+	}
+
+	_, ok := mycluster.APIUsers[userform.Username]
+	if ok {
+		http.Error(w, "User already registered on peer cluster!", http.StatusConflict)
+		return
+	}
+
+	userform.Roles = "pending"
+	mycluster.AddUser(userform)
+
+	msg := fmt.Sprintf(`
+Subject: New Peer User Registration Request for Cluster %s: %s
+
+Dear Admin,
+
+A new user has requested to register for the cluster service.
+
+Details:
+- User Email: %s
+- Cluster: %s
+- Registration Request Time: %s
+
+Please review the registration request and take the necessary actions.
+
+Best regards,
+Replication Manager
+`, mycluster.Name, userform.Username, userform.Username, mycluster.Name, time.Now().Format("2006-01-02 15:04:05"))
+
+	subj := "Replication-Manager started"
+	alert := alert.Alert{}
+	alert.Cluster = mycluster.Name
+	err = alert.EmailMessage(msg, subj, repman.Conf)
+	if err != nil {
+		http.Error(w, "Error sending email :"+err.Error(), 500)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Email sent to admin!"))
+}
+
 func (repman *ReplicationManager) validateTokenMiddleware(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	//validate token
@@ -1148,6 +1230,8 @@ func (repman *ReplicationManager) DynamicPeerHandler(w http.ResponseWriter, r *h
 	encodedPeer := vars["encodedpeer"]
 	route := vars["route"]
 
+	// logRequest(r)
+
 	// Decode the Base64-encoded peer URL
 	peer, err := base64.StdEncoding.DecodeString(encodedPeer)
 	if err != nil {
@@ -1177,18 +1261,96 @@ func (repman *ReplicationManager) DynamicPeerHandler(w http.ResponseWriter, r *h
 	// Attach the specific route from the URL to the peer URL
 	parsedPeerURL.Path = parsedPeerURL.Path + "/" + route
 
-	// Create a reverse proxy for the peer
-	proxy := httputil.NewSingleHostReverseProxy(parsedPeerURL)
-
-	// Modify the response to add "X-Processed-By" header
-	proxy.ModifyResponse = func(resp *http.Response) error {
-		resp.Header.Set("X-Processed-By", "Replication Manager Peer")
-		return nil
-	}
-
 	// Log the forwarding request
 	log.Printf("Forwarding request to: %s", parsedPeerURL.String())
 
-	// Serve the request using the proxy
-	proxy.ServeHTTP(w, r)
+	// Create a new request to forward to Peer
+	req, err := http.NewRequest(r.Method, parsedPeerURL.String(), r.Body)
+	if err != nil {
+		http.Error(w, "Failed to create request: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Copy Content-Type and other headers from the original request
+	req.Header = r.Header.Clone()
+
+	// logForwardedRequest(req)
+
+	// Send the request to GoApp 2
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		http.Error(w, "Error forwarding request: "+err.Error(), http.StatusBadGateway)
+		return
+	}
+	defer resp.Body.Close()
+
+	// logResponse(resp)
+
+	var body []byte
+	// Check if the response is compressed with zstd
+	if resp.Header.Get("Content-Encoding") == "zstd" {
+		// Decompress the zstd response
+		decoder, err := zstd.NewReader(resp.Body)
+		if err != nil {
+			http.Error(w, "Failed to create zstd decoder: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+		defer decoder.Close()
+
+		// Read the decompressed data
+		body, err = io.ReadAll(decoder)
+		if err != nil {
+			http.Error(w, "Failed to read decompressed body: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// fmt.Printf("Decompressed Response: %s\n", body)
+	} else {
+		// Handle uncompressed response
+		body, err = io.ReadAll(resp.Body)
+		if err != nil {
+			http.Error(w, "Failed to read response body: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// fmt.Printf("Response: %s\n", body)
+	}
+
+	// Forward the response back to the React client
+	w.WriteHeader(resp.StatusCode)
+	w.Write(body)
+}
+
+// logRequest logs details of the incoming HTTP request
+func logRequest(r *http.Request) {
+	log.Printf("Incoming Request -> Method: %s, URL: %s", r.Method, r.URL.String())
+	log.Printf("Incoming Headers: %v", r.Header)
+	if r.Body != nil {
+		body, _ := io.ReadAll(r.Body)
+		log.Printf("Incoming Body: %s", string(body))
+		r.Body = io.NopCloser(bytes.NewReader(body)) // Reset the body for further use
+	}
+}
+
+// logForwardedRequest logs details of the request sent to GoApp 2
+func logForwardedRequest(req *http.Request) {
+	log.Printf("Forwarding Request -> Method: %s, URL: %s", req.Method, req.URL.String())
+	log.Printf("Forwarding Headers: %v", req.Header)
+	if req.Body != nil {
+		body, _ := io.ReadAll(req.Body)
+		log.Printf("Forwarding Body: %s", string(body))
+		req.Body = io.NopCloser(bytes.NewReader(body)) // Reset the body for sending
+	}
+}
+
+// logResponse logs details of the HTTP response received from GoApp 2
+func logResponse(resp *http.Response) {
+	log.Printf("Response Status: %s", resp.Status)
+	log.Printf("Response Headers: %v", resp.Header)
+	if resp.Body != nil {
+		body, _ := io.ReadAll(resp.Body)
+		log.Printf("Response Body: %s", string(body))
+		resp.Body = io.NopCloser(bytes.NewReader(body)) // Reset the body for further use
+	}
 }

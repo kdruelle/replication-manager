@@ -4,7 +4,8 @@ import { configService } from '../services/configService'
 
 export const addDBTag = createAsyncThunk('configs/addDBTag', async ({ clusterName, tag }, thunkAPI) => {
   try {
-    const { data, status } = await configService.addDBTag(clusterName, tag)
+    const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+    const { data, status } = await configService.addDBTag(clusterName, tag, baseURL)
     showSuccessBanner(`Db tag ${tag} added successful!`, status, thunkAPI)
     return { data, status }
   } catch (error) {
@@ -14,7 +15,8 @@ export const addDBTag = createAsyncThunk('configs/addDBTag', async ({ clusterNam
 })
 export const dropDBTag = createAsyncThunk('configs/dropDBTag', async ({ clusterName, tag }, thunkAPI) => {
   try {
-    const { data, status } = await configService.dropDBTag(clusterName, tag)
+    const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+    const { data, status } = await configService.dropDBTag(clusterName, tag, baseURL)
     showSuccessBanner(`Db tag ${tag} dropped successful!`, status, thunkAPI)
     return { data, status }
   } catch (error) {
@@ -25,7 +27,8 @@ export const dropDBTag = createAsyncThunk('configs/dropDBTag', async ({ clusterN
 
 export const addProxyTag = createAsyncThunk('configs/addProxyTag', async ({ clusterName, tag }, thunkAPI) => {
   try {
-    const { data, status } = await configService.addProxyTag(clusterName, tag)
+    const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+    const { data, status } = await configService.addProxyTag(clusterName, tag, baseURL)
     showSuccessBanner(`Proxy tag ${tag} added successful!`, status, thunkAPI)
     return { data, status }
   } catch (error) {
@@ -36,7 +39,8 @@ export const addProxyTag = createAsyncThunk('configs/addProxyTag', async ({ clus
 
 export const dropProxyTag = createAsyncThunk('configs/dropProxyTag', async ({ clusterName, tag }, thunkAPI) => {
   try {
-    const { data, status } = await configService.dropProxyTag(clusterName, tag)
+    const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+    const { data, status } = await configService.dropProxyTag(clusterName, tag, baseURL)
     showSuccessBanner(`Proxy tag ${tag} dropped successful!`, status, thunkAPI)
     return { data, status }
   } catch (error) {

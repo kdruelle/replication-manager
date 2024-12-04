@@ -4,7 +4,8 @@ import { handleError, showErrorBanner, showSuccessBanner } from '../utility/comm
 
 export const getClusterData = createAsyncThunk('cluster/getClusterData', async ({ clusterName }, thunkAPI) => {
   try {
-    const { data, status } = await clusterService.getClusterData(clusterName)
+    const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+    const { data, status } = await clusterService.getClusterData(clusterName, baseURL)
     return { data, status }
   } catch (error) {
     handleError(error, thunkAPI)
@@ -13,7 +14,8 @@ export const getClusterData = createAsyncThunk('cluster/getClusterData', async (
 
 export const getClusterAlerts = createAsyncThunk('cluster/getClusterAlerts', async ({ clusterName }, thunkAPI) => {
   try {
-    const { data, status } = await clusterService.getClusterAlerts(clusterName)
+    const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+    const { data, status } = await clusterService.getClusterAlerts(clusterName, baseURL)
     return { data, status }
   } catch (error) {
     handleError(error, thunkAPI)
@@ -22,7 +24,8 @@ export const getClusterAlerts = createAsyncThunk('cluster/getClusterAlerts', asy
 
 export const getClusterMaster = createAsyncThunk('cluster/getClusterMaster', async ({ clusterName }, thunkAPI) => {
   try {
-    const { data, status } = await clusterService.getClusterMaster(clusterName)
+    const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+    const { data, status } = await clusterService.getClusterMaster(clusterName, baseURL)
     return { data, status }
   } catch (error) {
     handleError(error, thunkAPI)
@@ -31,7 +34,8 @@ export const getClusterMaster = createAsyncThunk('cluster/getClusterMaster', asy
 
 export const getClusterServers = createAsyncThunk('cluster/getClusterServers', async ({ clusterName }, thunkAPI) => {
   try {
-    const { data, status } = await clusterService.getClusterServers(clusterName)
+    const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+    const { data, status } = await clusterService.getClusterServers(clusterName, baseURL)
     return { data, status }
   } catch (error) {
     handleError(error, thunkAPI)
@@ -40,7 +44,8 @@ export const getClusterServers = createAsyncThunk('cluster/getClusterServers', a
 
 export const getClusterProxies = createAsyncThunk('cluster/getClusterProxies', async ({ clusterName }, thunkAPI) => {
   try {
-    const { data, status } = await clusterService.getClusterProxies(clusterName)
+    const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+    const { data, status } = await clusterService.getClusterProxies(clusterName, baseURL)
     return { data, status }
   } catch (error) {
     handleError(error, thunkAPI)
@@ -51,7 +56,8 @@ export const getClusterCertificates = createAsyncThunk(
   'cluster/getClusterCertificates',
   async ({ clusterName }, thunkAPI) => {
     try {
-      const { data, status } = await clusterService.getClusterCertificates(clusterName)
+      const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+      const { data, status } = await clusterService.getClusterCertificates(clusterName, baseURL)
       return { data, status }
     } catch (error) {
       handleError(error, thunkAPI)
@@ -61,7 +67,8 @@ export const getClusterCertificates = createAsyncThunk(
 
 export const getTopProcess = createAsyncThunk('cluster/getTopProcess', async ({ clusterName }, thunkAPI) => {
   try {
-    const { data, status } = await clusterService.getTopProcess(clusterName)
+    const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+    const { data, status } = await clusterService.getTopProcess(clusterName, baseURL)
     return { data, status }
   } catch (error) {
     handleError(error, thunkAPI)
@@ -70,7 +77,8 @@ export const getTopProcess = createAsyncThunk('cluster/getTopProcess', async ({ 
 
 export const getBackupSnapshot = createAsyncThunk('cluster/getBackupSnapshot', async ({ clusterName }, thunkAPI) => {
   try {
-    const { data, status } = await clusterService.getBackupSnapshot(clusterName)
+    const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+    const { data, status } = await clusterService.getBackupSnapshot(clusterName, baseURL)
     return { data, status }
   } catch (error) {
     handleError(error, thunkAPI)
@@ -79,7 +87,8 @@ export const getBackupSnapshot = createAsyncThunk('cluster/getBackupSnapshot', a
 
 export const getJobs = createAsyncThunk('cluster/getJobs', async ({ clusterName }, thunkAPI) => {
   try {
-    const { data, status } = await clusterService.getJobs(clusterName)
+    const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+    const { data, status } = await clusterService.getJobs(clusterName, baseURL)
     return { data, status }
   } catch (error) {
     handleError(error, thunkAPI)
@@ -88,7 +97,8 @@ export const getJobs = createAsyncThunk('cluster/getJobs', async ({ clusterName 
 
 export const getShardSchema = createAsyncThunk('cluster/getShardSchema', async ({ clusterName }, thunkAPI) => {
   try {
-    const { data, status } = await clusterService.getShardSchema(clusterName)
+    const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+    const { data, status } = await clusterService.getShardSchema(clusterName, baseURL)
     return { data, status }
   } catch (error) {
     handleError(error, thunkAPI)
@@ -97,7 +107,8 @@ export const getShardSchema = createAsyncThunk('cluster/getShardSchema', async (
 
 export const getQueryRules = createAsyncThunk('cluster/getQueryRules', async ({ clusterName }, thunkAPI) => {
   try {
-    const { data, status } = await clusterService.getQueryRules(clusterName)
+    const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+    const { data, status } = await clusterService.getQueryRules(clusterName, baseURL)
     return { data, status }
   } catch (error) {
     handleError(error, thunkAPI)
@@ -106,7 +117,8 @@ export const getQueryRules = createAsyncThunk('cluster/getQueryRules', async ({ 
 
 export const switchOverCluster = createAsyncThunk('cluster/switchOverCluster', async ({ clusterName }, thunkAPI) => {
   try {
-    const { data, status } = await clusterService.switchOverCluster(clusterName)
+    const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+    const { data, status } = await clusterService.switchOverCluster(clusterName, baseURL)
     showSuccessBanner('Switchover Successful!', status, thunkAPI)
     return { data, status }
   } catch (error) {
@@ -117,7 +129,8 @@ export const switchOverCluster = createAsyncThunk('cluster/switchOverCluster', a
 
 export const failOverCluster = createAsyncThunk('cluster/failOverCluster', async ({ clusterName }, thunkAPI) => {
   try {
-    const { data, status } = await clusterService.failOverCluster(clusterName)
+    const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+    const { data, status } = await clusterService.failOverCluster(clusterName, baseURL)
     showSuccessBanner('Failover Successful!', status, thunkAPI)
     return { data, status }
   } catch (error) {
@@ -130,7 +143,8 @@ export const resetFailOverCounter = createAsyncThunk(
   'cluster/resetFailOverCounter',
   async ({ clusterName }, thunkAPI) => {
     try {
-      const { data, status } = await clusterService.resetFailOverCounter(clusterName)
+      const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+      const { data, status } = await clusterService.resetFailOverCounter(clusterName, baseURL)
       showSuccessBanner('Failover counter reset!', status, thunkAPI)
       return { data, status }
     } catch (error) {
@@ -141,7 +155,8 @@ export const resetFailOverCounter = createAsyncThunk(
 )
 export const resetSLA = createAsyncThunk('cluster/resetSLA', async ({ clusterName }, thunkAPI) => {
   try {
-    const { data, status } = await clusterService.resetSLA(clusterName)
+    const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+    const { data, status } = await clusterService.resetSLA(clusterName, baseURL)
     showSuccessBanner('SLA reset!', status, thunkAPI)
     return { data, status }
   } catch (error) {
@@ -152,7 +167,8 @@ export const resetSLA = createAsyncThunk('cluster/resetSLA', async ({ clusterNam
 
 export const toggleTraffic = createAsyncThunk('cluster/toggleTraffic', async ({ clusterName }, thunkAPI) => {
   try {
-    const { data, status } = await clusterService.toggleTraffic(clusterName)
+    const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+    const { data, status } = await clusterService.toggleTraffic(clusterName, baseURL)
     showSuccessBanner('Traffic toggle done!', status, thunkAPI)
     return { data, status }
   } catch (error) {
@@ -165,7 +181,8 @@ export const addServer = createAsyncThunk(
   'cluster/addServer',
   async ({ clusterName, host, port, dbType }, thunkAPI) => {
     try {
-      const { data, status } = await clusterService.addServer(clusterName, host, port, dbType)
+      const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+      const { data, status } = await clusterService.addServer(clusterName, host, port, dbType, baseURL)
       showSuccessBanner('New server added!', status, thunkAPI)
       return { data, status }
     } catch (error) {
@@ -177,7 +194,8 @@ export const addServer = createAsyncThunk(
 
 export const provisionCluster = createAsyncThunk('cluster/provisionCluster', async ({ clusterName }, thunkAPI) => {
   try {
-    const { data, status } = await clusterService.provisionCluster(clusterName)
+    const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+    const { data, status } = await clusterService.provisionCluster(clusterName, baseURL)
     showSuccessBanner('Cluster provision successful', status, thunkAPI)
     return { data, status }
   } catch (error) {
@@ -188,7 +206,8 @@ export const provisionCluster = createAsyncThunk('cluster/provisionCluster', asy
 
 export const unProvisionCluster = createAsyncThunk('cluster/unProvisionCluster', async ({ clusterName }, thunkAPI) => {
   try {
-    const { data, status } = await clusterService.unProvisionCluster(clusterName)
+    const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+    const { data, status } = await clusterService.unProvisionCluster(clusterName, baseURL)
     showSuccessBanner('Cluster unprovision successful!', status, thunkAPI)
     return { data, status }
   } catch (error) {
@@ -201,7 +220,8 @@ export const setCredentials = createAsyncThunk(
   'cluster/setCredentials',
   async ({ clusterName, credentialType, credential }, thunkAPI) => {
     try {
-      const { data, status } = await clusterService.setCredentials(clusterName, credentialType, credential)
+      const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+      const { data, status } = await clusterService.setCredentials(clusterName, credentialType, credential, baseURL)
       showSuccessBanner(`Credentials for ${credentialType} set!`, status, thunkAPI)
       return { data, status }
     } catch (error) {
@@ -215,7 +235,8 @@ export const setDBCredential = createAsyncThunk(
   'cluster/setDBCredential',
   async ({ clusterName, credential }, thunkAPI) => {
     try {
-      const { data, status } = await clusterService.setDBCredential(clusterName, credential)
+      const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+      const { data, status } = await clusterService.setDBCredential(clusterName, credential, baseURL)
       showSuccessBanner('Database credentials set!', status, thunkAPI)
       return { data, status }
     } catch (error) {
@@ -229,7 +250,8 @@ export const setReplicationCredential = createAsyncThunk(
   'cluster/setReplicationCredential',
   async ({ clusterName, credential }, thunkAPI) => {
     try {
-      const { data, status } = await clusterService.setReplicationCredential(clusterName, credential)
+      const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+      const { data, status } = await clusterService.setReplicationCredential(clusterName, credential, baseURL)
       showSuccessBanner('Replication credentials set!', status, thunkAPI)
       return { data, status }
     } catch (error) {
@@ -241,7 +263,8 @@ export const setReplicationCredential = createAsyncThunk(
 
 export const rotateDBCredential = createAsyncThunk('cluster/rotateDBCredential', async ({ clusterName }, thunkAPI) => {
   try {
-    const { data, status } = await clusterService.rotateDBCredential(clusterName)
+    const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+    const { data, status } = await clusterService.rotateDBCredential(clusterName, baseURL)
     showSuccessBanner('Database rotation successful!', status, thunkAPI)
     return { data, status }
   } catch (error) {
@@ -252,7 +275,8 @@ export const rotateDBCredential = createAsyncThunk('cluster/rotateDBCredential',
 
 export const rollingOptimize = createAsyncThunk('cluster/rollingOptimize', async ({ clusterName }, thunkAPI) => {
   try {
-    const { data, status } = await clusterService.rollingOptimize(clusterName)
+    const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+    const { data, status } = await clusterService.rollingOptimize(clusterName, baseURL)
     showSuccessBanner('Rolling optimize successful!', status, thunkAPI)
     return { data, status }
   } catch (error) {
@@ -263,7 +287,8 @@ export const rollingOptimize = createAsyncThunk('cluster/rollingOptimize', async
 
 export const rollingRestart = createAsyncThunk('cluster/rollingRestart', async ({ clusterName }, thunkAPI) => {
   try {
-    const { data, status } = await clusterService.rollingRestart(clusterName)
+    const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+    const { data, status } = await clusterService.rollingRestart(clusterName, baseURL)
     showSuccessBanner('Rolling restart successful!', status, thunkAPI)
     return { data, status }
   } catch (error) {
@@ -274,7 +299,8 @@ export const rollingRestart = createAsyncThunk('cluster/rollingRestart', async (
 
 export const rotateCertificates = createAsyncThunk('cluster/rotateCertificates', async ({ clusterName }, thunkAPI) => {
   try {
-    const { data, status } = await clusterService.rotateCertificates(clusterName)
+    const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+    const { data, status } = await clusterService.rotateCertificates(clusterName, baseURL)
     showSuccessBanner('Rotate certificates successful!', status, thunkAPI)
     return { data, status }
   } catch (error) {
@@ -285,7 +311,8 @@ export const rotateCertificates = createAsyncThunk('cluster/rotateCertificates',
 
 export const reloadCertificates = createAsyncThunk('cluster/reloadCertificates', async ({ clusterName }, thunkAPI) => {
   try {
-    const { data, status } = await clusterService.reloadCertificates(clusterName)
+    const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+    const { data, status } = await clusterService.reloadCertificates(clusterName, baseURL)
     showSuccessBanner('Reload certificates successful!', status, thunkAPI)
     return { data, status }
   } catch (error) {
@@ -298,7 +325,8 @@ export const cancelRollingRestart = createAsyncThunk(
   'cluster/cancelRollingRestart',
   async ({ clusterName }, thunkAPI) => {
     try {
-      const { data, status } = await clusterService.cancelRollingRestart(clusterName)
+      const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+      const { data, status } = await clusterService.cancelRollingRestart(clusterName, baseURL)
       showSuccessBanner('Rolling restart cancelled!', status, thunkAPI)
       return { data, status }
     } catch (error) {
@@ -312,7 +340,8 @@ export const cancelRollingReprov = createAsyncThunk(
   'cluster/cancelRollingReprov',
   async ({ clusterName }, thunkAPI) => {
     try {
-      const { data, status } = await clusterService.cancelRollingReprov(clusterName)
+      const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+      const { data, status } = await clusterService.cancelRollingReprov(clusterName, baseURL)
       showSuccessBanner('Rolling reprov cancelled!', status, thunkAPI)
       return { data, status }
     } catch (error) {
@@ -326,7 +355,8 @@ export const bootstrapMasterSlave = createAsyncThunk(
   'cluster/bootstrapMasterSlave',
   async ({ clusterName }, thunkAPI) => {
     try {
-      const { data, status } = await clusterService.bootstrapMasterSlave(clusterName)
+      const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+      const { data, status } = await clusterService.bootstrapMasterSlave(clusterName, baseURL)
       showSuccessBanner('Master slave bootstrap successful!', status, thunkAPI)
       return { data, status }
     } catch (error) {
@@ -340,7 +370,8 @@ export const bootstrapMasterSlaveNoGtid = createAsyncThunk(
   'cluster/bootstrapMasterSlaveNoGtid',
   async ({ clusterName }, thunkAPI) => {
     try {
-      const { data, status } = await clusterService.bootstrapMasterSlaveNoGtid(clusterName)
+      const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+      const { data, status } = await clusterService.bootstrapMasterSlaveNoGtid(clusterName, baseURL)
       showSuccessBanner('Master slave positional bootstrap successful!', status, thunkAPI)
       return { data, status }
     } catch (error) {
@@ -354,7 +385,8 @@ export const bootstrapMultiMaster = createAsyncThunk(
   'cluster/bootstrapMultiMaster',
   async ({ clusterName }, thunkAPI) => {
     try {
-      const { data, status } = await clusterService.bootstrapMultiMaster(clusterName)
+      const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+      const { data, status } = await clusterService.bootstrapMultiMaster(clusterName, baseURL)
       showSuccessBanner('Multi master bootstrap successful!', status, thunkAPI)
       return { data, status }
     } catch (error) {
@@ -368,7 +400,8 @@ export const bootstrapMultiMasterRing = createAsyncThunk(
   'cluster/bootstrapMultiMasterRing',
   async ({ clusterName }, thunkAPI) => {
     try {
-      const { data, status } = await clusterService.bootstrapMultiMasterRing(clusterName)
+      const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+      const { data, status } = await clusterService.bootstrapMultiMasterRing(clusterName, baseURL)
       showSuccessBanner('Multi master ring bootstrap successful!', status, thunkAPI)
       return { data, status }
     } catch (error) {
@@ -382,7 +415,8 @@ export const bootstrapMultiTierSlave = createAsyncThunk(
   'cluster/bootstrapMultiTierSlave',
   async ({ clusterName }, thunkAPI) => {
     try {
-      const { data, status } = await clusterService.bootstrapMultiTierSlave(clusterName)
+      const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+      const { data, status } = await clusterService.bootstrapMultiTierSlave(clusterName, baseURL)
       showSuccessBanner('Multitier slave bootstrap successful!', status, thunkAPI)
       return { data, status }
     } catch (error) {
@@ -394,7 +428,8 @@ export const bootstrapMultiTierSlave = createAsyncThunk(
 
 export const configReload = createAsyncThunk('cluster/configReload', async ({ clusterName }, thunkAPI) => {
   try {
-    const { data, status } = await clusterService.configReload(clusterName)
+    const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+    const { data, status } = await clusterService.configReload(clusterName, baseURL)
     showSuccessBanner('Config is reloaded!', status, thunkAPI)
     return { data, status }
   } catch (error) {
@@ -405,7 +440,8 @@ export const configReload = createAsyncThunk('cluster/configReload', async ({ cl
 
 export const configDiscoverDB = createAsyncThunk('cluster/configDiscoverDB', async ({ clusterName }, thunkAPI) => {
   try {
-    const { data, status } = await clusterService.configDiscoverDB(clusterName)
+    const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+    const { data, status } = await clusterService.configDiscoverDB(clusterName, baseURL)
     showSuccessBanner('Databse discover config successful!', status, thunkAPI)
     return { data, status }
   } catch (error) {
@@ -416,7 +452,8 @@ export const configDiscoverDB = createAsyncThunk('cluster/configDiscoverDB', asy
 
 export const configDynamic = createAsyncThunk('cluster/configDynamic', async ({ clusterName }, thunkAPI) => {
   try {
-    const { data, status } = await clusterService.configDynamic(clusterName)
+    const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+    const { data, status } = await clusterService.configDynamic(clusterName, baseURL)
     showSuccessBanner('Databse apply dynamic config successful!', status, thunkAPI)
     return { data, status }
   } catch (error) {
@@ -427,7 +464,8 @@ export const configDynamic = createAsyncThunk('cluster/configDynamic', async ({ 
 
 export const checksumAllTables = createAsyncThunk('cluster/checksumAllTables', async ({ clusterName }, thunkAPI) => {
   try {
-    const { data, status } = await clusterService.checksumAllTables(clusterName)
+    const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+    const { data, status } = await clusterService.checksumAllTables(clusterName, baseURL)
     showSuccessBanner('Checksum all tables successful!', status, thunkAPI)
     return { data, status }
   } catch (error) {
@@ -440,7 +478,8 @@ export const setMaintenanceMode = createAsyncThunk(
   'cluster/setMaintenanceMode',
   async ({ clusterName, serverId }, thunkAPI) => {
     try {
-      const { data, status } = await clusterService.setMaintenanceMode(clusterName, serverId)
+      const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+      const { data, status } = await clusterService.setMaintenanceMode(clusterName, serverId, baseURL)
       showSuccessBanner('Maintenance mode is set!', status, thunkAPI)
       return { data, status }
     } catch (error) {
@@ -453,7 +492,8 @@ export const promoteToLeader = createAsyncThunk(
   'cluster/promoteToLeader',
   async ({ clusterName, serverId }, thunkAPI) => {
     try {
-      const { data, status } = await clusterService.promoteToLeader(clusterName, serverId)
+      const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+      const { data, status } = await clusterService.promoteToLeader(clusterName, serverId, baseURL)
       showSuccessBanner('Promote to leader successful!', status, thunkAPI)
       return { data, status }
     } catch (error) {
@@ -465,7 +505,8 @@ export const promoteToLeader = createAsyncThunk(
 
 export const setAsUnrated = createAsyncThunk('cluster/setAsUnrated', async ({ clusterName, serverId }, thunkAPI) => {
   try {
-    const { data, status } = await clusterService.setAsUnrated(clusterName, serverId)
+    const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+    const { data, status } = await clusterService.setAsUnrated(clusterName, serverId, baseURL)
     showSuccessBanner('Failover candidate set as unrated!', status, thunkAPI)
     return { data, status }
   } catch (error) {
@@ -478,7 +519,8 @@ export const setAsPreferred = createAsyncThunk(
   'cluster/setAsPreferred',
   async ({ clusterName, serverId }, thunkAPI) => {
     try {
-      const { data, status } = await clusterService.setAsPreferred(clusterName, serverId)
+      const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+      const { data, status } = await clusterService.setAsPreferred(clusterName, serverId, baseURL)
       showSuccessBanner('Failover candidate set as preferred!', status, thunkAPI)
       return { data, status }
     } catch (error) {
@@ -490,7 +532,8 @@ export const setAsPreferred = createAsyncThunk(
 
 export const setAsIgnored = createAsyncThunk('cluster/setAsIgnored', async ({ clusterName, serverId }, thunkAPI) => {
   try {
-    const { data, status } = await clusterService.setAsIgnored(clusterName, serverId)
+    const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+    const { data, status } = await clusterService.setAsIgnored(clusterName, serverId, baseURL)
     showSuccessBanner('Failover candidate set as ignored!', status, thunkAPI)
     return { data, status }
   } catch (error) {
@@ -503,7 +546,8 @@ export const reseedLogicalFromBackup = createAsyncThunk(
   'cluster/reseedLogicalFromBackup',
   async ({ clusterName, serverId }, thunkAPI) => {
     try {
-      const { data, status } = await clusterService.reseedLogicalFromBackup(clusterName, serverId)
+      const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+      const { data, status } = await clusterService.reseedLogicalFromBackup(clusterName, serverId, baseURL)
       showSuccessBanner('Reseed logical from backup successful!', status, thunkAPI)
       return { data, status }
     } catch (error) {
@@ -517,7 +561,8 @@ export const reseedLogicalFromMaster = createAsyncThunk(
   'cluster/reseedLogicalFromMaster',
   async ({ clusterName, serverId }, thunkAPI) => {
     try {
-      const { data, status } = await clusterService.reseedLogicalFromMaster(clusterName, serverId)
+      const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+      const { data, status } = await clusterService.reseedLogicalFromMaster(clusterName, serverId, baseURL)
       showSuccessBanner('Reseed logical from master successful!', status, thunkAPI)
       return { data, status }
     } catch (error) {
@@ -531,7 +576,8 @@ export const reseedPhysicalFromBackup = createAsyncThunk(
   'cluster/reseedPhysicalFromBackup',
   async ({ clusterName, serverId }, thunkAPI) => {
     try {
-      const { data, status } = await clusterService.reseedPhysicalFromBackup(clusterName, serverId)
+      const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+      const { data, status } = await clusterService.reseedPhysicalFromBackup(clusterName, serverId, baseURL)
       showSuccessBanner('Reseed physical from backup successful!', status, thunkAPI)
       return { data, status }
     } catch (error) {
@@ -543,7 +589,8 @@ export const reseedPhysicalFromBackup = createAsyncThunk(
 
 export const flushLogs = createAsyncThunk('cluster/flushLogs', async ({ clusterName, serverId }, thunkAPI) => {
   try {
-    const { data, status } = await clusterService.flushLogs(clusterName, serverId)
+    const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+    const { data, status } = await clusterService.flushLogs(clusterName, serverId, baseURL)
     showSuccessBanner('Logs flush successful!', status, thunkAPI)
     return { data, status }
   } catch (error) {
@@ -556,7 +603,8 @@ export const physicalBackupMaster = createAsyncThunk(
   'cluster/physicalBackupMaster',
   async ({ clusterName, serverId }, thunkAPI) => {
     try {
-      const { data, status } = await clusterService.physicalBackupMaster(clusterName, serverId)
+      const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+      const { data, status } = await clusterService.physicalBackupMaster(clusterName, serverId, baseURL)
       showSuccessBanner('Physical master backup successful!', status, thunkAPI)
       return { data, status }
     } catch (error) {
@@ -568,7 +616,8 @@ export const physicalBackupMaster = createAsyncThunk(
 
 export const logicalBackup = createAsyncThunk('cluster/logicalBackup', async ({ clusterName, serverId }, thunkAPI) => {
   try {
-    const { data, status } = await clusterService.logicalBackup(clusterName, serverId)
+    const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+    const { data, status } = await clusterService.logicalBackup(clusterName, serverId, baseURL)
     showSuccessBanner('Logical backup successful!', status, thunkAPI)
     return { data, status }
   } catch (error) {
@@ -579,7 +628,8 @@ export const logicalBackup = createAsyncThunk('cluster/logicalBackup', async ({ 
 
 export const stopDatabase = createAsyncThunk('cluster/stopDatabase', async ({ clusterName, serverId }, thunkAPI) => {
   try {
-    const { data, status } = await clusterService.stopDatabase(clusterName, serverId)
+    const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+    const { data, status } = await clusterService.stopDatabase(clusterName, serverId, baseURL)
     showSuccessBanner('Database is stopped!', status, thunkAPI)
     return { data, status }
   } catch (error) {
@@ -590,7 +640,8 @@ export const stopDatabase = createAsyncThunk('cluster/stopDatabase', async ({ cl
 
 export const startDatabase = createAsyncThunk('cluster/startDatabase', async ({ clusterName, serverId }, thunkAPI) => {
   try {
-    const { data, status } = await clusterService.startDatabase(clusterName, serverId)
+    const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+    const { data, status } = await clusterService.startDatabase(clusterName, serverId, baseURL)
     showSuccessBanner('Database has started!', status, thunkAPI)
     return { data, status }
   } catch (error) {
@@ -604,7 +655,8 @@ export const provisionDatabase = createAsyncThunk(
   'cluster/provisionDatabase',
   async ({ clusterName, serverId }, thunkAPI) => {
     try {
-      const { data, status } = await clusterService.provisionDatabase(clusterName, serverId)
+      const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+      const { data, status } = await clusterService.provisionDatabase(clusterName, serverId, baseURL)
       showSuccessBanner('Provision database successful!', status, thunkAPI)
       return { data, status }
     } catch (error) {
@@ -618,7 +670,8 @@ export const unprovisionDatabase = createAsyncThunk(
   'cluster/unprovisionDatabase',
   async ({ clusterName, serverId }, thunkAPI) => {
     try {
-      const { data, status } = await clusterService.unprovisionDatabase(clusterName, serverId)
+      const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+      const { data, status } = await clusterService.unprovisionDatabase(clusterName, serverId, baseURL)
       showSuccessBanner('Unprovision database successful!', status, thunkAPI)
       return { data, status }
     } catch (error) {
@@ -630,7 +683,8 @@ export const unprovisionDatabase = createAsyncThunk(
 
 export const runRemoteJobs = createAsyncThunk('cluster/runRemoteJobs', async ({ clusterName, serverId }, thunkAPI) => {
   try {
-    const { data, status } = await clusterService.runRemoteJobs(clusterName, serverId)
+    const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+    const { data, status } = await clusterService.runRemoteJobs(clusterName, serverId, baseURL)
     showSuccessBanner('Remote jobs started!', status, thunkAPI)
     return { data, status }
   } catch (error) {
@@ -643,7 +697,8 @@ export const optimizeServer = createAsyncThunk(
   'cluster/optimizeServer',
   async ({ clusterName, serverId }, thunkAPI) => {
     try {
-      const { data, status } = await clusterService.optimizeServer(clusterName, serverId)
+      const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+      const { data, status } = await clusterService.optimizeServer(clusterName, serverId, baseURL)
       showSuccessBanner('Database optimize successful!', status, thunkAPI)
       return { data, status }
     } catch (error) {
@@ -653,11 +708,12 @@ export const optimizeServer = createAsyncThunk(
   }
 )
 
-export const skip1ReplicationEvent = createAsyncThunk(
-  'cluster/skip1ReplicationEvent',
+export const skipReplicationEvent = createAsyncThunk(
+  'cluster/skipReplicationEvent',
   async ({ clusterName, serverId }, thunkAPI) => {
     try {
-      const { data, status } = await clusterService.skip1ReplicationEvent(clusterName, serverId)
+      const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+      const { data, status } = await clusterService.skipReplicationEvent(clusterName, serverId, baseURL)
       showSuccessBanner('Replication event skipped!', status, thunkAPI)
       return { data, status }
     } catch (error) {
@@ -671,7 +727,8 @@ export const toggleInnodbMonitor = createAsyncThunk(
   'cluster/toggleInnodbMonitor',
   async ({ clusterName, serverId }, thunkAPI) => {
     try {
-      const { data, status } = await clusterService.toggleInnodbMonitor(clusterName, serverId)
+      const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+      const { data, status } = await clusterService.toggleInnodbMonitor(clusterName, serverId, baseURL)
       showSuccessBanner('Toggle Innodb Monitor successful!', status, thunkAPI)
       return { data, status }
     } catch (error) {
@@ -685,7 +742,8 @@ export const toggleSlowQueryCapture = createAsyncThunk(
   'cluster/toggleSlowQueryCapture',
   async ({ clusterName, serverId }, thunkAPI) => {
     try {
-      const { data, status } = await clusterService.toggleSlowQueryCapture(clusterName, serverId)
+      const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+      const { data, status } = await clusterService.toggleSlowQueryCapture(clusterName, serverId, baseURL)
       showSuccessBanner('Toggle Slow Query Capture successful!', status, thunkAPI)
       return { data, status }
     } catch (error) {
@@ -697,7 +755,8 @@ export const toggleSlowQueryCapture = createAsyncThunk(
 
 export const startSlave = createAsyncThunk('cluster/startSlave', async ({ clusterName, serverId }, thunkAPI) => {
   try {
-    const { data, status } = await clusterService.startSlave(clusterName, serverId)
+    const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+    const { data, status } = await clusterService.startSlave(clusterName, serverId, baseURL)
     showSuccessBanner('Slave has started!', status, thunkAPI)
     return { data, status }
   } catch (error) {
@@ -708,7 +767,8 @@ export const startSlave = createAsyncThunk('cluster/startSlave', async ({ cluste
 
 export const stopSlave = createAsyncThunk('cluster/stopSlave', async ({ clusterName, serverId }, thunkAPI) => {
   try {
-    const { data, status } = await clusterService.stopSlave(clusterName, serverId)
+    const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+    const { data, status } = await clusterService.stopSlave(clusterName, serverId, baseURL)
     showSuccessBanner('Slave has stopped!', status, thunkAPI)
     return { data, status }
   } catch (error) {
@@ -721,7 +781,8 @@ export const toggleReadOnly = createAsyncThunk(
   'cluster/toggleReadOnly',
   async ({ clusterName, serverId }, thunkAPI) => {
     try {
-      const { data, status } = await clusterService.toggleReadOnly(clusterName, serverId)
+      const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+      const { data, status } = await clusterService.toggleReadOnly(clusterName, serverId, baseURL)
       showSuccessBanner('Toggle readonly successful!', status, thunkAPI)
       return { data, status }
     } catch (error) {
@@ -733,7 +794,8 @@ export const toggleReadOnly = createAsyncThunk(
 
 export const resetMaster = createAsyncThunk('cluster/resetMaster', async ({ clusterName, serverId }, thunkAPI) => {
   try {
-    const { data, status } = await clusterService.resetMaster(clusterName, serverId)
+    const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+    const { data, status } = await clusterService.resetMaster(clusterName, serverId, baseURL)
     showSuccessBanner('Reset Master successful!', status, thunkAPI)
     return { data, status }
   } catch (error) {
@@ -744,7 +806,8 @@ export const resetMaster = createAsyncThunk('cluster/resetMaster', async ({ clus
 
 export const resetSlave = createAsyncThunk('cluster/resetSlave', async ({ clusterName, serverId }, thunkAPI) => {
   try {
-    const { data, status } = await clusterService.resetSlave(clusterName, serverId)
+    const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+    const { data, status } = await clusterService.resetSlave(clusterName, serverId, baseURL)
     showSuccessBanner('Reset Slave successful!', status, thunkAPI)
     return { data, status }
   } catch (error) {
@@ -757,7 +820,8 @@ export const cancelServerJob = createAsyncThunk(
   'cluster/cancelServerJob',
   async ({ clusterName, serverId, taskName }, thunkAPI) => {
     try {
-      const { data, status } = await clusterService.cancelServerJob(clusterName, serverId, taskName)
+      const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+      const { data, status } = await clusterService.cancelServerJob(clusterName, serverId, taskName, baseURL)
       showSuccessBanner(`Job ${taskName} cancelled successful!`, status, thunkAPI)
       return { data, status }
     } catch (error) {
@@ -769,7 +833,8 @@ export const cancelServerJob = createAsyncThunk(
 
 export const provisionProxy = createAsyncThunk('cluster/provisionProxy', async ({ clusterName, proxyId }, thunkAPI) => {
   try {
-    const { data, status } = await clusterService.provisionProxy(clusterName, proxyId)
+    const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+    const { data, status } = await clusterService.provisionProxy(clusterName, proxyId, baseURL)
     showSuccessBanner('Provision proxy successful!', status, thunkAPI)
     return { data, status }
   } catch (error) {
@@ -782,7 +847,8 @@ export const unprovisionProxy = createAsyncThunk(
   'cluster/unprovisionProxy',
   async ({ clusterName, proxyId }, thunkAPI) => {
     try {
-      const { data, status } = await clusterService.unprovisionProxy(clusterName, proxyId)
+      const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+      const { data, status } = await clusterService.unprovisionProxy(clusterName, proxyId, baseURL)
       showSuccessBanner('Unprovision proxy successful!', status, thunkAPI)
       return { data, status }
     } catch (error) {
@@ -794,7 +860,8 @@ export const unprovisionProxy = createAsyncThunk(
 
 export const startProxy = createAsyncThunk('cluster/startProxy', async ({ clusterName, proxyId }, thunkAPI) => {
   try {
-    const { data, status } = await clusterService.startProxy(clusterName, proxyId)
+    const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+    const { data, status } = await clusterService.startProxy(clusterName, proxyId, baseURL)
     showSuccessBanner('Starting proxy successful!', status, thunkAPI)
     return { data, status }
   } catch (error) {
@@ -805,7 +872,8 @@ export const startProxy = createAsyncThunk('cluster/startProxy', async ({ cluste
 
 export const stopProxy = createAsyncThunk('cluster/stopProxy', async ({ clusterName, proxyId }, thunkAPI) => {
   try {
-    const { data, status } = await clusterService.stopProxy(clusterName, proxyId)
+    const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+    const { data, status } = await clusterService.stopProxy(clusterName, proxyId, baseURL)
     showSuccessBanner('Stopping proxy successful!', status, thunkAPI)
     return { data, status }
   } catch (error) {
@@ -816,7 +884,8 @@ export const stopProxy = createAsyncThunk('cluster/stopProxy', async ({ clusterN
 
 export const runSysBench = createAsyncThunk('cluster/runSysBench', async ({ clusterName, thread }, thunkAPI) => {
   try {
-    const { data, status } = await clusterService.runSysbench(clusterName, thread)
+    const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+    const { data, status } = await clusterService.runSysbench(clusterName, thread, baseURL)
     showSuccessBanner('Sysbench ran successfuly!', status, thunkAPI)
     return { data, status }
   } catch (error) {
@@ -829,7 +898,8 @@ export const runRegressionTests = createAsyncThunk(
   'cluster/runRegressionTests',
   async ({ clusterName, testName }, thunkAPI) => {
     try {
-      const { data, status } = await clusterService.runRegressionTests(clusterName, testName)
+      const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+      const { data, status } = await clusterService.runRegressionTests(clusterName, testName, baseURL)
       showSuccessBanner('Regression test ran successfuly!', status, thunkAPI)
       return { data, status }
     } catch (error) {
@@ -843,7 +913,8 @@ export const getDatabaseService = createAsyncThunk(
   'cluster/getDatabaseService',
   async ({ clusterName, serviceName, dbId }, thunkAPI) => {
     try {
-      const { data, status } = await clusterService.getDatabaseService(clusterName, serviceName, dbId)
+      const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+      const { data, status } = await clusterService.getDatabaseService(clusterName, serviceName, dbId, baseURL)
       return { data, status }
     } catch (error) {
       handleError(error, thunkAPI)
@@ -855,7 +926,8 @@ export const updateLongQueryTime = createAsyncThunk(
   'cluster/updateLongQueryTime',
   async ({ clusterName, dbId, time }, thunkAPI) => {
     try {
-      const { data, status } = await clusterService.updateLongQueryTime(clusterName, dbId, time)
+      const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+      const { data, status } = await clusterService.updateLongQueryTime(clusterName, dbId, time, baseURL)
       showSuccessBanner('Long query time updated!', status, thunkAPI)
       return { data, status }
     } catch (error) {
@@ -869,7 +941,8 @@ export const checksumTable = createAsyncThunk(
   'cluster/checksumTable',
   async ({ clusterName, schema, table }, thunkAPI) => {
     try {
-      const { data, status } = await clusterService.checksumTable(clusterName, schema, table)
+      const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+      const { data, status } = await clusterService.checksumTable(clusterName, schema, table, baseURL)
       showSuccessBanner(`Checksum done for schema ${schema} and table ${table}!`, status, thunkAPI)
       return { data, status }
     } catch (error) {
@@ -883,7 +956,8 @@ export const toggleDatabaseActions = createAsyncThunk(
   'cluster/toggleDatabaseActions',
   async ({ clusterName, dbId, serviceName }, thunkAPI) => {
     try {
-      const { data, status } = await clusterService.toggleDatabaseActions(clusterName, serviceName, dbId)
+      const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+      const { data, status } = await clusterService.toggleDatabaseActions(clusterName, serviceName, dbId, baseURL)
       showSuccessBanner(`Toggle ${serviceName} successful!`, status, thunkAPI)
       return { data, status }
     } catch (error) {
@@ -897,7 +971,8 @@ export const addUser = createAsyncThunk(
   'cluster/addUser',
   async ({ clusterName, username, grants, roles }, thunkAPI) => {
     try {
-      const { data, status } = await clusterService.addUser(clusterName, username, grants, roles)
+      const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+      const { data, status } = await clusterService.addUser(clusterName, username, grants, roles, baseURL)
       showSuccessBanner(`User is added successful!`, status, thunkAPI)
       return { data, status }
     } catch (error) {
@@ -906,6 +981,20 @@ export const addUser = createAsyncThunk(
     }
   }
 )
+
+export const peerRegister = createAsyncThunk('auth/peerRegister', async ({  password, clusterName, baseURL }, thunkAPI) => {
+  try {
+    const { data, status } = await clusterService.peerRegister(thunkAPI.getState().auth.user.username, password, clusterName, baseURL)
+    showSuccessBanner(`Register user to peer cluster sent!`, status, thunkAPI)
+    return { data, status }
+  } catch (error) {
+    showErrorBanner(`Register user to peer cluster failed!`, error, thunkAPI)
+    const errorMessage = error.message || 'Request failed'
+    const errorStatus = error.errorStatus || 500 // Default error status if not provided
+    // Handle errors (including custom errorStatus)
+    return thunkAPI.rejectWithValue({ errorMessage, errorStatus }) // Pass the entire Error object to the rejected action
+  }
+})
 
 const initialState = {
   loading: false,
@@ -1076,7 +1165,7 @@ export const clusterSlice = createSlice({
         unprovisionDatabase.pending,
         runRemoteJobs.pending,
         optimizeServer.pending,
-        skip1ReplicationEvent.pending,
+        skipReplicationEvent.pending,
         toggleInnodbMonitor.pending,
         toggleSlowQueryCapture.pending,
         startSlave.pending,
@@ -1143,7 +1232,7 @@ export const clusterSlice = createSlice({
         unprovisionDatabase.fulfilled,
         runRemoteJobs.fulfilled,
         optimizeServer.fulfilled,
-        skip1ReplicationEvent.fulfilled,
+        skipReplicationEvent.fulfilled,
         toggleInnodbMonitor.fulfilled,
         toggleSlowQueryCapture.fulfilled,
         startSlave.fulfilled,
@@ -1210,7 +1299,7 @@ export const clusterSlice = createSlice({
         unprovisionDatabase.rejected,
         runRemoteJobs.rejected,
         optimizeServer.rejected,
-        skip1ReplicationEvent.rejected,
+        skipReplicationEvent.rejected,
         toggleInnodbMonitor.rejected,
         toggleSlowQueryCapture.rejected,
         startSlave.rejected,

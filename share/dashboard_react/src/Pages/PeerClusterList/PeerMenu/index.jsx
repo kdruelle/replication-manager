@@ -1,26 +1,44 @@
 import React, { useEffect, useState } from 'react'
 import MenuOptions from '../../../components/MenuOptions'
 import PeerDetailsModal from '../../../components/Modals/PeerDetailsModal'
+import PeerLoginModal from '../../../components/Modals/PeerLoginModal'
+import { getClusterData, peerRegister } from '../../../redux/clusterSlice'
+import { peerLogin, setBaseURL } from '../../../redux/authSlice'
+import { useDispatch, useSelector } from 'react-redux'
 
 function PeerMenu({
+    mode,
+    onLogin,
     clusterItem,
     className,
     labelClassName,
     valueClassName,
     colorScheme,
 }) {
-    // const dispatch = useDispatch()
-    const [peerDetails, setPeerDetails] = useState(clusterItem)
+    const dispatch = useDispatch()
+    const [options, setOptions] = useState([])
+    const [title, setTitle] = useState("Login to Peer Cluster")
     const [isPeerDetailsModalOpen, setIsPeerDetailsModalOpen] = useState(false)
+    const [isPeerLoginModalOpen, setIsPeerLoginModalOpen] = useState(false)
 
-    // const openConfirmModal = () => {
-    //   setIsConfirmModalOpen(true)
-    // }
-    // const closeConfirmModal = () => {
-    //   setIsConfirmModalOpen(false)
-    //   setConfirmHandler(null)
-    //   setConfirmTitle('')
-    // }
+    const {
+        auth: { loadingPeerLogin, isPeerLogged, baseURL, error }
+    } = useSelector((state) => state)
+
+    const openPeerLoginModal = () => {
+        setIsPeerLoginModalOpen(true)
+    }
+
+    const closePeerLoginModal = () => {
+        setIsPeerLoginModalOpen(false)
+    }
+
+    const handleEnterCluster = () => {
+        dispatch(getClusterData({ clusterName: clusterItem['cluster-name'] }))
+        if (onLogin) {
+            onLogin(clusterItem)
+        }
+    }
 
     const openPeerDetailsModal = () => {
         setIsPeerDetailsModalOpen(true)
@@ -29,21 +47,56 @@ function PeerMenu({
         setIsPeerDetailsModalOpen(false)
     }
 
-    useEffect(() => {
-        setPeerDetails(clusterItem)
-    }, [clusterItem])
+    const handlePeerLogin = () => {
+        setTitle("Login to Peer Cluster")
+        const token = localStorage.getItem(`user_token_${btoa(clusterItem['api-public-url'])}`)
+        if (token) {
+            dispatch(setBaseURL({ baseURL: clusterItem['api-public-url'] }))
+            handleEnterCluster(clusterItem)
+        } else {
+            openPeerLoginModal()
+        }
+    }
 
-    /* {isConfirmModalOpen && (
-        <ConfirmModal
-          isOpen={isConfirmModalOpen}
-          closeModal={closeConfirmModal}
-          title={confirmTitle}
-          onConfirmClick={() => {
-            confirmHandler()
-            closeConfirmModal()
-          }}
-        />
-      )} */
+    const handlePeerRegister = () => {
+        setTitle("Register to Peer Cluster")
+        openPeerLoginModal()
+    }
+
+    const handleSaveModal = (password) => {
+        if (mode == "shared") {
+            dispatch(peerRegister({ password, clusterName: clusterItem['cluster-name'], baseURL: clusterItem['api-public-url'] }))
+        } else {
+            dispatch(peerLogin({password,baseURL: clusterItem['api-public-url']}))
+        }
+        closePeerLoginModal()
+    }
+
+    useEffect(() => {
+        let opts = []
+        if (mode == "shared") {
+            opts.push({
+                name: 'Register',
+                onClick: () => {
+                    handlePeerRegister()
+                }
+            })
+        } else {
+            opts.push({
+                name: 'Login',
+                onClick: () => {
+                    handlePeerLogin()
+                }
+            })
+        }
+        opts.push({
+            name: 'Details',
+            onClick: () => {
+                openPeerDetailsModal()
+            }
+        })
+        setOptions(opts)
+    }, [mode, onLogin])
 
     return (
         <>
@@ -51,24 +104,18 @@ function PeerMenu({
                 className={className}
                 colorScheme={colorScheme}
                 placement='left-end'
-                options={[
-                    {
-                        name: 'Details',
-                        onClick: () => {
-                            openPeerDetailsModal()
-                        }
-                    },
-                ]}
+                options={options}
             />
             {isPeerDetailsModalOpen && (
                 <PeerDetailsModal
-                    peerDetails={peerDetails}
+                    peerDetails={clusterItem}
                     labelClassName={labelClassName}
                     valueClassName={valueClassName}
                     isOpen={isPeerDetailsModalOpen}
                     closeModal={closePeerDetailsModal}
                 />
             )}
+            {isPeerLoginModalOpen && <PeerLoginModal title={title} isOpen={isPeerLoginModalOpen} closeModal={closePeerLoginModal} onSaveModal={handleSaveModal} />}
         </>
     )
 }

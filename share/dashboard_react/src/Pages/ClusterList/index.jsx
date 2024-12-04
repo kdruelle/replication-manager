@@ -14,8 +14,6 @@ import CustomIcon from '../../components/Icons/CustomIcon'
 import { FaUserPlus } from 'react-icons/fa'
 import RMIconButton from '../../components/RMIconButton'
 import AddUserModal from '../../components/Modals/AddUserModal'
-import { getMeet } from '../../redux/meetSlice'
-import authHeader from '../../services/apiHelper'
 
 function ClusterList({ onClick }) {
   const dispatch = useDispatch()
