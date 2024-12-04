@@ -73,7 +73,7 @@ const performRequest = async (method, apiUrl, params, authValue, baseUrl = '') =
   try {
     const response = await fetch(url, options);
     if (response.status === 401) {
-      localStorage.removeItem('user_token')
+      clearLocalStorageByPrefix('user_token')
       localStorage.removeItem('username')
       window.location.reload()
     } else {
@@ -120,3 +120,12 @@ export const getApi = (baseURL = '') => {
   return baseURL ? peerApi(baseURL) : localApi;
 };
 
+// Utility function to clear localStorage keys with a specific prefix
+export const clearLocalStorageByPrefix = (prefix) => {
+  for (let i = localStorage.length - 1; i >= 0; i--) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith(prefix)) {
+          localStorage.removeItem(key);
+      }
+  }
+}

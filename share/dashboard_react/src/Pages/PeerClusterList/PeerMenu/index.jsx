@@ -4,7 +4,7 @@ import PeerDetailsModal from '../../../components/Modals/PeerDetailsModal'
 import PeerLoginModal from '../../../components/Modals/PeerLoginModal'
 import { getClusterData } from '../../../redux/clusterSlice'
 import { setBaseURL } from '../../../redux/authSlice'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 function PeerMenu({
     mode,
@@ -15,7 +15,7 @@ function PeerMenu({
     valueClassName,
     colorScheme,
 }) {
-    // const dispatch = useDispatch()
+    const dispatch = useDispatch()
     const [url, setURL] = useState("")
     const [peerDetails, setPeerDetails] = useState(clusterItem)
     const [options, setOptions] = useState([])

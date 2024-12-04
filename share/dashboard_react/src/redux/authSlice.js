@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk, isAnyOf } from '@reduxjs/toolkit'
 import { authService } from '../services/authService'
+import { clearLocalStorageByPrefix } from '../services/apiHelper'
 
 export const login = createAsyncThunk('auth/login', async ({ username, password }, thunkAPI) => {
   try {
@@ -54,7 +55,7 @@ export const authSlice = createSlice({
   },
   reducers: {
     logout: (state, action) => {
-      localStorage.removeItem('user_token')
+      clearLocalStorageByPrefix('user_token')
       localStorage.removeItem('username')
       state.user = null
       state.isLogged = false
