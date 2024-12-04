@@ -117,7 +117,14 @@ func (repman *ReplicationManager) httpserver() {
 	}
 
 	router.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		http.Redirect(w, r, "/", http.StatusFound)
+		// Check if the path starts with "/api"
+		if len(r.URL.Path) >= 4 && r.URL.Path[:4] == "/api" {
+			// Return 404 for /api paths
+			http.NotFound(w, r)
+		} else {
+			// Redirect non /api paths to "/"
+			http.Redirect(w, r, "/", http.StatusFound)
+		}
 	})
 
 	router.HandleFunc("/api/login", repman.loginHandler)
@@ -128,6 +135,9 @@ func (repman *ReplicationManager) httpserver() {
 	))
 	router.Handle("/api/clusters/peers", negroni.New(
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxPeerClusters)),
+	))
+	router.Handle("/api/clusters/{clusterName}/peer-register", negroni.New(
+		negroni.Wrap(http.HandlerFunc(repman.handlerMuxPeerRegister)),
 	))
 	router.Handle("/api/status", negroni.New(
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxStatus)),

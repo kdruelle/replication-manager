@@ -45,6 +45,7 @@ import (
 	"github.com/signal18/replication-manager/config"
 	"github.com/signal18/replication-manager/regtest"
 	"github.com/signal18/replication-manager/share"
+	"github.com/signal18/replication-manager/utils/alert"
 	"github.com/signal18/replication-manager/utils/githelper"
 	"github.com/signal18/replication-manager/utils/peerclient"
 	"github.com/signal18/replication-manager/utils/state"
@@ -224,7 +225,14 @@ func (repman *ReplicationManager) apiserver() {
 	}
 
 	router.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		http.Redirect(w, r, "/", http.StatusFound)
+		// Check if the path starts with "/api"
+		if len(r.URL.Path) >= 4 && r.URL.Path[:4] == "/api" {
+			// Return 404 for /api paths
+			http.NotFound(w, r)
+		} else {
+			// Redirect non /api paths to "/"
+			http.Redirect(w, r, "/", http.StatusFound)
+		}
 	})
 
 	router.HandleFunc("/api/login", repman.loginHandler)
@@ -244,6 +252,9 @@ func (repman *ReplicationManager) apiserver() {
 	))
 	router.Handle("/api/clusters/peers", negroni.New(
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxPeerClusters)),
+	))
+	router.Handle("/api/clusters/{clusterName}/peer-register", negroni.New(
+		negroni.Wrap(http.HandlerFunc(repman.handlerMuxPeerRegister)),
 	))
 	router.Handle("/api/prometheus", negroni.New(
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxPrometheus)),
@@ -850,6 +861,57 @@ func (repman *ReplicationManager) handlerMuxPeerRoutes(w http.ResponseWriter, r 
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(res)
+}
+
+func (repman *ReplicationManager) handlerMuxPeerRegister(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	vars := mux.Vars(r)
+
+	var userform cluster.UserForm
+	//decode request into UserCredentials struct
+	err := json.NewDecoder(r.Body).Decode(&userform)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "Error in request")
+		return
+	}
+
+	mycluster := repman.getClusterByName(vars["clusterName"])
+	if mycluster != nil {
+		tok, _ := githelper.GetGitLabTokenBasicAuth(userform.Username, userform.Password, false)
+		if tok == "" {
+			http.Error(w, "Error logging in to gitlab: Token is empty", http.StatusUnauthorized)
+			return
+		}
+
+		if repman.Conf.Cloud18GitUser != "" {
+			msg := fmt.Sprintf(`
+Subject: New Peer User Registration Request for Cluster %s: %s
+
+Dear Admin,
+
+A new user has requested to register for the cluster service.
+
+Details:
+- User Email: %s
+- Cluster: %s
+- Registration Request Time: %s
+
+Please review the registration request and take the necessary actions.
+
+Best regards,
+Replication Manager
+`, mycluster.Name, userform.Username, userform.Username, mycluster.Name, time.Now().Format("2006-01-02 15:04:05"))
+
+			subj := "Replication-Manager started"
+			alert := alert.Alert{}
+			alert.Cluster = mycluster.Name
+			go alert.EmailMessage(msg, subj, repman.Conf)
+		}
+	} else {
+		http.Error(w, "No valid cluster", 500)
+		return
+	}
 }
 
 func (repman *ReplicationManager) validateTokenMiddleware(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
