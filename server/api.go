@@ -1212,25 +1212,28 @@ func (repman *ReplicationManager) DynamicPeerHandler(w http.ResponseWriter, r *h
 		// Decompress the zstd response
 		decoder, err := zstd.NewReader(resp.Body)
 		if err != nil {
-			log.Fatalf("Failed to create zstd decoder: %v", err)
+			http.Error(w, "Failed to create zstd decoder: "+err.Error(), http.StatusInternalServerError)
+			return
 		}
 		defer decoder.Close()
 
 		// Read the decompressed data
 		body, err = io.ReadAll(decoder)
 		if err != nil {
-			log.Fatalf("Failed to read decompressed body: %v", err)
+			http.Error(w, "Failed to read decompressed body: "+err.Error(), http.StatusInternalServerError)
+			return
 		}
 
-		fmt.Printf("Decompressed Response: %s\n", body)
+		// fmt.Printf("Decompressed Response: %s\n", body)
 	} else {
 		// Handle uncompressed response
 		body, err = io.ReadAll(resp.Body)
 		if err != nil {
-			log.Fatalf("Failed to read response body: %v", err)
+			http.Error(w, "Failed to read response body: "+err.Error(), http.StatusInternalServerError)
+			return
 		}
 
-		fmt.Printf("Response: %s\n", body)
+		// fmt.Printf("Response: %s\n", body)
 	}
 
 	// Forward the response back to the React client
