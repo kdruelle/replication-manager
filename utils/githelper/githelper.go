@@ -61,9 +61,6 @@ func InitGitRepo(url string, tok string, user string, path string) (*GitReposito
 		URL:  url,
 	}
 
-	// Pull the latest changes from the remote repository
-	err = gr.Pull(true)
-
 	return gr, err
 }
 
@@ -97,9 +94,6 @@ func InitGitClone(url string, tok string, user string, path string) (*GitReposit
 		Path: path,
 		URL:  url,
 	}
-
-	// Pull the latest changes from the remote repository
-	err = gr.Pull(true)
 
 	return gr, err
 }

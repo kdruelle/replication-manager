@@ -15,6 +15,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"path/filepath"
 	"slices"
 
 	"errors"
@@ -934,7 +935,14 @@ func (server *ServerMonitor) JobBackupErrorLog() (int64, error) {
 	if server.IsDown() {
 		return 0, nil
 	}
-	port, err := cluster.SSTRunReceiverToFile(server, server.Datadir+"/log/log_error.log", ConstJobAppendFile, task)
+
+	filename := server.Datadir + "/log/log_error.log"
+	dirname := filepath.Dir(filename)
+	if _, err := os.Stat(dirname); os.IsNotExist(err) {
+		os.MkdirAll(dirname, 0755)
+	}
+
+	port, err := cluster.SSTRunReceiverToFile(server, filename, ConstJobAppendFile, task)
 	if err != nil {
 		return 0, nil
 	}
@@ -1007,7 +1015,13 @@ func (server *ServerMonitor) JobBackupSlowQueryLog() (int64, error) {
 		return 0, nil
 	}
 
-	port, err := cluster.SSTRunReceiverToFile(server, server.Datadir+"/log/log_slow_query.log", ConstJobAppendFile, task)
+	filename := server.Datadir + "/log/log_slow_query.log"
+	dirname := filepath.Dir(filename)
+	if _, err := os.Stat(dirname); os.IsNotExist(err) {
+		os.MkdirAll(dirname, 0755)
+	}
+
+	port, err := cluster.SSTRunReceiverToFile(server, filename, ConstJobAppendFile, task)
 	if err != nil {
 		return 0, nil
 	}
