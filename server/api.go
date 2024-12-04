@@ -877,15 +877,22 @@ func (repman *ReplicationManager) handlerMuxPeerRegister(w http.ResponseWriter, 
 	}
 
 	mycluster := repman.getClusterByName(vars["clusterName"])
-	if mycluster != nil {
-		tok, _ := githelper.GetGitLabTokenBasicAuth(userform.Username, userform.Password, false)
-		if tok == "" {
-			http.Error(w, "Error logging in to gitlab: Token is empty", http.StatusUnauthorized)
-			return
-		}
+	if mycluster == nil {
+		http.Error(w, "No valid cluster", 500)
+		return
+	}
 
-		if repman.Conf.Cloud18GitUser != "" {
-			msg := fmt.Sprintf(`
+	tok, _ := githelper.GetGitLabTokenBasicAuth(userform.Username, userform.Password, false)
+	if tok == "" {
+		http.Error(w, "Error logging in to gitlab: Token is empty", http.StatusUnauthorized)
+		return
+	}
+
+	if repman.Conf.Cloud18GitUser != "" {
+		http.Error(w, "Peer does not have cloud18 setup!", 500)
+		return
+	}
+	msg := fmt.Sprintf(`
 Subject: New Peer User Registration Request for Cluster %s: %s
 
 Dear Admin,
@@ -903,15 +910,17 @@ Best regards,
 Replication Manager
 `, mycluster.Name, userform.Username, userform.Username, mycluster.Name, time.Now().Format("2006-01-02 15:04:05"))
 
-			subj := "Replication-Manager started"
-			alert := alert.Alert{}
-			alert.Cluster = mycluster.Name
-			go alert.EmailMessage(msg, subj, repman.Conf)
-		}
-	} else {
-		http.Error(w, "No valid cluster", 500)
+	subj := "Replication-Manager started"
+	alert := alert.Alert{}
+	alert.Cluster = mycluster.Name
+	err = alert.EmailMessage(msg, subj, repman.Conf)
+	if err != nil {
+		http.Error(w, "Error sending email :"+err.Error(), 500)
 		return
 	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Email sent to admin!"))
 }
 
 func (repman *ReplicationManager) validateTokenMiddleware(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
