@@ -76,9 +76,15 @@ function PeerClusterList({ onLogin, mode }) {
               )
             },
             { key: 'Service Plan', value: clusterItem['prov-service-plan'] },
-            { key: 'Memory MB', value: clusterItem['prov-db-memory'] },
-            { key: 'I/Ops', value: clusterItem['prov-db-disk-iops'] },
-            { key: 'Disk GB', value: clusterItem['prov-db-disk-size'] },
+            { key: 'Geo Zone', value: clusterItem['cloud18-infra-geo-localizations'] },
+            { key: 'Memory', value: clusterItem['prov-db-memory']/1024 + "GB"},
+            { key: 'IOps', value: clusterItem['prov-db-disk-iops'] },
+            { key: 'Disk', value: clusterItem['prov-db-disk-size']+ "GB" },
+            { key: 'CPU Core', value: clusterItem['prov-db-cpu-cores']},
+            { key: 'CPU Type', value: clusterItem['cloud18-infra-cpu-model'] },
+            { key: 'Data Centers', value: clusterItem['cloud18-infra-data-centers'] },
+            { key: 'Public Bandwidth', value: clusterItem['cloud18-infra-public-bandwidth']/1024 +"Gbps"},
+            { key: 'Price', value:  clusterItem['cloud18-monthly-infra-cost']*1+clusterItem['cloud18-monthly-license-cost']*1 + clusterItem['cloud18-monthly-sysops-cost']*1 + clusterItem['cloud18-monthly-dbops-cost']*1 + clusterItem['cloud18-cost-currency'] },
             { key: 'Platfom Desciption', value: clusterItem['cloud18-platfom-desciption'] },
 
             /*  {
@@ -96,7 +102,7 @@ function PeerClusterList({ onLogin, mode }) {
                         <Text>No</Text>
                       </>
                     )}
-    
+
                   </HStack>
                 )
               }*/

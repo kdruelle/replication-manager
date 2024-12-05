@@ -750,17 +750,17 @@ type PeerCluster struct {
 	Cloud18PlatformDescription       string   `json:"cloud18-platform-description"`
 	Cloud18Shared                    bool     `json:"cloud18-shared,string"`
 	Cloud18Peer                      bool     `json:"cloud18-peer,string"`
-	Cloud18Plan                      string   `json:"cloud18-plan"`
+	Cloud18Plan                      string   `json:"cloud18-plan" `
 	Cloud18SubDomain                 string   `json:"cloud18-sub-domain"`
 	Cloud18SubDomainZone             string   `json:"cloud18-sub-domain-zone"`
-	Cloud18MonthlyInfraCost          float64  `json:"cloud18-montly-infra-cost"`
-	Cloud18MonthlyLicenseCost        float64  `json:"cloud18-montly-license-cost"`
-	Cloud18MonthlySysopsCost         float64  `json:"cloud18-montly-sysops-cost"`
-	Cloud18MonthlyDbopsCost          float64  `json:"cloud18-montly-dbops-cost"`
+	Cloud18MonthlyInfraCost          float64  `json:"cloud18-monthly-infra-cost,string"`
+	Cloud18MonthlyLicenseCost        float64  `json:"cloud18-monthly-license-cost,string"`
+	Cloud18MonthlySysopsCost         float64  `json:"cloud18-monthly-sysops-cost,string"`
+	Cloud18MonthlyDbopsCost          float64  `json:"cloud18-monthly-dbops-cost,string"`
 	Cloud18CostCurrency              string   `json:"cloud18-cost-currency"`
 	Cloud18InfraCPUModel						 string   `json:"cloud18-infra-cpu-model"`
 	Cloud18InfraGeoLocalizations     string   `json:"cloud18-infra-geo-localizations"`
-	Cloud18InfraPublicBandwidth      string   `json:"cloud18-infra-public-bandwidth,string"`
+	Cloud18InfraPublicBandwidth      float64   `json:"cloud18-infra-public-bandwidth,string"`
 	Cloud18InfraDataCenters          string   `json:"cloud18-infra-data-centers"`
 	Cloud18OpenDbops                 bool     `json:"cloud18-open-dbops,string"`
 	Cloud18SubscribedDbops           bool     `json:"cloud18-subscribed-dbops,string"`
