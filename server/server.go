@@ -831,13 +831,28 @@ func (repman *ReplicationManager) AddFlags(flags *pflag.FlagSet, conf *config.Co
 	flags.StringVar(&conf.OnPremiseSSHDbJobScript, "onpremise-ssh-db-job-script", "", "Run via ssh a custom script to execute database jobs")
 
 	flags.BoolVar(&conf.Cloud18, "cloud18", false, "Enable Cloud 18 DBAAS")
-	flags.StringVar(&conf.Cloud18Domain, "cloud18-domain", "signal18", "DNS sub domain per organisation")
-	flags.StringVar(&conf.Cloud18SubDomain, "cloud18-sub-domain", "ovh-1", "DNS sub domain per replication-manger instance")
-	flags.StringVar(&conf.Cloud18SubDomainZone, "cloud18-sub-domain-zone", "fr", "DNS sub domain per replication-manger instance")
+	flags.StringVar(&conf.Cloud18Domain, "cloud18-domain", "", "DNS sub domain per organisation")
+	flags.StringVar(&conf.Cloud18SubDomain, "cloud18-sub-domain", "", "DNS sub domain per replication-manger instance")
+	flags.StringVar(&conf.Cloud18SubDomainZone, "cloud18-sub-domain-zone", "", "DNS sub domain geo zone per replication-manger instance")
 	flags.BoolVar(&conf.Cloud18Shared, "cloud18-shared", false, "Enable cluster sharing for Cloud 18 DBAAS")
 	flags.StringVar(&conf.Cloud18GitUser, "cloud18-gitlab-user", "", "Cloud 18 GitLab user")
 	flags.StringVar(&conf.Cloud18GitPassword, "cloud18-gitlab-password", "", "Cloud 18 GitLab password")
 	flags.StringVar(&conf.Cloud18PlatformDescription, "cloud18-platform-description", "", "Marketing banner display on the cloud18 portal describing the infrastucture")
+	flags.StringVar(&conf.Cloud18InfraDataCenters ,"cloud18-infra-data-centers" , "", "Infrastucture datacenters name")
+	flags.Float64Var(&conf.Cloud18InfraPublicBandwidth ,"cloud18-infra-public-bandwidth", 0,  "Infrastucture public bandwidth")
+	flags.StringVar(&conf.Cloud18InfraGeoLocalizations  ,"cloud18-infra-geo-localizations", "", "Infrastucture geo zone")
+	flags.StringVar(&conf.Cloud18InfraCPUModel  ,"cloud18-infra-cpu-model"   ,"", "Infrastructure CPU model")
+	flags.StringVar(&conf.Cloud18DatabseWriteSrvRecord ,"cloud18-database-write-srv-record" , "", "Database write SRV record host:port")
+	flags.StringVar(&conf.Cloud18DatabseReadSrvRecord   ,"cloud18-database-read-srv-record" , "", "Database read SRV record host:port")
+	flags.StringVar(&conf.Cloud18DatabseReadWriteSrvRecord , "cloud18-database-read-write-srv-record" ,"", "Database read write split SRV record host:port")
+	flags.StringVar(&conf.Cloud18DbaUserCredentials  ,"cloud18-dba-user-credentials" , "","Database credential")
+	flags.Float64Var(&conf.Cloud18MonthlyInfraCost,  "cloud18-monthly-infra-cost" ,0, "Monthly infrastructure cost")
+	flags.Float64Var(&conf.Cloud18MonthlyLicenseCost , "cloud18-monthly-license-cost"  ,0, "Monthly license cost")
+	flags.Float64Var(&conf.Cloud18MonthlySysopsCost,"cloud18-monthly-sysops-cost"  ,0, "Monthly sysops cost")
+	flags.Float64Var(&conf.Cloud18MonthlyDbopsCost,"cloud18-monthly-dbops-cost"  ,0, "Monthly dbops cost")
+	flags.StringVar(&conf.Cloud18CostCurrency ,"cloud18-cost-currency"  ,"EUR", "Cost currency")
+
+
 	flags.BoolVar(&conf.GitForceSyncFromRepo, "git-force-sync-from-repo", false, "Always replace local with the latest value from repo")
 
 	if WithProvisioning == "ON" {

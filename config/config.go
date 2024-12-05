@@ -758,6 +758,10 @@ type PeerCluster struct {
 	Cloud18MonthlySysopsCost         float64  `json:"cloud18-montly-sysops-cost"`
 	Cloud18MonthlyDbopsCost          float64  `json:"cloud18-montly-dbops-cost"`
 	Cloud18CostCurrency              string   `json:"cloud18-cost-currency"`
+	Cloud18InfraCPUModel						 string   `json:"cloud18-infra-cpu-model"`
+	Cloud18InfraGeoLocalizations     string   `json:"cloud18-infra-geo-localizations"`
+	Cloud18InfraPublicBandwidth      string   `json:"cloud18-infra-public-bandwidth,string"`
+	Cloud18InfraDataCenters          string   `json:"cloud18-infra-data-centers"`
 	Cloud18OpenDbops                 bool     `json:"cloud18-open-dbops,string"`
 	Cloud18SubscribedDbops           bool     `json:"cloud18-subscribed-dbops,string"`
 	Cloud18OpenSysops                bool     `json:"cloud18-open-sysops,string"`

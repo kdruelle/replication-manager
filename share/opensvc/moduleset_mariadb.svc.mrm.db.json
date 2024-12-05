@@ -3385,8 +3385,8 @@
                 {
                     "var_author": "admin Manager",
                     "var_class": "file",
-                    "var_value": "{\"path\":\"%%ENV:SVC_CONF_ENV_BASE_DIR%%/%%ENV:POD%%/etc/mysql/replication-manager.d/with_log_totable.cnf\",\"mode\":\"%%ENV:CNF_PERMS%%\",\"uid\":\"%%ENV:MYSQL_UID%%\",\"gid\":\"%%ENV:MYSQL_GID%%\",\"fmt\":\"# mariadb_command: SET GLOBAL log_output='TABLE';\\n# mariadb_default SET GLOBAL log_output='FILE';\\n\\n# mysql_command: SET GLOBAL log_output='TABLE';\\n# mysql_default SET GLOBAL log_output='FILE';\\n\\n[mysqld]\\nlog_output=TABLE\"}",
-                    "var_updated": "2024-07-29 18:57:54",
+                    "var_value": "{\"path\":\"%%ENV:SVC_CONF_ENV_BASE_DIR%%/%%ENV:POD%%/etc/mysql/replication-manager.d/with_log_totable.cnf\",\"mode\":\"%%ENV:CNF_PERMS%%\",\"uid\":\"%%ENV:MYSQL_UID%%\",\"gid\":\"%%ENV:MYSQL_GID%%\",\"fmt\":\"# mariadb_command: SET GLOBAL log_output='TABLE';\\n# mariadb_default: SET GLOBAL log_output='FILE';\\n\\n# mysql_command: SET GLOBAL log_output='TABLE';\\n# mysql_default: SET GLOBAL log_output='FILE';\\n\\n[mysqld]\\nlog_output=TABLE\"}",
+                    "var_updated": "2024-12-05 10:56:43",
                     "var_name": "db_cnf_log_with_table",
                     "id": 6099
                 },
