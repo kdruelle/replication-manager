@@ -850,7 +850,7 @@ func (repman *ReplicationManager) AddFlags(flags *pflag.FlagSet, conf *config.Co
 	flags.Float64Var(&conf.Cloud18MonthlyLicenseCost , "cloud18-monthly-license-cost"  ,0, "Monthly license cost")
 	flags.Float64Var(&conf.Cloud18MonthlySysopsCost,"cloud18-monthly-sysops-cost"  ,0, "Monthly sysops cost")
 	flags.Float64Var(&conf.Cloud18MonthlyDbopsCost,"cloud18-monthly-dbops-cost"  ,0, "Monthly dbops cost")
-	flags.StringVar(&conf.Cloud18CostCurrency ,"cloud18-cost-currency"  ,"EUR", "Cost currency")
+	flags.StringVar(&conf.Cloud18CostCurrency ,"cloud18-cost-currency"  ,"", "Cost currency")
 
 
 	flags.BoolVar(&conf.GitForceSyncFromRepo, "git-force-sync-from-repo", false, "Always replace local with the latest value from repo")
