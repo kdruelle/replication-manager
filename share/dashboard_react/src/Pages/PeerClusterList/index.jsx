@@ -64,14 +64,14 @@ function PeerClusterList({ onLogin, mode }) {
           const subDomainZone = ` ${clusterItem['cloud18-sub-domain-zone']}`
           const cost = clusterItem['cloud18-monthly-infra-cost']*1+clusterItem['cloud18-monthly-license-cost']*1 + clusterItem['cloud18-monthly-sysops-cost']*1 + clusterItem['cloud18-monthly-dbops-cost']*1
           const currency  = clusterItem['cloud18-cost-currency']
-          const price = `${cost} ${currency}`
+          const price = `${cost} ${currency}/Month`
 
           const dataObject = [
             {
               key: 'Tags', value: (
                 <>
                   <Wrap>
-                    <TagPill text='Cloud18' colorScheme='blue' />
+                    <TagPill text='cloud18' colorScheme='blue' />
                     <TagPill text={domain} colorScheme='blue' />
                     <TagPill text={subDomain} colorScheme='blue' />
                     <TagPill text={subDomainZone} colorScheme='blue' />
@@ -89,7 +89,7 @@ function PeerClusterList({ onLogin, mode }) {
             { key: 'Data Centers', value: clusterItem['cloud18-infra-data-centers'] },
             { key: 'Public Bandwidth', value: clusterItem['cloud18-infra-public-bandwidth']/1024 +"Gbps"},
             { key: 'Price', value: price  },
-            { key: 'Platfom Desciption', value: clusterItem['cloud18-platfom-description'] },
+            { key: 'Infrastructure', value: clusterItem['prov-orchestrator']  + " " + clusterItem['cloud18-platform-description'] },
 
             /*  {
                 key: 'Share',

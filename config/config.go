@@ -746,6 +746,7 @@ type PeerCluster struct {
 	ProvDbDiskIops                   int64    `json:"prov-db-disk-iops,string"`
 	ProvDbDiskSize                   int64    `json:"prov-db-disk-size,string"`
 	ProvServicePlan                  string   `json:"prov-service-plan"`
+	ProvOrchestrator                 string   `json:"prov-orchestrator"`
 	Cloud18Domain                    string   `json:"cloud18-domain"`
 	Cloud18PlatformDescription       string   `json:"cloud18-platform-description"`
 	Cloud18Shared                    bool     `json:"cloud18-shared,string"`
