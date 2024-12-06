@@ -350,8 +350,8 @@ type Config struct {
 	HaproxyStatPort                           int                    `mapstructure:"haproxy-stat-port" toml:"haproxy-stat-port" json:"haproxyStatPort"`
 	HaproxyAPIPort                            int                    `mapstructure:"haproxy-api-port" toml:"haproxy-api-port" json:"haproxyAPIPort"`
 	HaproxyWriteBindIp                        string                 `mapstructure:"haproxy-ip-write-bind" toml:"haproxy-ip-write-bind" json:"haproxyIpWriteBind"`
-	HaproxyHostsIPV6                          string                 `mapstructure:"haproxy-servers-ipv6" toml:"haproxy-servers-ipv6" json:"haproxyServers-ipv6"`
 	HaproxyReadBindIp                         string                 `mapstructure:"haproxy-ip-read-bind" toml:"haproxy-ip-read-bind" json:"haproxyIpReadBind"`
+	HaproxyHostsIPV6                          string                 `mapstructure:"haproxy-servers-ipv6" toml:"haproxy-servers-ipv6" json:"haproxyServers-ipv6"`
 	HaproxyBinaryPath                         string                 `mapstructure:"haproxy-binary-path" toml:"haproxy-binary-path" json:"haproxyBinaryPath"`
 	HaproxyAPIReadBackend                     string                 `mapstructure:"haproxy-api-read-backend"  toml:"haproxy-api-read-backend" json:"haproxyAPIReadBackend"`
 	HaproxyAPIWriteBackend                    string                 `mapstructure:"haproxy-api-write-backend"  toml:"haproxy-api-write-backend" json:"haproxyAPIWriteBackend"`

@@ -110,6 +110,9 @@ func (proxy *Proxy) GetBindAddress() string {
 	if proxy.ClusterGroup.Conf.ProvOrchestrator == config.ConstOrchestratorSlapOS {
 		return proxy.Host
 	}
+	if proxy.Type == config.ConstProxyHaproxy && proxy.ClusterGroup.Conf.HaproxyHostsIPV6!="" {
+			return  proxy.ClusterGroup.Conf.HaproxyHostsIPV6
+	}
 	return "0.0.0.0"
 }
 func (proxy *Proxy) GetBindAddressExtraIPV6() string {
