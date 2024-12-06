@@ -16,10 +16,11 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-
+  "net"
 	"github.com/signal18/replication-manager/config"
 	"github.com/signal18/replication-manager/router/haproxy"
 	"github.com/signal18/replication-manager/utils/state"
+	"github.com/signal18/replication-manager/utils/misc"
 	"github.com/spf13/pflag"
 )
 
@@ -314,7 +315,13 @@ func (proxy *HaproxyProxy) Refresh() error {
 			host := line[73]
 			if proxy.HasDNS() {
 				// After provisioning the stats may arrive with IP:Port while sometime not
-				host = strings.Split(line[73], ":")[0]
+				if strings.Count(host, ":") >= 2 {
+					// IPV6
+					host, _, _ = net.SplitHostPort(host)
+					host = misc.Unbracket(host)
+				} else {
+				 host = strings.Split(line[73], ":")[0]
+				}
 				host = backend_ip_host[host]
 			}
 
@@ -353,7 +360,13 @@ func (proxy *HaproxyProxy) Refresh() error {
 			host := line[73]
 			if proxy.HasDNS() {
 				// After provisioning the stats may arrive with  IP:Port while sometime not
-				host = strings.Split(line[73], ":")[0]
+				if strings.Count(host, ":") >= 2 {
+					// IPV6
+					host, _, _ = net.SplitHostPort(host)
+					host = misc.Unbracket(host)
+				} else {
+				  host = strings.Split(line[73], ":")[0]
+				}
 				host = backend_ip_host[host]
 			}
 			srv := cluster.GetServerFromURL(host)

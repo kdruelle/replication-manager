@@ -1247,12 +1247,50 @@ func (cluster *Cluster) SetSysbenchThreads(Threads string) {
 /*
 Set Service Plan. Log Module : Topology
 */
+
+
+func (cluster *Cluster) SetServicePlanInfos(theplan string) error {
+	plans := cluster.GetServicePlans()
+	for _, plan := range plans {
+			if plan.Plan == theplan {
+
+		cluster.Conf.ProvServicePlan = theplan
+		cluster.SetDBCores(strconv.Itoa(plan.DbCores))
+		cluster.SetDBMemorySize(strconv.Itoa(plan.DbMemory))
+		cluster.SetDBDiskSize(strconv.Itoa(plan.DbDataSize))
+		cluster.SetDBDiskIOPS(strconv.Itoa(plan.DbIops))
+		cluster.SetProxyCores(strconv.Itoa(plan.PrxCores))
+		cluster.SetProxyDiskSize(strconv.Itoa(plan.PrxDataSize))
+		cluster.SetCloud18MonthlyInfraCost(plan.InfraCost)
+		cluster.SetCloud18MonthlyLicenseCost(plan.LicenceCost)
+		cluster.SetCloud18MonthlySysopsCost(plan.SysCost)
+		cluster.SetCloud18MonthlyDbopsCost(plan.DbaCost)
+		cluster.SetCloud18CostCurrency(plan.Devise)
+		cluster.SetCloud18InfraCPUModel(plan.CPU)
+		cluster.SetCloud18InfraDescription(plan.Infra)
+		cluster.SetCloud18InfraDataCenters(plan.DC)
+		cluster.SetCloud18InfraPublicBandwidth(plan.BP)
+		cluster.SetCloud18InfraGeoLocalizations(plan.Zone)
+		cluster.Save()
+	  return nil
+	 }
+	}
+	cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlErr, "Service plan not found %s", theplan)
+	return errors.New("Plan not found in repository")
+
+  cluster.Save()
+  return nil
+ }
+
+
+
 func (cluster *Cluster) SetServicePlan(theplan string) error {
 	plans := cluster.GetServicePlans()
 	for _, plan := range plans {
 		if plan.Plan == theplan {
 			cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "Attaching service plan %s", theplan)
-			cluster.Conf.ProvServicePlan = theplan
+
+			if !cluster.IsProvision   {
 
 			if cluster.Conf.User == "" {
 				cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "Settting database root credential to admin:repman ")
@@ -1366,27 +1404,12 @@ func (cluster *Cluster) SetServicePlan(theplan string) error {
 					}
 				}
 			}
-			cluster.SetDBCores(strconv.Itoa(plan.DbCores))
-			cluster.SetDBMemorySize(strconv.Itoa(plan.DbMemory))
-			cluster.SetDBDiskSize(strconv.Itoa(plan.DbDataSize))
-			cluster.SetDBDiskIOPS(strconv.Itoa(plan.DbIops))
-			cluster.SetProxyCores(strconv.Itoa(plan.PrxCores))
-			cluster.SetProxyDiskSize(strconv.Itoa(plan.PrxDataSize))
-			cluster.SetCloud18MonthlyInfraCost(plan.InfraCost)
-			cluster.SetCloud18MonthlyLicenseCost(plan.LicenceCost)
-			cluster.SetCloud18MonthlySysopsCost(plan.SysCost)
-			cluster.SetCloud18MonthlyDbopsCost(plan.DbaCost)
-	    cluster.SetCloud18CostCurrency(plan.Devise)
-			cluster.SetCloud18InfraCPUModel(plan.CPU)
-	    cluster.SetCloud18InfraDescription(plan.Infra)
-			cluster.SetCloud18InfraDataCenters(plan.DC)
-			cluster.SetCloud18InfraPublicBandwidth(plan.BP)
-			cluster.SetCloud18InfraGeoLocalizations(plan.Zone)
-
 			cluster.Save()
+			} // End of cluster not already prov
+			cluster.SetServicePlanInfos(theplan)
 			return nil
-		}
-	}
+		} // End of if the plan
+	} // End of for each plan
 	cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlErr, "Service plan not found %s", theplan)
 	return errors.New("Plan not found in repository")
 }
