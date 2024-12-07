@@ -51,16 +51,6 @@ function CloudSettings({ config }) {
       )
     },
     {
-      key: 'Force sync config files from repo',
-      value: (
-        <RMSwitch
-          confirmTitle={'Confirm switch global settings for git-force-sync-from-repo? This will replace config files in working directory!'}
-          onChange={() => dispatch(switchGlobalSetting({ setting: 'git-force-sync-from-repo' }))}
-          isChecked={config?.gitForceSyncFromRepo}
-        />
-      )
-    },
-    {
       key: 'Domain',
       value: (
         <TextForm

@@ -60,6 +60,7 @@ type Config struct {
 	ConfDirBackup                             string                 `scope:"server" mapstructure:"monitoring-confdir-backup" toml:"monitoring-confdir-backup" json:"monitoringConfdirBackup"`
 	ConfDirExtra                              string                 `scope:"server" mapstructure:"monitoring-confdir-extra" toml:"monitoring-confdir-extra" json:"monitoringConfdirExtra"`
 	ConfRewrite                               bool                   `scope:"server" mapstructure:"monitoring-save-config" toml:"monitoring-save-config" json:"monitoringSaveConfig"`
+	ConfRestoreOnStart                        bool                   `scope:"server" mapstructure:"monitoring-restore-config-on-start"  toml:"monitoring-restore-config-on-start" json:"monitoringRestoreConfigOnStart"`
 	MonitoringSSLCert                         string                 `scope:"server" mapstructure:"monitoring-ssl-cert" toml:"monitoring-ssl-cert" json:"monitoringSSLCert"`
 	MonitoringSSLKey                          string                 `scope:"server" mapstructure:"monitoring-ssl-key" toml:"monitoring-ssl-key" json:"monitoringSSLKey"`
 	MonitoringKeyPath                         string                 `scope:"server" mapstructure:"monitoring-key-path" toml:"monitoring-key-path" json:"monitoringKeyPath"`
@@ -670,7 +671,6 @@ type Config struct {
 	GitUsername                               string                 `scope:"server" mapstructure:"git-username" toml:"git-username" json:"gitUsername"`
 	GitAccesToken                             string                 `scope:"server" mapstructure:"git-acces-token" toml:"git-acces-token" json:"-"`
 	GitMonitoringTicker                       int                    `scope:"server" mapstructure:"git-monitoring-ticker" toml:"git-monitoring-ticker" json:"gitMonitoringTicker"`
-	GitForceSyncFromRepo                      bool                   `scope:"server" mapstructure:"git-force-sync-from-repo"  toml:"git-force-sync-from-repo" json:"gitForceSyncFromRepo"`
 	Cloud18                                   bool                   `scope:"server" mapstructure:"cloud18"  toml:"cloud18" json:"cloud18"`
 	Cloud18Domain                             string                 `scope:"server" mapstructure:"cloud18-domain" toml:"cloud18-domain" json:"cloud18Domain"`
 	Cloud18SubDomain                          string                 `scope:"server" mapstructure:"cloud18-sub-domain" toml:"cloud18-sub-domain" json:"cloud18SubDomain"`
@@ -1217,10 +1217,6 @@ func (conf *Config) DecryptSecretsFromConfig() {
 		secret.Value = strings.Join(tab_cred, ",")
 		//log.Printf("Decrypting secret variable %s=%s", k, secret.Value)
 		conf.Secrets[k] = secret
-		/* Decrypt feature not managed within log modules config due to risk of credentials leak */
-		if conf.LogSecrets {
-			log.WithFields(log.Fields{"cluster": "none", "type": "log", "module": "config"}).Infof("DecryptSecretsFromConfig %s: %s", k, secret.Value)
-		}
 	}
 }
 
@@ -1564,11 +1560,7 @@ func (conf *Config) CloneConfigFromGit(url string, user string, tok string, dir 
 		})
 
 		if err != nil {
-			if err.Error() != "repository not found" && err.Error() != "remote repository is empty" {
-				if conf.IsEligibleForPrinting(ConstLogModGit, LvlDbg) {
-					log.Errorf("Git error : cannot Clone %s repository : %s", url, err)
-				}
-			} else if conf.IsEligibleForPrinting(ConstLogModGit, LvlErr) {
+			if conf.IsEligibleForPrinting(ConstLogModGit, LvlDbg) {
 				log.Errorf("Git error : cannot Clone %s repository : %s", url, err)
 			}
 		}
@@ -2668,8 +2660,8 @@ func (conf *Config) SwitchCloud18() {
 	conf.Cloud18 = !conf.Cloud18
 }
 
-func (conf *Config) SwitchGitForceSyncFromRepo() {
-	conf.GitForceSyncFromRepo = !conf.GitForceSyncFromRepo
+func (conf *Config) SetRestoreConfigOnStart(val bool) {
+	conf.ConfRestoreOnStart = val
 }
 
 func (conf *Config) SetLogGitLevel(value int) {

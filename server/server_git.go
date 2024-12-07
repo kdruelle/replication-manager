@@ -108,8 +108,14 @@ func (repman *ReplicationManager) InitGitConfig(conf *config.Config) error {
 			conf.ImmuableFlagMap["git-url-pull"] = conf.GitUrlPull
 			conf.ImmuableFlagMap["git-username"] = conf.GitUsername
 			conf.ImmuableFlagMap["git-acces-token"] = personal_access_token
-			conf.CloneConfigFromGit(conf.GitUrl, conf.GitUsername, conf.GitAccesToken, conf.WorkingDir)
-			conf.PushConfigToGit(conf.GitUrl, conf.GitAccesToken, conf.GitUsername, conf.WorkingDir, []string{})
+
+			if conf.ConfRestoreOnStart {
+				conf.ConfRestoreOnStart = false
+				conf.ImmuableFlagMap["monitoring-restore-config-on-start"] = false
+				os.RemoveAll(conf.WorkingDir)
+				conf.CloneConfigFromGit(conf.GitUrl, conf.GitUsername, conf.GitAccesToken, conf.WorkingDir)
+				conf.CloneConfigFromGit(conf.GitUrlPull, conf.GitUsername, conf.GitAccesToken, conf.WorkingDir+"/.pull")
+			}
 			//conf.GitAddReadMe(conf.GitUrl, conf.GitAccesToken, conf.GitUsername, conf.WorkingDir)
 
 		} else if conf.LogGit {
