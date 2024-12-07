@@ -317,6 +317,9 @@ func GetGitLabTokenOAuth(acces_token string, log_git bool) (string, int) {
 	return tokenInfos[0].Token, tokenInfos[0].ID
 
 }
+func GitLabCreatePullProject(token string, name string, path string, namespace string, user_id int, log_git bool) {
+	GitLabCreateProject(token, name+"-pull", path, namespace, user_id, log_git)
+}
 
 func GitLabCreateProject(token string, name string, path string, namespace string, user_id int, log_git bool) {
 	req, err := http.NewRequest("GET", "https://gitlab.signal18.io/api/v4/projects?search="+name, nil)

@@ -26,8 +26,6 @@ import (
 	"time"
 
 	"github.com/bluele/logrus_slack"
-	"github.com/go-git/go-git/v5"
-	git_obj "github.com/go-git/go-git/v5/plumbing/object"
 	vault "github.com/hashicorp/vault/api"
 
 	"github.com/pelletier/go-toml"
@@ -110,6 +108,8 @@ type Cluster struct {
 	IsCapturing                   bool                 `json:"isCapturing"`
 	IsGitPull                     bool                 `json:"isGitPull"`
 	IsGitPush                     bool                 `json:"isGitPush"`
+	IsSavingConfig                bool                 `json:"-"`
+	IsNeedGitPush                 bool                 `json:"-"`
 	IsExportPush                  bool                 `json:"isExportPush"`
 	IsAlertDisable                bool                 `json:"isAlertDisable"`
 	Conf                          config.Config        `json:"config"`
@@ -857,19 +857,15 @@ func (cluster *Cluster) Stop() {
 	cluster.exit = true
 }
 
+func (cluster *Cluster) SetIsSavingConfig(val bool) {
+	cluster.IsSavingConfig = val
+}
+
 func (cluster *Cluster) Save() error {
 	//Needed to preserve diretory before Pull
 	if !cluster.IsGitPull && cluster.Conf.Cloud18 {
-		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModConfigLoad, config.LvlDbg, "Cannot save cluster config, cloud18 active but config is not pulled yet.")
 		return nil
 	}
-
-	if cluster.Conf.Cloud18 {
-		if cluster.GitRepo == nil || cluster.GitRepo.IsPushing {
-			return nil
-		}
-	}
-
 	_, file, no, ok := runtime.Caller(1)
 	if ok {
 		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModConfigLoad, config.LvlDbg, "Saved called from %s#%d\n", file, no)
@@ -919,8 +915,20 @@ func (cluster *Cluster) Save() error {
 		return err
 	}
 
+	has_changed := false
+
 	if cluster.Conf.ConfRewrite {
-		defer cluster.PushConfigs()
+		// Check and inject config
+		cluster.CheckInjectConfig()
+
+		// Save the main configuration file
+		has_changed, err = cluster.SaveConfigFile()
+		if err != nil {
+			cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModConfigLoad, config.LvlWarn, "Error during save cluster config: %s", err)
+			return err
+		}
+
+		// Checksum decrypted value to prevent unnecessary file
 		new_ih, err := cluster.Conf.GetImmutableChecksum()
 		if err != nil {
 			cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModConfigLoad, config.LvlWarn, "Error during checksum immutable config: %s", err)
@@ -933,48 +941,72 @@ func (cluster *Cluster) Save() error {
 		}
 		old_sh, ok2 := cluster.CheckSumConfig["plain-secret"]
 
-		// Check and inject config
-		cluster.CheckInjectConfig()
-
-		// Save the main configuration file
-		if err := cluster.SaveConfigFile(cluster.Conf.WorkingDir+"/"+cluster.Name+"/"+cluster.Name+".toml", "[saved-"+cluster.Name+"]\ntitle = \""+cluster.Name+"\" \n", "saved"); err != nil {
-			cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModConfigLoad, config.LvlWarn, "Error during save cluster config: %s", err)
-			return err
+		non_secret_change := !ok || !bytes.Equal(old_ih.Sum(nil), new_ih.Sum(nil))
+		secret_change := !ok2 || !bytes.Equal(old_sh.Sum(nil), new_sh.Sum(nil))
+		if non_secret_change {
+			cluster.CheckSumConfig["plain-immutable"] = new_ih
 		}
 
-		if !ok || !ok2 || !bytes.Equal(old_ih.Sum(nil), new_ih.Sum(nil)) || !bytes.Equal(old_sh.Sum(nil), new_sh.Sum(nil)) {
-			if !ok || !bytes.Equal(old_ih.Sum(nil), new_ih.Sum(nil)) {
-				cluster.CheckSumConfig["plain-immutable"] = new_ih
-			}
+		if secret_change {
+			cluster.CheckSumConfig["plain-secret"] = new_sh
+		}
+
+		// Only save if the value is changed
+		if non_secret_change || secret_change {
+
+			has_changed = true
 			// Save the immutable configuration file
-			if err := cluster.SaveImmutableConfig(); err != nil {
+			_, err := cluster.SaveImmutableConfig()
+			if err != nil {
 				cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModConfigLoad, config.LvlWarn, "Error during save cluster immutable config: %s", err)
 				return err
 			}
 
-			if !ok2 || !bytes.Equal(old_sh.Sum(nil), new_sh.Sum(nil)) {
-				cluster.CheckSumConfig["plain-secret"] = new_sh
-
-				// Save the cache configuration file
-				if err := cluster.SaveCacheConfig(); err != nil {
-					cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModConfigLoad, config.LvlWarn, "Error during save cluster cache config: %s", err)
-					return err
-				}
+			// Save the cache configuration file
+			if err := cluster.SaveCacheConfig(); err != nil {
+				cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModConfigLoad, config.LvlWarn, "Error during save cluster cache config: %s", err)
+				return err
 			}
 		}
 
-		// Final overwrite based on whether configuration has changed
-		hasChanged := cluster.CheckForChanges()
-		if err := cluster.Overwrite(hasChanged); err != nil {
-			cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModConfigLoad, config.LvlWarn, "Error during save overw cluster config: %s", err)
-			return err
+		_, err = cluster.Overwrite()
+		if err != nil {
+			cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModConfigLoad, config.LvlWarn, "Error during Overwriting: %s", err)
 		}
+	}
+
+	if has_changed {
+		cluster.IsNeedGitPush = true
 	}
 
 	return nil
 }
 
-func (cluster *Cluster) SaveConfigFile(filePath, header, checksumKey string) error {
+func (cluster *Cluster) SaveConfigFile() (bool, error) {
+	var has_changed bool
+
+	filePath := cluster.Conf.WorkingDir + "/" + cluster.Name + "/" + cluster.Name + ".toml"
+	header := "[saved-" + cluster.Name + "]\ntitle = \"" + cluster.Name + "\" \n"
+
+	// Marshal and write TOML configuration
+	readconf, err := toml.Marshal(cluster.Conf)
+	if err != nil {
+		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModConfigLoad, config.LvlErr, "Error marshalling toml: %s", err)
+		return false, err
+	}
+
+	// Load TOML and sort keys
+	t, err := toml.LoadBytes(readconf)
+	if err != nil {
+		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModConfigLoad, config.LvlErr, "Error loading toml: %s", err)
+		return false, err
+	}
+
+	s := t
+	keys := t.Keys()
+	keys = misc.SortKeysAsc(keys)
+
+	// Write sorted values to file
 	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_TRUNC|os.O_RDWR, 0666)
 	if err != nil {
 		if os.IsPermission(err) {
@@ -982,48 +1014,58 @@ func (cluster *Cluster) SaveConfigFile(filePath, header, checksumKey string) err
 		} else {
 			cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModConfigLoad, config.LvlErr, "Error opening file: %s", err)
 		}
-		return err
+		return false, err
 	}
 	defer file.Close()
 
 	// Write header
 	file.WriteString(header)
 
-	// Marshal and write TOML configuration
-	readconf, err := toml.Marshal(cluster.Conf)
-	if err != nil {
-		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModConfigLoad, config.LvlErr, "Error marshalling toml: %s", err)
-		return err
+	for _, key := range keys {
+		_, ok := cluster.Conf.ImmuableFlagMap[key]
+		if ok {
+			s.Delete(key)
+		} else {
+			v, ok := cluster.Conf.DefaultFlagMap[key]
+			if ok && fmt.Sprintf("%v", s.Get(key)) == fmt.Sprintf("%v", v) {
+				s.Delete(key)
+			} else if !ok {
+				s.Delete(key)
+			} else if _, ok = cluster.Conf.Secrets[key]; ok {
+				s.Delete(key)
+				//to encrypt credentials before writting in the config file
+				encrypt_val := cluster.GetEncryptedValueFromMemory(key)
+				file.WriteString(key + " = \"" + encrypt_val + "\"\n")
+
+			}
+		}
 	}
 
-	t, err := toml.LoadBytes(readconf)
-	if err != nil {
-		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModConfigLoad, config.LvlErr, "Error loading toml: %s", err)
-		return err
+	s.WriteTo(file)
+	//fmt.Printf("SAVE CLUSTER IMMUABLE MAP : %s", cluster.Conf.ImmuableFlagMap)
+	//fmt.Printf("SAVE CLUSTER DYNAMIC MAP : %s", cluster.Conf.DynamicFlagMap)
+	new_h := md5.New()
+	if _, err := io.Copy(new_h, file); err != nil {
+		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModConfigLoad, config.LvlWarn, "Error during Overwriting: %s", err)
 	}
 
-	// Process keys
-	if err := cluster.ProcessKeys(t, file); err != nil {
-		return err
+	h, ok := cluster.CheckSumConfig["saved"]
+	if !ok {
+		has_changed = true
+	}
+	if ok && !bytes.Equal(h.Sum(nil), new_h.Sum(nil)) {
+		has_changed = true
 	}
 
-	// Generate and compare checksum
-	return cluster.UpdateChecksum(file, checksumKey)
+	cluster.CheckSumConfig["saved"] = new_h
+
+	return has_changed, nil
 }
 
-func (cluster *Cluster) SaveImmutableConfig() error {
-	filePath := cluster.Conf.WorkingDir + "/" + cluster.Name + "/immutable.toml"
-	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_TRUNC|os.O_RDWR, 0666)
-	if err != nil {
-		if os.IsPermission(err) {
-			cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModConfigLoad, config.LvlWarn, "File permission denied: %s", filePath)
-		} else {
-			cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModConfigLoad, config.LvlErr, "Error opening file: %s", err)
-		}
-		return err
-	}
-	defer file.Close()
+func (cluster *Cluster) SaveImmutableConfig() (bool, error) {
+	var has_changed bool
 
+	// Get Sorted Keys
 	keys := make([]string, 0)
 	for key, _ := range cluster.Conf.ImmuableFlagMap {
 		keys = append(keys, key)
@@ -1031,18 +1073,47 @@ func (cluster *Cluster) SaveImmutableConfig() error {
 
 	keys = misc.SortKeysAsc(keys)
 
+	// Open file and
+	file2, err := os.OpenFile(cluster.Conf.WorkingDir+"/"+cluster.Name+"/immutable.toml", os.O_CREATE|os.O_TRUNC|os.O_RDWR, 0666)
+	if err != nil {
+		if os.IsPermission(err) {
+			cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModConfigLoad, config.LvlWarn, "File permission denied: %s", cluster.Conf.WorkingDir+"/"+cluster.Name+"/immutable.toml")
+		}
+		return false, err
+	}
+	defer file2.Close()
+
 	for _, key := range keys {
 		val := cluster.Conf.ImmuableFlagMap[key]
-		if _, ok := cluster.Conf.Secrets[key]; ok {
+		_, ok := cluster.Conf.Secrets[key]
+		if ok {
 			encrypt_val := cluster.GetEncryptedValueFromMemory(key)
-			file.WriteString(key + " = \"" + encrypt_val + "\"\n")
+			file2.WriteString(key + " = \"" + encrypt_val + "\"\n")
 		} else {
-			file.WriteString(fmt.Sprintf("%s = %v\n", key, val))
+			if fmt.Sprintf("%T", val) == "string" {
+				file2.WriteString(key + " = \"" + fmt.Sprintf("%v", val) + "\"\n")
+			} else {
+				file2.WriteString(key + " = " + fmt.Sprintf("%v", val) + "\n")
+			}
 		}
 	}
 
-	// Generate and compare checksum
-	return cluster.UpdateChecksum(file, "immutable")
+	new_h := md5.New()
+	if _, err := io.Copy(new_h, file2); err != nil {
+		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModConfigLoad, config.LvlWarn, "Error during Overwriting: %s", err)
+	}
+
+	h, ok := cluster.CheckSumConfig["immutable"]
+	if !ok {
+		has_changed = true
+	}
+	if ok && !bytes.Equal(h.Sum(nil), new_h.Sum(nil)) {
+		has_changed = true
+	}
+
+	cluster.CheckSumConfig["immutable"] = new_h
+
+	return has_changed, nil
 }
 
 func (cluster *Cluster) SaveCacheConfig() error {
@@ -1075,152 +1146,8 @@ func (cluster *Cluster) SaveCacheConfig() error {
 	return nil
 }
 
-func (cluster *Cluster) ProcessKeys(t *toml.Tree, file *os.File) error {
-	s := t
-	keys := t.Keys()
-	for _, key := range keys {
-		if _, ok := cluster.Conf.ImmuableFlagMap[key]; ok {
-			s.Delete(key)
-		} else {
-			v, ok := cluster.Conf.DefaultFlagMap[key]
-			if ok && fmt.Sprintf("%v", s.Get(key)) == fmt.Sprintf("%v", v) {
-				s.Delete(key)
-			} else if !ok {
-				s.Delete(key)
-			} else if _, ok = cluster.Conf.Secrets[key]; ok {
-				s.Delete(key)
-				encrypt_val := cluster.GetEncryptedValueFromMemory(key)
-				file.WriteString(key + " = \"" + encrypt_val + "\"\n")
-			}
-		}
-	}
-
-	_, err := s.WriteTo(file)
-	return err
-}
-
-func (cluster *Cluster) UpdateChecksum(file *os.File, checksumKey string) error {
-	new_h := md5.New()
-	if _, err := io.Copy(new_h, file); err != nil {
-		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModConfigLoad, config.LvlWarn, "Error during checksum update: %s", err)
-		return err
-	}
-
-	h, ok := cluster.CheckSumConfig[checksumKey]
-	hasChanged := !ok || !bytes.Equal(h.Sum(nil), new_h.Sum(nil))
-
-	// Update the checksum if changed
-	if hasChanged {
-		cluster.CheckSumConfig[checksumKey] = new_h
-	}
-
-	return nil
-}
-
-func (cluster *Cluster) CheckForChanges() bool {
-	// Check if the configuration files have changed (based on the checksum comparison logic)
-	// Modify this logic as per your specific requirements
-	for _, checksumKey := range []string{"saved", "immutable"} {
-		h, ok := cluster.CheckSumConfig[checksumKey]
-		if !ok || !bytes.Equal(h.Sum(nil), cluster.CheckSumConfig[checksumKey].Sum(nil)) {
-			return true
-		}
-	}
-	return false
-}
-
-func (cluster *Cluster) PushConfigToGit() {
-	var err error
-
-	// Prevent concurrent
-	cluster.GitRepo.IsPushing = true
-	defer func() {
-		cluster.GitRepo.IsPushing = false
-	}()
-
-	cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGit, config.LvlInfo, "Push to git : tok %s, dir %s, user %s, name %s\n", cluster.Conf.PrintSecret(cluster.GitRepo.Auth.Password), cluster.GitRepo.Path, cluster.GitRepo.Auth.Username, cluster.Name)
-
-	msg := "Update " + cluster.Name + ".toml file"
-
-	// Adds the new file to the staging area.
-	err = cluster.GitRepo.AddGlob(cluster.Name + "/*.toml")
-	if err != nil {
-		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGit, config.LvlWarn, "Git error : cannot Add %s : %s", cluster.Name+"/*.toml", err)
-	}
-
-	_, err = cluster.GitRepo.Add(cluster.Name + "/agents.json")
-	if err != nil {
-		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGit, config.LvlWarn, "Git error : cannot Add %s : %s", cluster.Name+"/*.json", err)
-	}
-	_, err = cluster.GitRepo.Add(cluster.Name + "/queryrules.json")
-	if err != nil {
-		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGit, config.LvlWarn, "Git error : cannot Add %s : %s", cluster.Name+"/*.json", err)
-	}
-
-	_, err = cluster.GitRepo.Commit(msg, &git.CommitOptions{
-		Author: &git_obj.Signature{
-			Name: "Replication-manager",
-			When: time.Now(),
-		},
-		AllowEmptyCommits: false,
-	})
-	if err != nil {
-		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGit, config.LvlWarn, "Git error : cannot Commit : %s", err)
-	}
-
-	// push using default options
-	err = cluster.GitRepo.Push()
-	if err != nil {
-		if strings.Contains(err.Error(), git.ErrNonFastForwardUpdate.Error()) {
-			cluster.SetState("WARN0132", state.State{ErrType: config.LvlWarn, ErrDesc: fmt.Sprintf(config.ClusterError["WARN0132"], cluster.Conf.GitUrl, err.Error()), ErrFrom: "GIT"})
-		} else {
-			cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGit, config.LvlWarn, "Git error : cannot Push : %s", err)
-		}
-	} else {
-		cluster.GitRepo.Pull(true)
-	}
-}
-
-func (cluster *Cluster) PushConfigToBackupDir() {
-	var err error
-	cluster.IsExportPush = true
-	defer func() {
-		cluster.IsExportPush = false
-	}()
-
-	if cluster.Conf.WithEmbed == "ON" {
-		return
-	}
-
-	srcDir := cluster.Conf.WorkingDir + "/" + cluster.Name
-	dstDir := cluster.Conf.ConfDirBackup + "/" + cluster.Name
-
-	_, err = os.Stat(srcDir)
-	if err != nil {
-		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModConfigLoad, config.LvlErr, "Config : error accessing source dir (%s): %s", srcDir, err)
-		return
-	}
-
-	_, err = os.Stat(dstDir)
-	if os.IsNotExist(err) {
-		err = os.MkdirAll(dstDir, 0755)
-		if err != nil {
-			cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModConfigLoad, config.LvlErr, "Config : error creating destination dir (%s)  : %s", dstDir, err)
-			return
-		}
-	}
-
-	err = misc.CopyFilesWithSuffix(srcDir, dstDir, ".toml")
-	if err != nil {
-		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModConfigLoad, config.LvlErr, "Config : error copying *.toml files to destination dir (%s)  : %s", dstDir, err)
-		return
-	}
-
-	cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModConfigLoad, config.LvlDbg, "Config : Success copying *.toml files to destination dir :%s", dstDir)
-
-}
-
-func (cluster *Cluster) Overwrite(has_changed bool) error {
+func (cluster *Cluster) Overwrite() (bool, error) {
+	var has_changed bool
 
 	if cluster.Conf.ConfRewrite {
 		var myconf = make(map[string]config.Config)
@@ -1232,7 +1159,7 @@ func (cluster *Cluster) Overwrite(has_changed bool) error {
 			if os.IsPermission(err) {
 				cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModConfigLoad, config.LvlWarn, "File permission denied: %s", cluster.Conf.WorkingDir+"/"+cluster.Name+"/overwrite.toml")
 			}
-			return err
+			return false, err
 		}
 		defer file.Close()
 
@@ -1240,8 +1167,9 @@ func (cluster *Cluster) Overwrite(has_changed bool) error {
 		t, _ := toml.LoadBytes(readconf)
 		s := t
 		keys := t.Keys()
-		for _, key := range keys {
+		keys = misc.SortKeysAsc(keys)
 
+		for _, key := range keys {
 			v, ok := cluster.Conf.ImmuableFlagMap[key]
 			if !ok {
 				s.Delete(key)
@@ -1282,7 +1210,7 @@ func (cluster *Cluster) Overwrite(has_changed bool) error {
 
 	}
 
-	return nil
+	return has_changed, nil
 }
 
 func (cluster *Cluster) GetEncryptedValueFromMemory(key string) string {

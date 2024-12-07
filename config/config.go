@@ -666,6 +666,7 @@ type Config struct {
 	LogVault                                  bool                   `mapstructure:"log-vault" toml:"log-vault" json:"logVault"`
 	LogVaultLevel                             int                    `mapstructure:"log-vault-level" toml:"log-vault-level" json:"logVaultLevel"`
 	GitUrl                                    string                 `scope:"server" mapstructure:"git-url" toml:"git-url" json:"gitUrl"`
+	GitUrlPull                                string                 `scope:"server" mapstructure:"git-url-pull" toml:"git-url-pull" json:"gitUrlPull"`
 	GitUsername                               string                 `scope:"server" mapstructure:"git-username" toml:"git-username" json:"gitUsername"`
 	GitAccesToken                             string                 `scope:"server" mapstructure:"git-acces-token" toml:"git-acces-token" json:"-"`
 	GitMonitoringTicker                       int                    `scope:"server" mapstructure:"git-monitoring-ticker" toml:"git-monitoring-ticker" json:"gitMonitoringTicker"`
@@ -697,11 +698,11 @@ type Config struct {
 	Cloud18DbaUserCredentials                 string                 `mapstructure:"cloud18-dba-user-credentials"  toml:"cloud18-dba-user-credentials" json:"cloud18DbaUserCredential"`
 	Cloud18Plan                               string                 `mapstructure:"cloud18-plan" toml:"cloud18-plan" json:"cloud18Plan"`
 	LogSecrets                                bool                   `mapstructure:"log-secrets"  toml:"log-secrets" json:"-"`
-	Secrets                                   map[string]Secret      `json:"-"`
-	SecretKey                                 []byte                 `json:"-"`
-	ImmuableFlagMap                           map[string]interface{} `json:"-"`
-	DynamicFlagMap                            map[string]interface{} `json:"-"`
-	DefaultFlagMap                            map[string]interface{} `json:"-"`
+	Secrets                                   map[string]Secret      `toml:"-" json:"-"`
+	SecretKey                                 []byte                 `toml:"-" json:"-"`
+	ImmuableFlagMap                           map[string]interface{} `toml:"-" json:"-"`
+	DynamicFlagMap                            map[string]interface{} `toml:"-" json:"-"`
+	DefaultFlagMap                            map[string]interface{} `toml:"-" json:"-"`
 	OAuthProvider                             string                 `mapstructure:"api-oauth-provider-url" toml:"api-oauth-provider-url" json:"apiOAuthProvider"`
 	OAuthClientID                             string                 `mapstructure:"api-oauth-client-id" toml:"api-oauth-client-id" json:"apiOAuthClientID"`
 	OAuthClientSecret                         string                 `mapstructure:"api-oauth-client-secret" toml:"api-oauth-client-secret" json:"apiOAuthClientSecret"`
@@ -759,9 +760,9 @@ type PeerCluster struct {
 	Cloud18MonthlySysopsCost         float64  `json:"cloud18-monthly-sysops-cost,string"`
 	Cloud18MonthlyDbopsCost          float64  `json:"cloud18-monthly-dbops-cost,string"`
 	Cloud18CostCurrency              string   `json:"cloud18-cost-currency"`
-	Cloud18InfraCPUModel						 string   `json:"cloud18-infra-cpu-model"`
+	Cloud18InfraCPUModel             string   `json:"cloud18-infra-cpu-model"`
 	Cloud18InfraGeoLocalizations     string   `json:"cloud18-infra-geo-localizations"`
-	Cloud18InfraPublicBandwidth      float64   `json:"cloud18-infra-public-bandwidth,string"`
+	Cloud18InfraPublicBandwidth      float64  `json:"cloud18-infra-public-bandwidth,string"`
 	Cloud18InfraDataCenters          string   `json:"cloud18-infra-data-centers"`
 	Cloud18OpenDbops                 bool     `json:"cloud18-open-dbops,string"`
 	Cloud18SubscribedDbops           bool     `json:"cloud18-subscribed-dbops,string"`
@@ -1216,6 +1217,10 @@ func (conf *Config) DecryptSecretsFromConfig() {
 		secret.Value = strings.Join(tab_cred, ",")
 		//log.Printf("Decrypting secret variable %s=%s", k, secret.Value)
 		conf.Secrets[k] = secret
+		/* Decrypt feature not managed within log modules config due to risk of credentials leak */
+		if conf.LogSecrets {
+			log.WithFields(log.Fields{"cluster": "none", "type": "log", "module": "config"}).Infof("DecryptSecretsFromConfig %s: %s", k, secret.Value)
+		}
 	}
 }
 
@@ -1502,141 +1507,177 @@ func (conf *Config) PrintSecret(value string) string {
 	return masker.String(masker.MAddress, value)
 }
 
-func (conf *Config) CloneConfigFromGit(url string, user string, tok string, dir string) error {
+func (conf *Config) CloneConfigFromGit(url string, user string, tok string, dir string) {
+
 	auth := &git_https.BasicAuth{
-		Username: user, // can be any non-empty string
+		Username: user, // yes, this can be anything except an empty string
 		Password: tok,
+	}
+
+	if conf.IsEligibleForPrinting(ConstLogModGit, LvlDbg) {
+		log.Printf("Clone from git : url %s, tok %s, dir %s\n", url, conf.PrintSecret(tok), dir)
 	}
 
 	path := dir
 	if _, err := os.Stat(path + "/.git"); err == nil {
-		// Open existing repository
+
+		// We instantiate a new repository targeting the given path (the .git folder)
 		r, err := git.PlainOpen(path)
 		if err != nil {
-			return fmt.Errorf("git error: cannot open repository: %w", err)
+			if conf.IsEligibleForPrinting(ConstLogModGit, LvlErr) {
+				log.Errorf("Git error : cannot PlainOpen : %s", err)
+			}
+			return
 		}
 
 		// Get the working directory for the repository
 		w, err := r.Worktree()
 		if err != nil {
-			return fmt.Errorf("git error: cannot get worktree: %w", err)
-		}
-
-		// Pull the latest changes from origin
-		err = w.Pull(&git.PullOptions{
-			RemoteName: "origin",
-			Auth:       auth,
-			Force:      true,
-		})
-		if err != nil && err.Error() != "already up-to-date" {
-			if strings.Contains(err.Error(), git.ErrNonFastForwardUpdate.Error()) {
-				return err
+			if conf.IsEligibleForPrinting(ConstLogModGit, LvlErr) {
+				log.Errorf("Git error : cannot Worktree : %s", err)
 			}
-			fmt.Printf("git error: cannot pull from repository: %w", err)
+			return
+		}
+		// Pull the latest changes from the origin remote and merge into the current branch
+		//git_ex.Info("git pull origin")
+		err = w.Pull(&git.PullOptions{
+			RemoteName:   "origin",
+			Auth:         auth,
+			SingleBranch: true,
+			//RemoteURL:    url,
+			Force: true,
+		})
+		if err != nil && fmt.Sprintf("%v", err) != "already up-to-date" {
+			if conf.IsEligibleForPrinting(ConstLogModGit, LvlErr) {
+				log.Errorf("Git error : cannot Pull : %s", err)
+			}
 		}
 
 	} else {
-		// Clone the repository to the given directory
+		// Clone the given repository to the given directory
+		//git_ex.Info("git clone %s %s --recursive", url, path)
+
 		_, err := git.PlainClone(path, false, &git.CloneOptions{
 			URL:               url,
 			RecurseSubmodules: git.DefaultSubmoduleRecursionDepth,
 			Auth:              auth,
 		})
+
 		if err != nil {
-			return fmt.Errorf("git error: cannot clone repository %s: %w", url, err)
+			if err.Error() != "repository not found" && err.Error() != "remote repository is empty" {
+				if conf.IsEligibleForPrinting(ConstLogModGit, LvlDbg) {
+					log.Errorf("Git error : cannot Clone %s repository : %s", url, err)
+				}
+			} else if conf.IsEligibleForPrinting(ConstLogModGit, LvlErr) {
+				log.Errorf("Git error : cannot Clone %s repository : %s", url, err)
+			}
 		}
 	}
-
-	return nil
 }
 
-func (conf *Config) PushConfigToGit(url string, tok string, user string, dir string, clusterList []string) error {
+func (conf *Config) PushConfigToGit(url string, tok string, user string, dir string, clusterList []string) {
 
+	if conf.IsEligibleForPrinting(ConstLogModGit, LvlDbg) {
+		log.Debugf("Push to git : tok %s, dir %s, user %s, clustersList : %v\n", conf.PrintSecret(tok), dir, user, clusterList)
+	}
 	auth := &git_https.BasicAuth{
-		Username: user, // can be any non-empty string
+		Username: user, // yes, this can be anything except an empty string
 		Password: tok,
 	}
-
-	// Open the repository
-	r, err := git.PlainOpen(dir)
+	path := dir
+	r, err := git.PlainOpen(path)
 	if err != nil {
-		return fmt.Errorf("git error: cannot open repository: %w", err)
+		if conf.IsEligibleForPrinting(ConstLogModGit, LvlErr) {
+			log.Errorf("Git error : cannot PlainOpen : %s", err)
+		}
+		return
 	}
 
-	// Get the working tree
 	w, err := r.Worktree()
 	if err != nil {
-		return fmt.Errorf("git error: cannot get worktree: %w", err)
+		if conf.IsEligibleForPrinting(ConstLogModGit, LvlErr) {
+			log.Errorf("Git error : cannot Worktree : %s", err)
+		}
+		return
 	}
 
-	// Add cluster-specific files
 	if len(clusterList) != 0 {
 		for _, name := range clusterList {
-			if err := w.AddGlob(name + "/*.toml"); err != nil && conf.IsEligibleForPrinting(ConstLogModGit, LvlWarn) {
-				fmt.Printf("Git error: cannot add %s/*.toml: %w", name, err)
+			// Adds the new file to the staging area.
+			err = w.AddGlob(name + "/*.toml")
+			if err != nil {
+				if conf.IsEligibleForPrinting(ConstLogModGit, LvlErr) {
+					log.Errorf("Git error : cannot Add %s : %s", name+"/*.toml", err)
+				}
 			}
 
-			// Check and add specific JSON files if they exist
 			if _, err := os.Stat(conf.WorkingDir + "/" + name + "/agents.json"); !os.IsNotExist(err) {
-				if _, err := w.Add(name + "/agents.json"); err != nil && conf.IsEligibleForPrinting(ConstLogModGit, LvlWarn) {
-					fmt.Printf("git error: cannot add %s/agents.json: %w", name, err)
+				_, err = w.Add(name + "/agents.json")
+				if err != nil {
+					if conf.IsEligibleForPrinting(ConstLogModGit, LvlErr) {
+						log.Errorf("Git error : cannot Add %s : %s", name+"/agents.json", err)
+					}
 				}
-				if _, err := w.Add(name + "/queryrules.json"); err != nil && conf.IsEligibleForPrinting(ConstLogModGit, LvlWarn) {
-					fmt.Printf("git error: cannot add %s/queryrules.json: %w", name, err)
+				_, err = w.Add(name + "/queryrules.json")
+				if err != nil {
+					if conf.IsEligibleForPrinting(ConstLogModGit, LvlErr) {
+						log.Errorf("Git error : cannot Add %s : %s", name+"/queryrules.json", err)
+					}
 				}
 			}
 		}
 	}
 
-	// Add cloud18.toml if it exists
 	if _, err := os.Stat(conf.WorkingDir + "/cloud18.toml"); !os.IsNotExist(err) {
-		if _, err := w.Add("cloud18.toml"); err != nil && conf.IsEligibleForPrinting(ConstLogModGit, LvlWarn) {
-			fmt.Printf("git error: cannot add cloud18.toml: %w", err)
+		_, err = w.Add("cloud18.toml")
+		if err != nil {
+			if conf.IsEligibleForPrinting(ConstLogModGit, LvlErr) {
+				log.Errorf("Git error : cannot Add cloud18.toml : %s", err)
+			}
 		}
 	}
 
-	if ws, err := w.Status(); err == nil && !ws.IsClean() {
-		// Commit the changes
-		msg := "Update file"
-		if _, err := w.Commit(msg, &git.CommitOptions{
-			Author: &git_obj.Signature{
-				Name: "Replication-manager",
-				When: time.Now(),
-			},
-			All:               true,
-			AllowEmptyCommits: false,
-		}); err != nil {
-			return fmt.Errorf("git error: cannot commit changes: %w", err)
+	if _, err := os.Stat(conf.WorkingDir + "/default.toml"); !os.IsNotExist(err) {
+		_, err = w.Add("default.toml")
+		if err != nil {
+			if conf.IsEligibleForPrinting(ConstLogModGit, LvlErr) {
+				log.Errorf("Git error : cannot Add default.toml : %s", err)
+			}
 		}
 	}
 
-	// Pull the latest changes from the remote repository
-	if err := w.Pull(&git.PullOptions{
+	msg := "Update file"
+
+	_, err = w.Commit(msg, &git.CommitOptions{
+		Author: &git_obj.Signature{
+			Name: "Replication-manager",
+			When: time.Now(),
+		},
+		All: true,
+	})
+
+	if err != nil {
+		log.Errorf("Git error : cannot Commit : %s", err)
+		return
+	}
+
+	err = w.Pull(&git.PullOptions{
 		RemoteName: "origin",
 		Auth:       auth,
 		RemoteURL:  url,
 		Force:      true,
-	}); err != nil && err.Error() != "already up-to-date" && conf.IsEligibleForPrinting(ConstLogModGit, LvlWarn) {
-		if strings.Contains(err.Error(), git.ErrNonFastForwardUpdate.Error()) {
-			if conf.GitForceSyncFromRepo {
-				if err = ForcePullFromRepo(r, url, auth); err != nil && err.Error() != "already up-to-date" {
-					fmt.Printf("git error: %s", err.Error())
-				}
-			}
-		} else {
-			fmt.Printf("git error: cannot pull from repository %s: %w", url, err)
-		}
+	})
+
+	if err != nil && fmt.Sprintf("%v", err) != "already up-to-date" {
+		log.Errorf("Git error : cannot Pull %s repository : %s", url, err)
 	}
 
-	// Push the changes to the remote repository
-	if err := r.Push(&git.PushOptions{Auth: auth}); err != nil && err.Error() != "already up-to-date" {
-		if err != git.ErrNonFastForwardUpdate {
-			return err
-		}
-		return fmt.Errorf("git error: cannot push to remote repository: %w", err)
-	}
+	// push using default options
+	err = r.Push(&git.PushOptions{Auth: auth, ForceWithLease: &git.ForceWithLease{}})
+	if err != nil && conf.LogGit {
+		log.Errorf("Git error : cannot Push : %s", err)
 
-	return nil
+	}
 }
 
 // PullAndMergeWithConflictResolution pulls and merges changes, handling conflicts manually.
@@ -2266,20 +2307,19 @@ func IsScope(toml string, scope string) bool {
 	return false
 }
 
-func (conf *Config) ReadCloud18Config(viper *viper.Viper) {
+func (conf *Config) ReadCloud18Config(viper *viper.Viper, path string) {
 	viper = viper.Sub("default")
 	viper.SetConfigType("toml")
 
-	if _, err := os.Stat(conf.WorkingDir + "/cloud18.toml"); os.IsNotExist(err) {
-		//fmt.Printf("No monitoring saved config found " + conf.WorkingDir + "/cloud18.toml")
+	if _, err := os.Stat(path); os.IsNotExist(err) {
 		return
 	}
-	fmt.Printf("Parsing saved config from working directory %s ", conf.WorkingDir+"/cloud18.toml")
+	fmt.Printf("Parsing saved config from working directory %s ", path)
 
-	viper.SetConfigFile(conf.WorkingDir + "/cloud18.toml")
+	viper.SetConfigFile(path)
 	err := viper.MergeInConfig()
 	if err != nil {
-		log.Error("Config error in " + conf.WorkingDir + "/cloud18.toml:" + err.Error())
+		log.Error("Config error in " + path + ":" + err.Error())
 	}
 
 	viper.Unmarshal(&conf)

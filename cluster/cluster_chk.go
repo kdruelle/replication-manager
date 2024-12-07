@@ -846,18 +846,7 @@ func (cluster *Cluster) CheckInjectConfig() {
 				cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlErr, "Cannot truncate config file after extraction %s : %s", cluster.Conf.WorkingDir+"/"+cluster.Name+"/inject.toml", err)
 			}
 			file.Close()
-
-			cluster.PushConfigs()
 		}
-	}
-}
-
-func (cluster *Cluster) PushConfigs() {
-	if cluster.GitRepo != nil && !cluster.GitRepo.IsPushing {
-		go cluster.PushConfigToGit()
-	}
-	if !cluster.IsExportPush {
-		go cluster.PushConfigToBackupDir()
 	}
 }
 

@@ -29,7 +29,6 @@ import (
 
 	"github.com/buger/jsonparser"
 	"github.com/coreos/go-oidc/v3/oidc"
-	"github.com/go-git/go-git/v5"
 	"github.com/iancoleman/strcase"
 	"github.com/klauspost/compress/zstd"
 	"github.com/sirupsen/logrus"
@@ -48,7 +47,6 @@ import (
 	"github.com/signal18/replication-manager/utils/alert"
 	"github.com/signal18/replication-manager/utils/githelper"
 	"github.com/signal18/replication-manager/utils/peerclient"
-	"github.com/signal18/replication-manager/utils/state"
 )
 
 //RSA KEYS AND INITIALISATION
@@ -600,24 +598,7 @@ func (repman *ReplicationManager) handlerMuxAuthCallback(w http.ResponseWriter, 
 					cluster.Conf.Secrets["git-acces-token"] = newSecret
 					//cluster.Conf.GitAccesToken = tokenInfo.token
 					cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGit, config.LvlDbg, "Clone from git : url %s, tok %s, dir %s\n", cluster.Conf.GitUrl, cluster.Conf.PrintSecret(cluster.Conf.Secrets["git-acces-token"].Value), cluster.Conf.WorkingDir)
-					err = cluster.Conf.CloneConfigFromGit(cluster.Conf.GitUrl, cluster.Conf.GitUsername, cluster.Conf.Secrets["git-acces-token"].Value, cluster.Conf.WorkingDir)
-					if err != nil {
-						if strings.Contains(err.Error(), git.ErrNonFastForwardUpdate.Error()) {
-							for _, cl := range repman.Clusters {
-								if cl != nil {
-									cl.SetState("WARN0132", state.State{ErrType: config.LvlWarn, ErrDesc: fmt.Sprintf(config.ClusterError["WARN0132"], conf.GitUrl, err.Error()), ErrFrom: "GIT"})
-								}
-							}
-						} else {
-							repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlErr, err.Error())
-						}
-					} else {
-						for _, cl := range repman.Clusters {
-							if cl != nil && cl.GetStateMachine() != nil && cl.GetStateMachine().IsInState("WARN0132") {
-								cl.GetStateMachine().DeleteState("WARN0132")
-							}
-						}
-					}
+					cluster.Conf.CloneConfigFromGit(cluster.Conf.GitUrl, cluster.Conf.GitUsername, cluster.Conf.Secrets["git-acces-token"].Value, cluster.Conf.WorkingDir)
 				} else {
 					log.Printf("Failed to get token from gitlab: %v\n", err)
 				}
