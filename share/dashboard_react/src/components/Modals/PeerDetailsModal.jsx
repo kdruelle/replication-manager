@@ -18,7 +18,7 @@ function PeerDetailsModal({ peerDetails, tableClassName, labelClassName, valueCl
         { key: "cloud18-domain", value: peerDetails ? peerDetails["cloud18-domain"] : "" },
         { key: "cloud18-sub-domain", value: peerDetails ? peerDetails["cloud18-sub-domain"] : "" },
         { key: "cloud18-sub-domain-zone", value: peerDetails ? peerDetails["cloud18-sub-domain-zone"] : "" },
-        { key: "cloud18-plan", value: peerDetails ? peerDetails["cloud18-plan"] : "" },
+        { key: "prov-service-plan", value: peerDetails ? peerDetails["prov-service-plan"] : "" },
         { key: "cloud18-montly-infra-cost", value: peerDetails ? peerDetails["cloud18-montly-infra-cost"] : "" },
         { key: "cloud18-montly-license-cost", value: peerDetails ? peerDetails["cloud18-montly-license-cost"] : "" },
         { key: "cloud18-montly-sysops-cost", value: peerDetails ? peerDetails["cloud18-montly-sysops-cost"] : "" },

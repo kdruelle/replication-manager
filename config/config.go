@@ -696,7 +696,6 @@ type Config struct {
 	Cloud18DatabseReadSrvRecord               string                 `mapstructure:"cloud18-database-read-srv-record"  toml:"cloud18-database-read-srv-record" json:"cloud18DatabaseReadSrvRecord"`
 	Cloud18DatabseReadWriteSrvRecord          string                 `mapstructure:"cloud18-database-read-write-srv-record"  toml:"cloud18-database-read-write-srv-record" json:"cloud18DatabaseReadWriteSrvRecord"`
 	Cloud18DbaUserCredentials                 string                 `mapstructure:"cloud18-dba-user-credentials"  toml:"cloud18-dba-user-credentials" json:"cloud18DbaUserCredential"`
-	Cloud18Plan                               string                 `mapstructure:"cloud18-plan" toml:"cloud18-plan" json:"cloud18Plan"`
 	LogSecrets                                bool                   `mapstructure:"log-secrets"  toml:"log-secrets" json:"-"`
 	Secrets                                   map[string]Secret      `toml:"-" json:"-"`
 	SecretKey                                 []byte                 `toml:"-" json:"-"`
@@ -752,7 +751,6 @@ type PeerCluster struct {
 	Cloud18PlatformDescription       string   `json:"cloud18-platform-description"`
 	Cloud18Shared                    bool     `json:"cloud18-shared,string"`
 	Cloud18Peer                      bool     `json:"cloud18-peer,string"`
-	Cloud18Plan                      string   `json:"cloud18-plan" `
 	Cloud18SubDomain                 string   `json:"cloud18-sub-domain"`
 	Cloud18SubDomainZone             string   `json:"cloud18-sub-domain-zone"`
 	Cloud18MonthlyInfraCost          float64  `json:"cloud18-monthly-infra-cost,string"`

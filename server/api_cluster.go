@@ -1812,8 +1812,6 @@ func (repman *ReplicationManager) setClusterSetting(mycluster *cluster.Cluster, 
 			return errors.New("Unable to decode")
 		}
 		mycluster.Conf.BackupMysqldumpOptions = string(val)
-	case "cloud18-plan":
-		mycluster.Conf.Cloud18Plan = value
 	case "cloud18-monthly-infra-cost":
 		val, _ := strconv.ParseFloat(value, 64)
 		mycluster.Conf.Cloud18MonthlyInfraCost = val
