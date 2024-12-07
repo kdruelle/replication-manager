@@ -1286,31 +1286,28 @@ func (cluster *Cluster) SetServicePlanInfos(theplan string) error {
 
 func (cluster *Cluster) SetServicePlan(theplan string) error {
 	plans := cluster.GetServicePlans()
+
 	for _, plan := range plans {
 		if plan.Plan == theplan {
 			cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "Attaching service plan %s", theplan)
-
-			if !cluster.IsProvision   {
-
-			if cluster.Conf.User == "" {
-				cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "Settting database root credential to admin:repman ")
-				cluster.Conf.User = "admin:repman"
-			}
-			if cluster.Conf.RplUser == "" {
-				cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "Settting database replication credential to repl:repman ")
-				cluster.Conf.RplUser = "repl:repman"
-			}
-			cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "Adding %s database monitor on %s", string(strings.TrimPrefix(theplan, "x")[0]), cluster.Conf.ProvOrchestrator)
-			if cluster.GetOrchestrator() == config.ConstOrchestratorLocalhost || cluster.GetOrchestrator() == config.ConstOrchestratorOnPremise {
-				cluster.DropDBTag("docker")
-				cluster.DropDBTag("threadpool")
-				cluster.AddDBTag("pkg")
-				cluster.Conf.ProvNetCNI = false
-			}
 			srvcount, err := strconv.Atoi(string(strings.TrimPrefix(theplan, "x")[0]))
 			if err != nil {
 				cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "Can't add database monitor error %s ", err)
 			}
+			if !cluster.IsProvision   {
+
+			if cluster.Conf.User == "" {
+				cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "Settting default database root credential to admin:repman ")
+				cluster.Conf.User = "admin:repman"
+			}
+			if cluster.Conf.RplUser == "" {
+				cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "Settting default database replication credential to repl:repman ")
+				cluster.Conf.RplUser = "repl:repman"
+			}
+
+
+			if  srvcount > len(cluster.Conf.Hosts) {
+
 			hosts := []string{}
 			for i := 1; i <= srvcount; i++ {
 				cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "'%s' '%s'", cluster.Conf.ProvOrchestrator, config.ConstOrchestratorLocalhost)
@@ -1404,10 +1401,16 @@ func (cluster *Cluster) SetServicePlan(theplan string) error {
 					}
 				}
 			}
+			} // No need to add database server
 			cluster.Save()
 			} // End of cluster not already prov
-			cluster.SetServicePlanInfos(theplan)
-			return nil
+			if  srvcount == len(cluster.Conf.Hosts) {
+				cluster.SetServicePlanInfos(theplan)
+				return nil
+			} else {
+				cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlErr, "Service plan databases count does not match monitored databases %s %d", theplan,len(cluster.Conf.Hosts) )
+				return  errors.New("Plan not possible for that cluster")
+			}
 		} // End of if the plan
 	} // End of for each plan
 	cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlErr, "Service plan not found %s", theplan)
