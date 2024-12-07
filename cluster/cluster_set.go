@@ -1248,41 +1248,35 @@ func (cluster *Cluster) SetSysbenchThreads(Threads string) {
 Set Service Plan. Log Module : Topology
 */
 
-
 func (cluster *Cluster) SetServicePlanInfos(theplan string) error {
 	plans := cluster.GetServicePlans()
 	for _, plan := range plans {
-			if plan.Plan == theplan {
+		if plan.Plan == theplan {
 
-		cluster.Conf.ProvServicePlan = theplan
-		cluster.SetDBCores(strconv.Itoa(plan.DbCores))
-		cluster.SetDBMemorySize(strconv.Itoa(plan.DbMemory))
-		cluster.SetDBDiskSize(strconv.Itoa(plan.DbDataSize))
-		cluster.SetDBDiskIOPS(strconv.Itoa(plan.DbIops))
-		cluster.SetProxyCores(strconv.Itoa(plan.PrxCores))
-		cluster.SetProxyDiskSize(strconv.Itoa(plan.PrxDataSize))
-		cluster.SetCloud18MonthlyInfraCost(plan.InfraCost)
-		cluster.SetCloud18MonthlyLicenseCost(plan.LicenceCost)
-		cluster.SetCloud18MonthlySysopsCost(plan.SysCost)
-		cluster.SetCloud18MonthlyDbopsCost(plan.DbaCost)
-		cluster.SetCloud18CostCurrency(plan.Devise)
-		cluster.SetCloud18InfraCPUModel(plan.CPU)
-		cluster.SetCloud18InfraDescription(plan.Infra)
-		cluster.SetCloud18InfraDataCenters(plan.DC)
-		cluster.SetCloud18InfraPublicBandwidth(plan.BP)
-		cluster.SetCloud18InfraGeoLocalizations(plan.Zone)
-		cluster.Save()
-	  return nil
-	 }
+			cluster.Conf.ProvServicePlan = theplan
+			cluster.SetDBCores(strconv.Itoa(plan.DbCores))
+			cluster.SetDBMemorySize(strconv.Itoa(plan.DbMemory))
+			cluster.SetDBDiskSize(strconv.Itoa(plan.DbDataSize))
+			cluster.SetDBDiskIOPS(strconv.Itoa(plan.DbIops))
+			cluster.SetProxyCores(strconv.Itoa(plan.PrxCores))
+			cluster.SetProxyDiskSize(strconv.Itoa(plan.PrxDataSize))
+			cluster.SetCloud18MonthlyInfraCost(plan.InfraCost)
+			cluster.SetCloud18MonthlyLicenseCost(plan.LicenceCost)
+			cluster.SetCloud18MonthlySysopsCost(plan.SysCost)
+			cluster.SetCloud18MonthlyDbopsCost(plan.DbaCost)
+			cluster.SetCloud18CostCurrency(plan.Devise)
+			cluster.SetCloud18InfraCPUModel(plan.CPU)
+			cluster.SetCloud18InfraDescription(plan.Infra)
+			cluster.SetCloud18InfraDataCenters(plan.DC)
+			cluster.SetCloud18InfraPublicBandwidth(plan.BP)
+			cluster.SetCloud18InfraGeoLocalizations(plan.Zone)
+			cluster.Save()
+			return nil
+		}
 	}
 	cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlErr, "Service plan not found %s", theplan)
 	return errors.New("Plan not found in repository")
-
-  cluster.Save()
-  return nil
- }
-
-
+}
 
 func (cluster *Cluster) SetServicePlan(theplan string) error {
 	plans := cluster.GetServicePlans()
@@ -1294,122 +1288,121 @@ func (cluster *Cluster) SetServicePlan(theplan string) error {
 			if err != nil {
 				cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "Can't add database monitor error %s ", err)
 			}
-			if !cluster.IsProvision   {
+			if !cluster.IsProvision {
 
-			if cluster.Conf.User == "" {
-				cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "Settting default database root credential to admin:repman ")
-				cluster.Conf.User = "admin:repman"
-			}
-			if cluster.Conf.RplUser == "" {
-				cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "Settting default database replication credential to repl:repman ")
-				cluster.Conf.RplUser = "repl:repman"
-			}
-
-
-			if  srvcount > len(cluster.Conf.Hosts) {
-
-			hosts := []string{}
-			for i := 1; i <= srvcount; i++ {
-				cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "'%s' '%s'", cluster.Conf.ProvOrchestrator, config.ConstOrchestratorLocalhost)
-				if cluster.GetOrchestrator() == config.ConstOrchestratorLocalhost {
-					port, err := cluster.LocalhostGetFreePort()
-					if err != nil {
-						cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlErr, "Adding DB monitor on 127.0.0.1 %s", err)
-					} else {
-						cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "Adding DB monitor 127.0.0.1:%s", port)
-					}
-					hosts = append(hosts, "127.0.0.1:"+port)
-				} else if cluster.GetOrchestrator() != config.ConstOrchestratorOnPremise {
-					hosts = append(hosts, "db"+strconv.Itoa(i))
+				if cluster.Conf.User == "" {
+					cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "Settting default database root credential to admin:repman ")
+					cluster.Conf.User = "admin:repman"
 				}
-			}
-			//	cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology,config.LvlErr, strings.Join(hosts, ","))
-			err = cluster.SetDbServerHosts(strings.Join(hosts, ","))
-			if err != nil {
-				cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlErr, "SetServicePlan : Fail SetDbServerHosts : %s, for hosts : %s", err, strings.Join(hosts, ","))
-			}
-			cluster.StateMachine.SetFailoverState()
-			err = cluster.newServerList()
-			if err != nil {
-				cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlErr, "SetServicePlan : Fail newServerList : %s", err)
-			}
-			wg := new(sync.WaitGroup)
-			wg.Add(1)
-			go cluster.TopologyDiscover(wg)
-			wg.Wait()
-			cluster.StateMachine.RemoveFailoverState()
-			cluster.Conf.ProxysqlOn = true
-			cluster.Conf.ProxysqlHosts = ""
-			cluster.Conf.MdbsProxyOn = true
-			cluster.Conf.MdbsProxyHosts = ""
-			// cluster head is used to copy exiting proxy from an other cluster
-			if cluster.Conf.ClusterHead == "" {
-				if cluster.GetOrchestrator() == config.ConstOrchestratorLocalhost {
-					portproxysql, err := cluster.LocalhostGetFreePort()
-					if err != nil {
-						cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlErr, "Adding proxysql monitor on 127.0.0.1 %s", err)
-					} else {
-						cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "Adding proxysql monitor 127.0.0.1:%s", portproxysql)
-					}
-					portshardproxy, err := cluster.LocalhostGetFreePort()
-					if err != nil {
-						cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlErr, "Adding shard proxy monitor on 127.0.0.1 %s", err)
-					} else {
-						cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "Adding shard proxy monitor 127.0.0.1:%s", portshardproxy)
-					}
-					err = cluster.AddSeededProxy(config.ConstProxySqlproxy, "127.0.0.1", portproxysql, "", "")
-					if err != nil {
-						cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlErr, "Fail adding proxysql monitor on 127.0.0.1 %s", err)
-					}
-					err = cluster.AddSeededProxy(config.ConstProxySpider, "127.0.0.1", portshardproxy, "", "")
-					if err != nil {
-						cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlErr, "Fail adding shard proxy monitor on 127.0.0.1 %s", err)
-					}
-				} else {
-					err = cluster.AddSeededProxy(config.ConstProxySpider, "shardproxy1", "3306", "", "")
-					if err != nil {
-						cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlErr, "Fail adding shard proxy monitor on 3306 %s", err)
-					}
-					//cluster.Conf.ProxysqlUser = "external"
-					err = cluster.AddSeededProxy(config.ConstProxySqlproxy, "proxysql1", cluster.Conf.ProxysqlPort, "external", cluster.Conf.Secrets["proxysql-password"].Value)
-					if err != nil {
-						cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlErr, "Fail adding proxysql monitor on %s %s", cluster.Conf.ProxysqlPort, err)
-					}
+				if cluster.Conf.RplUser == "" {
+					cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "Settting default database replication credential to repl:repman ")
+					cluster.Conf.RplUser = "repl:repman"
 				}
-			} else {
-				cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "Copy proxy list from cluster head %s", cluster.Conf.ClusterHead)
 
-				oriClusters, err := cluster.GetClusterFromName(cluster.Conf.ClusterHead)
-				if err == nil {
-					for _, oriProxy := range oriClusters.Proxies {
-						cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "Adding new proxy %s copy %s:%s", oriProxy.GetType(), oriProxy.GetHost(), oriProxy.GetPort())
-						if oriProxy.GetType() == config.ConstProxySpider {
-							cluster.AddSeededProxy(oriProxy.GetType(), oriProxy.GetHost(), oriProxy.GetPort(), oriProxy.GetUser(), oriProxy.GetPass())
+				if srvcount > len(cluster.Conf.Hosts) {
+
+					hosts := []string{}
+					for i := 1; i <= srvcount; i++ {
+						cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "'%s' '%s'", cluster.Conf.ProvOrchestrator, config.ConstOrchestratorLocalhost)
+						if cluster.GetOrchestrator() == config.ConstOrchestratorLocalhost {
+							port, err := cluster.LocalhostGetFreePort()
+							if err != nil {
+								cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlErr, "Adding DB monitor on 127.0.0.1 %s", err)
+							} else {
+								cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "Adding DB monitor 127.0.0.1:%s", port)
+							}
+							hosts = append(hosts, "127.0.0.1:"+port)
+						} else if cluster.GetOrchestrator() != config.ConstOrchestratorOnPremise {
+							hosts = append(hosts, "db"+strconv.Itoa(i))
 						}
 					}
-					if cluster.GetOrchestrator() == config.ConstOrchestratorLocalhost {
-						portproxysql, err := cluster.LocalhostGetFreePort()
-						if err != nil {
-							cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlErr, "Adding proxysql monitor on 127.0.0.1 %s", err)
+					//	cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology,config.LvlErr, strings.Join(hosts, ","))
+					err = cluster.SetDbServerHosts(strings.Join(hosts, ","))
+					if err != nil {
+						cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlErr, "SetServicePlan : Fail SetDbServerHosts : %s, for hosts : %s", err, strings.Join(hosts, ","))
+					}
+					cluster.StateMachine.SetFailoverState()
+					err = cluster.newServerList()
+					if err != nil {
+						cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlErr, "SetServicePlan : Fail newServerList : %s", err)
+					}
+					wg := new(sync.WaitGroup)
+					wg.Add(1)
+					go cluster.TopologyDiscover(wg)
+					wg.Wait()
+					cluster.StateMachine.RemoveFailoverState()
+					cluster.Conf.ProxysqlOn = true
+					cluster.Conf.ProxysqlHosts = ""
+					cluster.Conf.MdbsProxyOn = true
+					cluster.Conf.MdbsProxyHosts = ""
+					// cluster head is used to copy exiting proxy from an other cluster
+					if cluster.Conf.ClusterHead == "" {
+						if cluster.GetOrchestrator() == config.ConstOrchestratorLocalhost {
+							portproxysql, err := cluster.LocalhostGetFreePort()
+							if err != nil {
+								cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlErr, "Adding proxysql monitor on 127.0.0.1 %s", err)
+							} else {
+								cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "Adding proxysql monitor 127.0.0.1:%s", portproxysql)
+							}
+							portshardproxy, err := cluster.LocalhostGetFreePort()
+							if err != nil {
+								cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlErr, "Adding shard proxy monitor on 127.0.0.1 %s", err)
+							} else {
+								cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "Adding shard proxy monitor 127.0.0.1:%s", portshardproxy)
+							}
+							err = cluster.AddSeededProxy(config.ConstProxySqlproxy, "127.0.0.1", portproxysql, "", "")
+							if err != nil {
+								cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlErr, "Fail adding proxysql monitor on 127.0.0.1 %s", err)
+							}
+							err = cluster.AddSeededProxy(config.ConstProxySpider, "127.0.0.1", portshardproxy, "", "")
+							if err != nil {
+								cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlErr, "Fail adding shard proxy monitor on 127.0.0.1 %s", err)
+							}
 						} else {
-							cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "Adding proxysql monitor 127.0.0.1:%s", portproxysql)
+							err = cluster.AddSeededProxy(config.ConstProxySpider, "shardproxy1", "3306", "", "")
+							if err != nil {
+								cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlErr, "Fail adding shard proxy monitor on 3306 %s", err)
+							}
+							//cluster.Conf.ProxysqlUser = "external"
+							err = cluster.AddSeededProxy(config.ConstProxySqlproxy, "proxysql1", cluster.Conf.ProxysqlPort, "external", cluster.Conf.Secrets["proxysql-password"].Value)
+							if err != nil {
+								cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlErr, "Fail adding proxysql monitor on %s %s", cluster.Conf.ProxysqlPort, err)
+							}
 						}
-						cluster.AddSeededProxy(config.ConstProxySqlproxy, "127.0.0.1", portproxysql, "", "")
-
 					} else {
-						cluster.AddSeededProxy(config.ConstProxySqlproxy, "proxysql1", cluster.Conf.ProxysqlPort, "", "")
+						cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "Copy proxy list from cluster head %s", cluster.Conf.ClusterHead)
+
+						oriClusters, err := cluster.GetClusterFromName(cluster.Conf.ClusterHead)
+						if err == nil {
+							for _, oriProxy := range oriClusters.Proxies {
+								cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "Adding new proxy %s copy %s:%s", oriProxy.GetType(), oriProxy.GetHost(), oriProxy.GetPort())
+								if oriProxy.GetType() == config.ConstProxySpider {
+									cluster.AddSeededProxy(oriProxy.GetType(), oriProxy.GetHost(), oriProxy.GetPort(), oriProxy.GetUser(), oriProxy.GetPass())
+								}
+							}
+							if cluster.GetOrchestrator() == config.ConstOrchestratorLocalhost {
+								portproxysql, err := cluster.LocalhostGetFreePort()
+								if err != nil {
+									cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlErr, "Adding proxysql monitor on 127.0.0.1 %s", err)
+								} else {
+									cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "Adding proxysql monitor 127.0.0.1:%s", portproxysql)
+								}
+								cluster.AddSeededProxy(config.ConstProxySqlproxy, "127.0.0.1", portproxysql, "", "")
+
+							} else {
+								cluster.AddSeededProxy(config.ConstProxySqlproxy, "proxysql1", cluster.Conf.ProxysqlPort, "", "")
+							}
+						}
 					}
-				}
-			}
-			} // No need to add database server
-			cluster.Save()
+				} // No need to add database server
+				cluster.Save()
 			} // End of cluster not already prov
-			if  srvcount == len(cluster.Conf.Hosts) {
+			if srvcount == len(cluster.Conf.Hosts) {
 				cluster.SetServicePlanInfos(theplan)
 				return nil
 			} else {
-				cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlErr, "Service plan databases count does not match monitored databases %s %d", theplan,len(cluster.Conf.Hosts) )
-				return  errors.New("Plan not possible for that cluster")
+				cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlErr, "Service plan databases count does not match monitored databases %s %d", theplan, len(cluster.Conf.Hosts))
+				return errors.New("Plan not possible for that cluster")
 			}
 		} // End of if the plan
 	} // End of for each plan
