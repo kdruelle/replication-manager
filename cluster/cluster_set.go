@@ -1278,101 +1278,29 @@ func (cluster *Cluster) SetServicePlanInfos(theplan string) error {
 	return errors.New("Plan not found in repository")
 }
 
+
+
 func (cluster *Cluster) SetServicePlan(theplan string) error {
 	plans := cluster.GetServicePlans()
 
 	for _, plan := range plans {
 		if plan.Plan == theplan {
-			cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "Attaching service plan %s", theplan)
-			srvcount, err := strconv.Atoi(string(strings.TrimPrefix(theplan, "x")[0]))
-			if err != nil {
-				cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "Can't add database monitor error %s ", err)
-			}
-			srvcountnow:=len(strings.Split(cluster.Conf.Hosts,","))
-			cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "Count exiting databases monitor: %d,"  ,srvcountnow)
-
-			if !cluster.IsProvision   {
-
-			if cluster.Conf.User == "" {
-				cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "Settting default database root credential to admin:repman ")
-				cluster.Conf.User = "admin:repman"
-			}
-			if cluster.Conf.RplUser == "" {
-				cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "Settting default database replication credential to repl:repman ")
-				cluster.Conf.RplUser = "repl:repman"
-			}
-			if  srvcount >srvcountnow {
-
-			hosts := []string{}
-			for i := 1; i <= srvcount; i++ {
-				if i <= srvcountnow {
-					 hosts = append(hosts, strings.Split(cluster.Conf.Hosts,",")[i])
-				} else {
-				  cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "'%s' '%s'", cluster.Conf.ProvOrchestrator, config.ConstOrchestratorLocalhost)
-				  if cluster.GetOrchestrator() == config.ConstOrchestratorLocalhost {
-				  	port, err := cluster.LocalhostGetFreePort()
-					  if err != nil {
-					  	cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlErr, "Adding DB monitor on 127.0.0.1 %s", err)
-					  } else {
-					  	cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "Adding DB monitor 127.0.0.1:%s", port)
-					  }
-					  hosts = append(hosts, "127.0.0.1:"+port)
-				  } else if cluster.GetOrchestrator() != config.ConstOrchestratorOnPremise {
-					  hosts = append(hosts, "db"+strconv.Itoa(i))
-				  }
+				cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "Attaching service plan %s", theplan)
+				srvcount, err := strconv.Atoi(string(strings.TrimPrefix(theplan, "x")[0]))
+				if err != nil {
+					cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "Can't add database monitor error %s ", err)
 				}
-			}
-			//	cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology,config.LvlErr, strings.Join(hosts, ","))
-			err = cluster.SetDbServerHosts(strings.Join(hosts, ","))
-			if err != nil {
-				cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlErr, "SetServicePlan : Fail SetDbServerHosts : %s, for hosts : %s", err, strings.Join(hosts, ","))
-			}
-			cluster.StateMachine.SetFailoverState()
-			err = cluster.newServerList()
-			if err != nil {
-				cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlErr, "SetServicePlan : Fail newServerList : %s", err)
-			}
-			wg := new(sync.WaitGroup)
-			wg.Add(1)
-			go cluster.TopologyDiscover(wg)
-			wg.Wait()
-			cluster.StateMachine.RemoveFailoverState()
-			cluster.Conf.ProxysqlOn = true
-			cluster.Conf.ProxysqlHosts = ""
-			cluster.Conf.MdbsProxyOn = true
-			cluster.Conf.MdbsProxyHosts = ""
-			// cluster head is used to copy exiting proxy from an other cluster
-			if cluster.Conf.ClusterHead == "" {
-				if cluster.GetOrchestrator() == config.ConstOrchestratorLocalhost {
-					portproxysql, err := cluster.LocalhostGetFreePort()
-					if err != nil {
-						cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlErr, "Adding proxysql monitor on 127.0.0.1 %s", err)
-					} else {
-						cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "Adding proxysql monitor 127.0.0.1:%s", portproxysql)
-					}
-					portshardproxy, err := cluster.LocalhostGetFreePort()
-					if err != nil {
-						cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlErr, "Adding shard proxy monitor on 127.0.0.1 %s", err)
-					} else {
-						cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "Adding shard proxy monitor 127.0.0.1:%s", portshardproxy)
-					}
-					err = cluster.AddSeededProxy(config.ConstProxySqlproxy, "127.0.0.1", portproxysql, "", "")
-					if err != nil {
-						cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlErr, "Fail adding proxysql monitor on 127.0.0.1 %s", err)
-					}
-					err = cluster.AddSeededProxy(config.ConstProxySpider, "127.0.0.1", portshardproxy, "", "")
-					if err != nil {
-						cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlErr, "Fail adding shard proxy monitor on 127.0.0.1 %s", err)
-					}
-				} else {
-					err = cluster.AddSeededProxy(config.ConstProxySpider, "shardproxy1", "3306", "", "")
-					if err != nil {
-						cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlErr, "Fail adding shard proxy monitor on 3306 %s", err)
-					}
-					err = cluster.AddSeededProxy(config.ConstProxySqlproxy, "proxysql1", cluster.Conf.ProxysqlPort, "external", cluster.Conf.Secrets["proxysql-password"].Value)
-					if err != nil {
-						cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlErr, "Fail adding proxysql monitor on %s %s", cluster.Conf.ProxysqlPort, err)
-					}
+				srvcountnow:=len(strings.Split(cluster.Conf.Hosts,","))
+				cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "Count exiting databases monitor: %d,"  ,srvcountnow)
+				if !cluster.IsProvision   {
+
+				if cluster.Conf.User == "" {
+					cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "Settting default database root credential to admin:repman ")
+					cluster.Conf.User = "admin:repman"
+				}
+				if cluster.Conf.RplUser == "" {
+					cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "Settting default database replication credential to repl:repman ")
+					cluster.Conf.RplUser = "repl:repman"
 				}
 
 				if srvcount > srvcountnow {
@@ -1380,17 +1308,21 @@ func (cluster *Cluster) SetServicePlan(theplan string) error {
 					hosts := []string{}
 					for i := 1; i <= srvcount; i++ {
 						cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "'%s' '%s'", cluster.Conf.ProvOrchestrator, config.ConstOrchestratorLocalhost)
-						if cluster.GetOrchestrator() == config.ConstOrchestratorLocalhost {
-							port, err := cluster.LocalhostGetFreePort()
-							if err != nil {
-								cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlErr, "Adding DB monitor on 127.0.0.1 %s", err)
-							} else {
-								cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "Adding DB monitor 127.0.0.1:%s", port)
-							}
-							hosts = append(hosts, "127.0.0.1:"+port)
-						} else if cluster.GetOrchestrator() != config.ConstOrchestratorOnPremise {
-							hosts = append(hosts, "db"+strconv.Itoa(i))
-						}
+						if i <= srvcountnow {
+							 hosts = append(hosts, strings.Split(cluster.Conf.Hosts,",")[i])
+						} else {
+  						if cluster.GetOrchestrator() == config.ConstOrchestratorLocalhost {
+	  						port, err := cluster.LocalhostGetFreePort()
+		  					if err != nil {
+			  					cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlErr, "Adding DB monitor on 127.0.0.1 %s", err)
+				  			} else {
+					  			cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "Adding DB monitor 127.0.0.1:%s", port)
+						  	}
+							  hosts = append(hosts, "127.0.0.1:"+port)
+						  } else if cluster.GetOrchestrator() != config.ConstOrchestratorOnPremise {
+					  		hosts = append(hosts, "db"+strconv.Itoa(i))
+						  }
+					  }
 					}
 					//	cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology,config.LvlErr, strings.Join(hosts, ","))
 					err = cluster.SetDbServerHosts(strings.Join(hosts, ","))
@@ -1445,7 +1377,7 @@ func (cluster *Cluster) SetServicePlan(theplan string) error {
 								cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlErr, "Fail adding proxysql monitor on %s %s", cluster.Conf.ProxysqlPort, err)
 							}
 						}
-					} else {
+					} else { // not cluster head
 						cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "Copy proxy list from cluster head %s", cluster.Conf.ClusterHead)
 
 						oriClusters, err := cluster.GetClusterFromName(cluster.Conf.ClusterHead)
@@ -1473,18 +1405,21 @@ func (cluster *Cluster) SetServicePlan(theplan string) error {
 				} // No need to add database server
 				cluster.Save()
 			} // End of cluster not already prov
-			if  srvcount == srvcountnow {
+			if srvcount == srvcountnow {
 				cluster.SetServicePlanInfos(theplan)
 				return nil
 			} else {
-				cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlErr, "Service plan databases count does not match monitored databases %s %d", theplan,srvcountnow )
-				return  errors.New("Plan not possible for that cluster")
+				cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlErr, "Service plan databases count does not match monitored databases %s %d", theplan, srvcountnow)
+				return errors.New("Plan not possible for that cluster")
 			}
 		} // End of if the plan
 	} // End of for each plan
 	cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlErr, "Service plan not found %s", theplan)
 	return errors.New("Plan not found in repository")
 }
+
+
+
 
 func (cluster *Cluster) SetProvNetCniCluster(value string) error {
 	cluster.Conf.ProvNetCNICluster = value
