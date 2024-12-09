@@ -27,7 +27,7 @@ function PeerClusterList({ onLogin, mode }) {
     dispatch(getClusterPeers({}))
   }, [])
 
-  const checkPeerACL = (u, gituser) => {
+  const checkPeerUser = (u, gituser) => {
     // Regular expression to check if the string is an email
     const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
@@ -35,7 +35,7 @@ function PeerClusterList({ onLogin, mode }) {
     if (emailPattern.test(u)) {
       return u;
     } else if (u.toLowerCase() === "admin") {
-      return gituser;
+      return gituser || "";
     }
     return "";
   }
@@ -46,7 +46,7 @@ function PeerClusterList({ onLogin, mode }) {
         const shared = clusterPeers.filter((cluster) => cluster["cloud18-shared"] === "true" && cluster["cloud18-peer"] === "false")
         setClusters(shared)
       } else {
-        const peers = user?.username ? clusterPeers.filter((cluster) => cluster["cloud18-peer"] === "true").filter((cluster) => cluster['api-credentials-acl-allow']?.includes(checkPeerACL(user?.username, monitor?.config?.cloud18GitUser || ""))) : []
+        const peers = user?.username ? clusterPeers.filter((cluster) => cluster["cloud18-peer"] === "true").filter((cluster) => cluster['api-credentials-acl-allow']?.includes(checkPeerUser(user?.username, monitor?.config?.cloud18GitUser))) : []
         setClusters(peers)
       }
     }

@@ -22,7 +22,8 @@ function PeerMenu({
     const [isPeerLoginModalOpen, setIsPeerLoginModalOpen] = useState(false)
 
     const {
-        auth: { loadingPeerLogin, isPeerLogged, baseURL, error }
+        auth: { user },
+        globalClusters: { monitor }
     } = useSelector((state) => state)
 
     const openPeerLoginModal = () => {
@@ -67,56 +68,57 @@ function PeerMenu({
         if (mode == "shared") {
             dispatch(peerRegister({ password, clusterName: clusterItem['cluster-name'], baseURL: clusterItem['api-public-url'] }))
         } else {
-            dispatch(peerLogin({password,baseURL: clusterItem['api-public-url']}))
+            dispatch(peerLogin({ password, baseURL: clusterItem['api-public-url'] }))
         }
         closePeerLoginModal()
     }
 
     useEffect(() => {
         let opts = []
-        if (mode == "shared") {
-            opts.push({
-                name: 'Register',
-                onClick: () => {
-                    handlePeerRegister()
-                }
-            })
-        } else {
-            opts.push({
-                name: 'Login',
-                onClick: () => {
-                    handlePeerLogin()
-                }
-            })
-        }
-        opts.push({
-            name: 'Details',
-            onClick: () => {
-                openPeerDetailsModal()
+        // For safety, user should use email if they want to login to peer
+        if ("admin" != user?.username) {
+            if (mode == "shared") {
+                opts.push({
+                    name: 'Register',
+                    onClick: () => {
+                        handlePeerRegister()
+                    }
+                })
+            } else {
+                opts.push({
+                    name: 'Login',
+                    onClick: () => {
+                        handlePeerLogin()
+                    }
+                })
             }
-        })
+        }
         setOptions(opts)
     }, [mode, onLogin])
 
-    return (
-        <>
-            <MenuOptions
-                className={className}
-                colorScheme={colorScheme}
-                placement='left-end'
-                options={options}
-            />
-            {isPeerDetailsModalOpen && (
-                <PeerDetailsModal
-                    peerDetails={clusterItem}
-                    labelClassName={labelClassName}
-                    valueClassName={valueClassName}
-                    isOpen={isPeerDetailsModalOpen}
-                    closeModal={closePeerDetailsModal}
+    if (user?.username == "admin") {
+        return (<></>)
+    } else {
+        return (
+            <>
+                <MenuOptions
+                    className={className}
+                    colorScheme={colorScheme}
+                    placement='left-end'
+                    options={options}
                 />
-            )}
-            {isPeerLoginModalOpen && <PeerLoginModal title={title} isOpen={isPeerLoginModalOpen} closeModal={closePeerLoginModal} onSaveModal={handleSaveModal} />}
-        </>
-    )
+                {isPeerDetailsModalOpen && (
+                    <PeerDetailsModal
+                        peerDetails={clusterItem}
+                        labelClassName={labelClassName}
+                        valueClassName={valueClassName}
+                        isOpen={isPeerDetailsModalOpen}
+                        closeModal={closePeerDetailsModal}
+                    />
+                )}
+                {isPeerLoginModalOpen && <PeerLoginModal title={title} isOpen={isPeerLoginModalOpen} closeModal={closePeerLoginModal} onSaveModal={handleSaveModal} />}
+            </>
+        )
+    }
 }
 export default PeerMenu;
