@@ -114,6 +114,15 @@ function Login(props) {
                   loadingText={'Signing in with Cloud18'}>
                   Sign in with cloud18
                 </RMButton>
+                <RMButton
+                  id='btnGitRegister'
+                  type='button'
+                  size='medium'
+                  onClick={() => window.open("https://gitlab.signal18.io/users/sign_up",'_blank')}
+                  isLoading={loadingGitLogin}
+                  loadingText={'Signing up to Cloud18'}>
+                  Sign Up To cloud18
+                </RMButton>
               </Stack>
             </Stack>
           </Box>
