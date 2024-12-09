@@ -2769,14 +2769,12 @@ func (repman *ReplicationManager) Save() error {
 
 	_, file, no, ok := runtime.Caller(1)
 	if ok {
-		repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModConfigLoad, config.LvlErr, "Saved called from %s#%d\n", file, no)
+		repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModConfigLoad, config.LvlDbg, "Saved called from %s#%d\n", file, no)
 	}
 
 	has_changed := false
 
 	if repman.Conf.ConfRewrite {
-		repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModConfigLoad, config.LvlErr, "Conf Rewrite")
-
 		// Dynamic
 		has_changed, err = repman.SaveDynamic()
 		if err != nil {
