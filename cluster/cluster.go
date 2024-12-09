@@ -862,10 +862,22 @@ func (cluster *Cluster) SetIsSavingConfig(val bool) {
 }
 
 func (cluster *Cluster) Save() error {
-	//Needed to preserve diretory before Pull
-	if !cluster.IsGitPull && cluster.Conf.Cloud18 {
+	// //Needed to preserve diretory before Pull
+	// if !cluster.IsGitPull && cluster.Conf.Cloud18 {
+	// 	return nil
+	// }
+
+	if cluster.IsGitPush {
 		return nil
 	}
+
+	if cluster.IsSavingConfig {
+		return nil
+	}
+
+	cluster.SetIsSavingConfig(true)
+	defer cluster.SetIsSavingConfig(false)
+
 	_, file, no, ok := runtime.Caller(1)
 	if ok {
 		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModConfigLoad, config.LvlDbg, "Saved called from %s#%d\n", file, no)
