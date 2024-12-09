@@ -1541,7 +1541,7 @@ func (conf *Config) CloneConfigFromGit(url string, user string, tok string, dir 
 			//RemoteURL:    url,
 			Force: true,
 		})
-		if err != nil && fmt.Sprintf("%v", err) != "already up-to-date" {
+		if err != nil && err != git.NoErrAlreadyUpToDate && err != transport.ErrEmptyRemoteRepository {
 			if conf.IsEligibleForPrinting(ConstLogModGit, LvlErr) {
 				log.Errorf("Git error : cannot Pull : %s", err)
 			}
