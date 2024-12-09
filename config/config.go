@@ -37,6 +37,7 @@ import (
 	"github.com/signal18/replication-manager/share"
 	"github.com/signal18/replication-manager/utils/crypto"
 	"github.com/signal18/replication-manager/utils/dbhelper"
+	"github.com/signal18/replication-manager/utils/githelper"
 	"github.com/signal18/replication-manager/utils/misc"
 	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
@@ -1586,8 +1587,40 @@ func (conf *Config) PushConfigToGit(url string, tok string, user string, dir str
 			NoCheckout:        true,
 		})
 		if err != nil {
-			if conf.IsEligibleForPrinting(ConstLogModGit, LvlDbg) {
-				log.Errorf("Git error : cannot Clone %s repository : %s", url, err)
+			if err == git.ErrRepositoryNotExists {
+				uid, err := githelper.GetGitLabUserId(tok, conf.IsEligibleForPrinting(ConstLogModGit, LvlDbg))
+				if err != nil {
+					if conf.Verbose || conf.IsEligibleForPrinting(ConstLogModGit, LvlErr) {
+						log.Errorf(err.Error() + "\n")
+					}
+					conf.Cloud18 = false
+					return
+				} else if uid == 0 {
+					if conf.Verbose || conf.IsEligibleForPrinting(ConstLogModGit, LvlErr) {
+						log.Errorf("Invalid user Id \n")
+					}
+					conf.Cloud18 = false
+					return
+				}
+
+				repopath := conf.Cloud18Domain + "/" + conf.Cloud18SubDomain + "-" + conf.Cloud18SubDomainZone
+				name := conf.Cloud18SubDomain + "-" + conf.Cloud18SubDomainZone
+
+				githelper.GitLabCreateProject(tok, name, repopath, conf.Cloud18Domain, uid, conf.IsEligibleForPrinting(ConstLogModGit, LvlDbg))
+
+				r, err = git.PlainClone(path, false, &git.CloneOptions{
+					URL:               url,
+					RecurseSubmodules: git.DefaultSubmoduleRecursionDepth,
+					Auth:              auth,
+					NoCheckout:        true,
+				})
+				if err != nil {
+					log.Errorf("Git error : cannot Clone %s repository : %s", url, err)
+				}
+			} else {
+				if conf.IsEligibleForPrinting(ConstLogModGit, LvlDbg) {
+					log.Errorf("Git error : cannot Clone %s repository : %s", url, err)
+				}
 			}
 		}
 
