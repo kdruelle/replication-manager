@@ -3,9 +3,12 @@ package server
 import (
 	"bytes"
 	"crypto/md5"
+	"encoding/json"
 	"fmt"
+	"hash"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -166,41 +169,9 @@ func (repman *ReplicationManager) PullCloud18Configs() {
 		repman.Conf.CloneConfigFromGit(repman.Conf.GitUrlPull, repman.Conf.GitUsername, repman.Conf.Secrets["git-acces-token"].Value, pullDir)
 
 		//to check cloud18.toml for the first time
-		if repman.cloud18CheckSum == nil && repman.Conf.Cloud18 {
-			new_h := md5.New()
-			repman.ReadCloud18Config()
-			file, err := os.Open(filePath)
-			if err != nil {
-				if os.IsPermission(err) {
-					repman.Logrus.Infof("File permission denied: %s", filePath)
-				}
-			} else {
-				if _, err := io.Copy(new_h, file); err != nil {
-					repman.Logrus.Infof("Error during computing cloud18.toml hash: %s", err)
-				} else {
-					repman.cloud18CheckSum = new_h
-				}
-			}
-			defer file.Close()
-
-		} else if repman.Conf.Cloud18 {
-			//to check whether new parameters have been injected into the cloud18.toml config file
-			file, err := os.Open(filePath)
-			if err != nil {
-				if os.IsPermission(err) {
-					repman.Logrus.Infof("File permission denied: %s", filePath)
-				}
-			} else {
-				new_h := md5.New()
-				if _, err := io.Copy(new_h, file); err != nil {
-					repman.Logrus.Infof("Error during computing cloud18.toml hash: %s", err)
-				} else if !bytes.Equal(repman.cloud18CheckSum.Sum(nil), new_h.Sum(nil)) {
-					repman.ReadCloud18Config()
-					repman.cloud18CheckSum = new_h
-				}
-			}
-			defer file.Close()
-
+		if repman.Conf.Cloud18 {
+			repman.CheckCloud18Config(filePath)
+			repman.LoadPeerJson()
 		}
 	}
 
@@ -213,7 +184,7 @@ func (repman *ReplicationManager) PullCloud18Configs() {
 		//check all dir of the datadir to check if a new cluster has been pull by git
 		for _, f := range files {
 			new_cluster_discover := true
-			if f.IsDir() && f.Name() != "graphite" && f.Name() != "backups" && f.Name() != ".git" && f.Name() != "cloud18.toml" && !strings.Contains(f.Name(), ".json") && !strings.Contains(f.Name(), ".csv") {
+			if f.IsDir() && f.Name() != "graphite" && f.Name() != "backups" && f.Name() != ".git" && f.Name() != "cloud18.toml" && !strings.Contains(f.Name(), ".json") && !strings.Contains(f.Name(), ".csv") && f.Name() != ".pull" {
 				for name, _ := range repman.Clusters {
 					if name == f.Name() {
 						new_cluster_discover = false
@@ -252,4 +223,78 @@ func (repman *ReplicationManager) ReadCloud18Config() {
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
 		repman.Conf.ReadCloud18Config(repman.ViperConfig, filePath)
 	}
+}
+
+func (repman *ReplicationManager) ComputeFileChecksum(filePath string) (hash.Hash, error) {
+	file, err := os.Open(filePath)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	hasher := md5.New()
+	if _, err := io.Copy(hasher, file); err != nil {
+		return nil, fmt.Errorf("error computing file hash: %v", err)
+	}
+	return hasher, nil
+}
+
+func (repman *ReplicationManager) CheckCloud18Config(filePath string) {
+	// Define the file path for cloud18.toml
+
+	currentChecksum, err := repman.ComputeFileChecksum(filePath)
+	if err != nil {
+		if !os.IsNotExist(err) {
+			repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModConfigLoad, config.LvlErr, "Error checking file %s: %v", filePath, err)
+		}
+		return
+	}
+
+	// First-time initialization
+	if repman.cloud18CheckSum == nil {
+		repman.ReadCloud18Config()
+		repman.cloud18CheckSum = currentChecksum
+		repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModConfigLoad, config.LvlInfo, "Initialized cloud18.toml checksum")
+	} else if !bytes.Equal(repman.cloud18CheckSum.Sum(nil), currentChecksum.Sum(nil)) {
+		// File has changed, reload configuration
+		repman.ReadCloud18Config()
+		repman.cloud18CheckSum = currentChecksum
+		repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModConfigLoad, config.LvlInfo, "cloud18.toml has been updated")
+	}
+}
+
+func (repman *ReplicationManager) LoadPeerJson() error {
+	filePath := filepath.Join(repman.Conf.WorkingDir, ".pull", "peer.json")
+
+	content, err := os.ReadFile(filePath)
+	if err != nil {
+		repman.PeerClusters = make([]config.PeerCluster, 0)
+		if !os.IsNotExist(err) {
+			repman.Logrus.Errorf("failed reading peer file: %v", err)
+		}
+		return err
+	}
+
+	// Calculate the checksum
+	newHash := md5.New()
+	newHash.Write(content)
+
+	// Compare with the existing checksum
+	if oldHash, ok := repman.CheckSumConfig["peer"]; ok && bytes.Equal(oldHash.Sum(nil), newHash.Sum(nil)) {
+		return nil // No changes
+	}
+
+	// Decode JSON
+	var PeerList []config.PeerCluster
+	if err := json.Unmarshal(content, &PeerList); err != nil {
+		repman.Logrus.Errorf("failed to decode peer JSON: %v", err)
+		return err
+	}
+
+	// Update state
+	repman.PeerClusters = PeerList
+	repman.CheckSumConfig["peer"] = newHash
+
+	return nil
+
 }

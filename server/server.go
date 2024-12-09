@@ -1226,7 +1226,7 @@ func (repman *ReplicationManager) InitConfig(conf config.Config) {
 		dynRead.SetConfigType("toml")
 
 		for _, f := range files {
-			if f.IsDir() && f.Name() != "graphite" {
+			if f.IsDir() && f.Name() != "graphite" && f.Name() != ".pull" && f.Name() != ".git" {
 				fistRead.SetConfigName(f.Name())
 				dynRead.SetConfigName("overwrite-" + f.Name())
 				if _, err := os.Stat(conf.WorkingDir + "/" + f.Name() + "/" + f.Name() + ".toml"); os.IsNotExist(err) || f.Name() == "overwrite" {
@@ -1246,13 +1246,13 @@ func (repman *ReplicationManager) InitConfig(conf config.Config) {
 		}
 
 		//to read and set cloud18.toml config file if exist
-		if _, err := os.Stat(conf.WorkingDir + "/cloud18.toml"); os.IsNotExist(err) {
-			repman.Logrus.Infof("No cloud18 config found %s", conf.WorkingDir+"/cloud18.toml")
+		if _, err := os.Stat(conf.WorkingDir + "/.pull/cloud18.toml"); os.IsNotExist(err) {
+			repman.Logrus.Infof("No cloud18 config found %s", conf.WorkingDir+"/.pull/cloud18.toml")
 		} else {
-			tmp_read.SetConfigFile(conf.WorkingDir + "/cloud18.toml")
+			tmp_read.SetConfigFile(conf.WorkingDir + "/.pull/cloud18.toml")
 			err := tmp_read.MergeInConfig()
 			if err != nil {
-				repman.Logrus.Error("Config error in " + conf.WorkingDir + "/cloud18.toml:" + err.Error())
+				repman.Logrus.Error("Config error in " + conf.WorkingDir + "/.pull/cloud18.toml:" + err.Error())
 			}
 		}
 
@@ -2314,95 +2314,6 @@ func (repman *ReplicationManager) InitServicePlans(u *user.User) error {
 		return err
 	}
 	repman.ServicePlans = m.Rows
-
-	return nil
-}
-
-func (repman *ReplicationManager) LoadPeerJson() error {
-	filePath := repman.Conf.WorkingDir + "/.pull/peer.json"
-
-	if _, err := os.Stat(filePath); err != nil && os.IsNotExist(err) {
-		repman.PeerClusters = make([]config.PeerCluster, 0)
-		return err
-	}
-
-	// Open the peer.json file
-	file, err := os.Open(filePath)
-	if err != nil {
-		repman.Logrus.Errorf("failed opening peer file: %s", err)
-		return err
-	}
-	defer file.Close()
-
-	// Calculate the checksum of the file content
-	new_h := md5.New()
-	_, err = io.Copy(new_h, file)
-	if err != nil {
-		repman.Logrus.Errorf("failed reading peer file: %s", err)
-		return err
-	}
-
-	// Check if the content has changed by comparing the current hash with the stored one
-	h, ok := repman.CheckSumConfig["peer"]
-	if ok && bytes.Equal(h.Sum(nil), new_h.Sum(nil)) {
-		return nil // No change in content, so no need to process further
-	}
-
-	// Reset the file to the beginning to decode JSON
-	if _, err := file.Seek(0, io.SeekStart); err != nil {
-		repman.Logrus.Errorf("failed seeking to the start of the file: %s", err)
-		return err
-	}
-
-	// Decode the JSON content into PeerList
-	var PeerList []config.PeerCluster
-	decoder := json.NewDecoder(file)
-	if err := decoder.Decode(&PeerList); err != nil {
-		repman.Logrus.Errorf("failed to decode peer JSON: %s", err)
-		return err
-	}
-
-	// Update the PeerClusters and checksum
-	repman.PeerClusters = PeerList
-	repman.CheckSumConfig["peer"] = new_h
-
-	return nil
-}
-
-func (repman *ReplicationManager) CheckCloud18Config() error {
-	// Define the file path for cloud18.toml
-	filePath := repman.Conf.WorkingDir + "/.pull/cloud18.toml"
-
-	// Open the file and handle errors
-	file, err := os.Open(filePath)
-	if err != nil {
-		if os.IsPermission(err) {
-			repman.Logrus.Infof("File permission denied: %s", filePath)
-		} else if !os.IsNotExist(err) {
-			repman.Logrus.Infof("Failed to open file %s: %s", filePath, err)
-		}
-		return err
-	}
-	defer file.Close()
-
-	// Compute the hash of the cloud18.toml file
-	newHash := md5.New()
-	if _, err := io.Copy(newHash, file); err != nil {
-		repman.Logrus.Infof("Error during computing cloud18.toml hash: %s", err)
-		return err
-	}
-
-	// If cloud18CheckSum is nil and Cloud18 config is enabled, initialize it
-	if repman.cloud18CheckSum == nil && repman.Conf.Cloud18 {
-		repman.cloud18CheckSum = newHash
-		repman.ReadCloud18Config()
-	} else if repman.Conf.Cloud18 {
-		// If cloud18CheckSum is set, check if the file has changed
-		if !bytes.Equal(repman.cloud18CheckSum.Sum(nil), newHash.Sum(nil)) {
-			repman.ReadCloud18Config()
-			repman.cloud18CheckSum = newHash
-		}
-	}
 
 	return nil
 }

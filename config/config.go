@@ -1645,14 +1645,15 @@ func (conf *Config) PushConfigToGit(url string, tok string, user string, dir str
 		}
 	}
 
-	if _, err := os.Stat(conf.WorkingDir + "/cloud18.toml"); !os.IsNotExist(err) {
-		_, err = w.Add("cloud18.toml")
-		if err != nil {
-			if conf.IsEligibleForPrinting(ConstLogModGit, LvlErr) {
-				log.Errorf("Git error : cannot Add cloud18.toml : %s", err)
-			}
-		}
-	}
+	// cloud18.toml will be in pull repo
+	// if _, err := os.Stat(conf.WorkingDir + "/.pull/cloud18.toml"); !os.IsNotExist(err) {
+	// 	_, err = w.Add("cloud18.toml")
+	// 	if err != nil {
+	// 		if conf.IsEligibleForPrinting(ConstLogModGit, LvlErr) {
+	// 			log.Errorf("Git error : cannot Add cloud18.toml : %s", err)
+	// 		}
+	// 	}
+	// }
 
 	if _, err := os.Stat(conf.WorkingDir + "/default.toml"); !os.IsNotExist(err) {
 		_, err = w.Add("default.toml")
