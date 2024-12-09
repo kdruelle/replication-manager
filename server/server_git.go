@@ -90,7 +90,7 @@ func (repman *ReplicationManager) InitGitConfig(conf *config.Config) error {
 			return err
 		}
 
-		personal_access_token, _ := githelper.GetGitLabTokenOAuth(acces_tok, conf.LogGit)
+		personal_access_token, _ := githelper.GetGitLabTokenOAuth(acces_tok, conf.IsEligibleForPrinting(config.ConstLogModGit, config.LvlDbg))
 		if personal_access_token != "" {
 			var Secrets config.Secret
 			Secrets.Value = personal_access_token
