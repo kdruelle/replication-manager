@@ -1575,12 +1575,39 @@ func (conf *Config) PushConfigToGit(url string, tok string, user string, dir str
 		Password: tok,
 	}
 	path := dir
-	r, err := git.PlainOpen(path)
-	if err != nil {
-		if conf.IsEligibleForPrinting(ConstLogModGit, LvlErr) {
-			log.Errorf("Git error : cannot PlainOpen : %s", err)
+
+	var r *git.Repository
+	if _, err := os.Stat(path + "/.git"); os.IsNotExist(err) {
+		r, err = git.PlainClone(path, false, &git.CloneOptions{
+			URL:               url,
+			RecurseSubmodules: git.DefaultSubmoduleRecursionDepth,
+			Auth:              auth,
+			NoCheckout:        true,
+		})
+		if err != nil {
+			if conf.IsEligibleForPrinting(ConstLogModGit, LvlDbg) {
+				log.Errorf("Git error : cannot Clone %s repository : %s", url, err)
+			}
 		}
-		return
+
+		w, err := r.Worktree()
+		if err != nil {
+			if conf.IsEligibleForPrinting(ConstLogModGit, LvlErr) {
+				log.Errorf("Git error : cannot Worktree : %s", err)
+			}
+			return
+		}
+
+		// checkout and keep files
+		w.Checkout(&git.CheckoutOptions{Keep: true})
+	} else {
+		r, err = git.PlainOpen(path)
+		if err != nil {
+			if conf.IsEligibleForPrinting(ConstLogModGit, LvlErr) {
+				log.Errorf("Git error : cannot PlainOpen : %s", err)
+			}
+			return
+		}
 	}
 
 	w, err := r.Worktree()
