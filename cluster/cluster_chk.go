@@ -817,14 +817,16 @@ func (cluster *Cluster) CheckIsOverwrite() {
 }
 
 func (cluster *Cluster) CheckInjectConfig() {
-	if fileInfo, err := os.Stat(cluster.Conf.WorkingDir + "/" + cluster.Name + "/inject.toml"); !os.IsNotExist(err) {
+	filePath := cluster.Conf.WorkingDir + "/.pull/" + cluster.Name + "/inject.toml"
+
+	if fileInfo, err := os.Stat(filePath); !os.IsNotExist(err) {
 		//if empty, nothing to extract
 		if fileInfo.Size() == 0 {
 			return
 		} else {
-			data, err := os.ReadFile(cluster.Conf.WorkingDir + "/" + cluster.Name + "/inject.toml")
+			data, err := os.ReadFile(filePath)
 			if err != nil {
-				cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlErr, "Cannot read config file %s : %s", cluster.Conf.WorkingDir+"/"+cluster.Name+"/inject.toml", err)
+				cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlErr, "Cannot read config file %s : %s", filePath, err)
 				return
 			}
 			//extract all the data of inject.toml file
@@ -840,10 +842,10 @@ func (cluster *Cluster) CheckInjectConfig() {
 				}
 			}
 			//then we can erase data from inject.toml file
-			file, _ := os.OpenFile(cluster.Conf.WorkingDir+"/"+cluster.Name+"/inject.toml", os.O_WRONLY|os.O_TRUNC, 0644)
+			file, _ := os.OpenFile(filePath, os.O_WRONLY|os.O_TRUNC, 0644)
 			err = file.Truncate(0)
 			if err != nil {
-				cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlErr, "Cannot truncate config file after extraction %s : %s", cluster.Conf.WorkingDir+"/"+cluster.Name+"/inject.toml", err)
+				cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlErr, "Cannot truncate config file after extraction %s : %s", filePath, err)
 			}
 			file.Close()
 		}
