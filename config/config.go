@@ -1544,8 +1544,12 @@ func (conf *Config) CloneConfigFromGit(url string, user string, tok string, dir 
 			Force: true,
 		})
 		if err != nil && err != git.NoErrAlreadyUpToDate && err != transport.ErrEmptyRemoteRepository {
-			if conf.IsEligibleForPrinting(ConstLogModGit, LvlErr) {
-				log.Errorf("Git error : cannot Pull : %s", err)
+			if err == transport.ErrRepositoryNotFound {
+				conf.CreateGitlabProjects()
+			} else {
+				if conf.IsEligibleForPrinting(ConstLogModGit, LvlErr) {
+					log.Errorf("Git error : cannot Pull : %s", err)
+				}
 			}
 		}
 
@@ -1560,6 +1564,9 @@ func (conf *Config) CloneConfigFromGit(url string, user string, tok string, dir 
 		})
 
 		if err != nil {
+			if err == transport.ErrRepositoryNotFound {
+				conf.CreateGitlabProjects()
+			}
 			if conf.IsEligibleForPrinting(ConstLogModGit, LvlDbg) {
 				log.Errorf("Git error : cannot Clone %s repository : %s", url, err)
 			}
@@ -1587,26 +1594,8 @@ func (conf *Config) PushConfigToGit(url string, tok string, user string, dir str
 			NoCheckout:        true,
 		})
 		if err != nil {
-			if err == git.ErrRepositoryNotExists {
-				uid, err := githelper.GetGitLabUserId(tok, conf.IsEligibleForPrinting(ConstLogModGit, LvlDbg))
-				if err != nil {
-					if conf.Verbose || conf.IsEligibleForPrinting(ConstLogModGit, LvlErr) {
-						log.Errorf(err.Error() + "\n")
-					}
-					conf.Cloud18 = false
-					return
-				} else if uid == 0 {
-					if conf.Verbose || conf.IsEligibleForPrinting(ConstLogModGit, LvlErr) {
-						log.Errorf("Invalid user Id \n")
-					}
-					conf.Cloud18 = false
-					return
-				}
-
-				repopath := conf.Cloud18Domain + "/" + conf.Cloud18SubDomain + "-" + conf.Cloud18SubDomainZone
-				name := conf.Cloud18SubDomain + "-" + conf.Cloud18SubDomainZone
-
-				githelper.GitLabCreateProject(tok, name, repopath, conf.Cloud18Domain, uid, conf.IsEligibleForPrinting(ConstLogModGit, LvlDbg))
+			if err == transport.ErrRepositoryNotFound {
+				conf.CreateGitlabProjects()
 
 				r, err = git.PlainClone(path, false, &git.CloneOptions{
 					URL:               url,
@@ -2779,4 +2768,33 @@ func (conf *Config) GetSecretChecksum() (hash.Hash, error) {
 
 	_, err = io.Copy(new_h, bytes.NewBuffer(js))
 	return new_h, err
+}
+
+func (conf *Config) CreateGitlabProjects() {
+	acces_tok, err := githelper.GetGitLabTokenBasicAuth(conf.Cloud18GitUser, conf.GetDecryptedValue("cloud18-gitlab-password"), conf.IsEligibleForPrinting(ConstLogModGit, LvlDbg))
+	if err != nil {
+		if conf.Verbose || conf.IsEligibleForPrinting(ConstLogModGit, LvlErr) {
+			log.Errorf(err.Error() + conf.GetDecryptedValue("cloud18-gitlab-password") + "\n")
+		}
+		return
+	}
+
+	uid, err := githelper.GetGitLabUserId(acces_tok, conf.IsEligibleForPrinting(ConstLogModGit, LvlDbg))
+	if err != nil {
+		if conf.Verbose || conf.IsEligibleForPrinting(ConstLogModGit, LvlDbg) {
+			log.Errorf(err.Error() + "\n")
+		}
+		return
+	} else if uid == 0 {
+		if conf.Verbose || conf.IsEligibleForPrinting(ConstLogModGit, LvlDbg) {
+			log.Errorf("Invalid user Id \n")
+		}
+		return
+	}
+
+	repopath := conf.Cloud18Domain + "/" + conf.Cloud18SubDomain + "-" + conf.Cloud18SubDomainZone
+	name := conf.Cloud18SubDomain + "-" + conf.Cloud18SubDomainZone
+
+	githelper.GitLabCreateProject(conf.Secrets["git-acces-token"].Value, name, repopath, conf.Cloud18Domain, uid, conf.IsEligibleForPrinting(ConstLogModGit, LvlDbg))
+	githelper.GitLabCreatePullProject(conf.Secrets["git-acces-token"].Value, name, repopath, conf.Cloud18Domain, uid, conf.IsEligibleForPrinting(ConstLogModGit, LvlDbg))
 }

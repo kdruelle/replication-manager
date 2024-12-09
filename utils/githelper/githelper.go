@@ -322,7 +322,7 @@ func GitLabCreatePullProject(token string, name string, path string, namespace s
 }
 
 func GitLabCreateProject(token string, name string, path string, namespace string, user_id int, log_git bool) {
-	req, err := http.NewRequest("GET", "https://gitlab.signal18.io/api/v4/projects?search="+name, nil)
+	req, err := http.NewRequest("GET", "https://gitlab.signal18.io/api/v4/projects/"+namespace+"%2F"+name, nil)
 	if err != nil {
 		Logrus.Println("Gitlab API Error: ", err)
 		return
@@ -341,67 +341,62 @@ func GitLabCreateProject(token string, name string, path string, namespace strin
 		Logrus.Println("Gitlab API Response: ", string(body))
 	}
 
-	var ProjectInfos []ProjectInfo
+	if resp.StatusCode != http.StatusNotFound {
+		return
+	}
 
-	err = json.Unmarshal(body, &ProjectInfos)
+	req, err = http.NewRequest("GET", "https://gitlab.signal18.io/api/v4/namespaces/"+namespace, nil)
+	if err != nil {
+		Logrus.Println("Gitlab API Error: ", err)
+		return
+	}
+	req.Header.Set("Private-token", token)
+
+	resp, err = http.DefaultClient.Do(req)
+	if err != nil {
+		Logrus.Println("Gitlab API Error: ", err)
+		return
+	}
+	defer resp.Body.Close()
+	body, _ = io.ReadAll(resp.Body)
+
+	if log_git {
+		Logrus.Println("Gitlab API Response: ", string(body))
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return
+	}
+
+	var ns NameSpace
+
+	err = json.Unmarshal(body, &ns)
 	if err != nil {
 		Logrus.Println("Gitlab API Error: ", err)
 		return
 	}
 
-	if len(ProjectInfos) != 0 && ProjectInfos[0].PathNameSpace == path {
+	namespace_id := ns.ID
+	lowerName := strings.ToLower(name)
+	jsondata := fmt.Sprintf(`{"name": "%s", "description": "", "path": "%s","namespace_id": %d, "initialize_with_readme": "false"}`, lowerName, lowerName, namespace_id)
+	b := bytes.NewBuffer([]byte(jsondata))
+	req, err = http.NewRequest("POST", "https://gitlab.signal18.io/api/v4/projects/", b)
+	if err != nil {
+		Logrus.Println("Gitlab API Error: ", err)
 		return
-	} else {
-		req, err := http.NewRequest("GET", "https://gitlab.signal18.io/api/v4/projects?namespace="+namespace, nil)
-		if err != nil {
-			Logrus.Println("Gitlab API Error: ", err)
-			return
-		}
-		req.Header.Set("Private-token", token)
-
-		resp, err := http.DefaultClient.Do(req)
-		if err != nil {
-			Logrus.Println("Gitlab API Error: ", err)
-			return
-		}
-		defer resp.Body.Close()
-		body, _ := io.ReadAll(resp.Body)
-
-		if log_git {
-			Logrus.Println("Gitlab API Response: ", string(body))
-		}
-
-		var ProjectInfos []ProjectInfo
-
-		err = json.Unmarshal(body, &ProjectInfos)
-		if err != nil {
-			Logrus.Println("Gitlab API Error: ", err)
-			return
-		}
-		if len(ProjectInfos) != 0 {
-			namespace_id := strconv.Itoa(ProjectInfos[0].Namespace.ID)
-			jsondata := `{"name": "` + strings.ToLower(name) + `", "description": "", "path": "` + strings.ToLower(name) + `","namespace_id": ` + namespace_id + `, "initialize_with_readme": "false"}`
-			b := bytes.NewBuffer([]byte(jsondata))
-			req, err = http.NewRequest("POST", "https://gitlab.signal18.io/api/v4/projects/", b)
-			if err != nil {
-				Logrus.Println("Gitlab API Error: ", err)
-				return
-			}
-			req.Header.Set("Content-Type", "application/json")
-			req.Header.Set("Private-token", token)
-			resp, err = http.DefaultClient.Do(req)
-			if err != nil {
-				Logrus.Println("Gitlab API Error: ", err)
-				return
-			}
-			defer resp.Body.Close()
-			body, _ = io.ReadAll(resp.Body)
-			if log_git {
-				Logrus.Println("Gitlab API Response: ", string(body))
-			}
-		}
 	}
-
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Private-token", token)
+	resp, err = http.DefaultClient.Do(req)
+	if err != nil {
+		Logrus.Println("Gitlab API Error: ", err)
+		return
+	}
+	defer resp.Body.Close()
+	body, _ = io.ReadAll(resp.Body)
+	if log_git {
+		Logrus.Println("Gitlab API Response: ", string(body))
+	}
 }
 
 func RefreshAccessToken(refresh_tok string, client_id string, secret_id string, log_git bool) (string, string, error) {
