@@ -1,6 +1,7 @@
 package server
 
 import (
+	"bufio"
 	"bytes"
 	"crypto/md5"
 	"encoding/json"
@@ -145,6 +146,7 @@ func (repman *ReplicationManager) PushAllConfigsToGit() {
 	}
 
 	if repman.Conf.GitUrl != "" {
+		repman.AddPullToGitignore()
 		repman.Logrus.Infof("Pushing All Configs To Git")
 		repman.Conf.PushConfigToGit(repman.Conf.GitUrl, repman.Conf.Secrets["git-acces-token"].Value, repman.Conf.GitUsername, repman.Conf.WorkingDir, repman.ClusterList)
 	}
@@ -297,4 +299,51 @@ func (repman *ReplicationManager) LoadPeerJson() error {
 
 	return nil
 
+}
+
+// Ensures ".pull/" is in .gitignore.
+func (repman *ReplicationManager) AddPullToGitignore() {
+	gitignoreFile := repman.Conf.WorkingDir + "/.gitignore"
+	lineToAdd := ".pull/"
+
+	// Check if .gitignore exists
+	if _, err := os.Stat(gitignoreFile); os.IsNotExist(err) {
+		// If .gitignore doesn't exist, create it and write the line
+		err := os.WriteFile(gitignoreFile, []byte(lineToAdd+"\n"), 0644)
+		if err != nil {
+			fmt.Println("Error creating .gitignore:", err)
+		}
+		return
+	}
+
+	// Open .gitignore for reading and appending
+	file, err := os.OpenFile(gitignoreFile, os.O_RDWR|os.O_APPEND, 0644)
+	if err != nil {
+		fmt.Println("Error opening .gitignore:", err)
+		return
+	}
+	defer file.Close()
+
+	// Check if the line already exists
+	scanner := bufio.NewScanner(file)
+	lineExists := false
+	for scanner.Scan() {
+		if strings.TrimSpace(scanner.Text()) == lineToAdd {
+			lineExists = true
+			break
+		}
+	}
+
+	if scanner.Err() != nil {
+		fmt.Println("Error reading .gitignore:", scanner.Err())
+		return
+	}
+
+	// Append the line if it doesn't already exist
+	if !lineExists {
+		_, err := file.WriteString(lineToAdd + "\n")
+		if err != nil {
+			fmt.Println("Error appending to .gitignore:", err)
+		}
+	}
 }
