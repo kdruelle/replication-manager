@@ -1503,7 +1503,10 @@ func (conf *Config) PrintSecret(value string) string {
 	return masker.String(masker.MAddress, value)
 }
 
-func (conf *Config) CloneConfigFromGit(url string, user string, tok string, dir string) {
+func (conf *Config) CloneConfigFromGit(url string, user string, tok string, dir string) error {
+	var err error
+	var r *git.Repository
+	var w *git.Worktree
 
 	auth := &git_https.BasicAuth{
 		Username: user, // yes, this can be anything except an empty string
@@ -1515,24 +1518,24 @@ func (conf *Config) CloneConfigFromGit(url string, user string, tok string, dir 
 	}
 
 	path := dir
-	if _, err := os.Stat(path + "/.git"); err == nil {
+	if _, err = os.Stat(path + "/.git"); err == nil {
 
 		// We instantiate a new repository targeting the given path (the .git folder)
-		r, err := git.PlainOpen(path)
+		r, err = git.PlainOpen(path)
 		if err != nil {
 			if conf.IsEligibleForPrinting(ConstLogModGit, LvlErr) {
 				log.Errorf("Git error : cannot PlainOpen : %s", err)
 			}
-			return
+			return err
 		}
 
 		// Get the working directory for the repository
-		w, err := r.Worktree()
+		w, err = r.Worktree()
 		if err != nil {
 			if conf.IsEligibleForPrinting(ConstLogModGit, LvlErr) {
 				log.Errorf("Git error : cannot Worktree : %s", err)
 			}
-			return
+			return err
 		}
 		// Pull the latest changes from the origin remote and merge into the current branch
 		//git_ex.Info("git pull origin")
@@ -1557,7 +1560,7 @@ func (conf *Config) CloneConfigFromGit(url string, user string, tok string, dir 
 		// Clone the given repository to the given directory
 		//git_ex.Info("git clone %s %s --recursive", url, path)
 
-		_, err := git.PlainClone(path, false, &git.CloneOptions{
+		_, err = git.PlainClone(path, false, &git.CloneOptions{
 			URL:               url,
 			RecurseSubmodules: git.DefaultSubmoduleRecursionDepth,
 			Auth:              auth,
@@ -1572,6 +1575,8 @@ func (conf *Config) CloneConfigFromGit(url string, user string, tok string, dir 
 			}
 		}
 	}
+
+	return err
 }
 
 func (conf *Config) PushConfigToGit(url string, tok string, user string, dir string, clusterList []string) {

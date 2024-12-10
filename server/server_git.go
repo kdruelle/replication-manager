@@ -191,7 +191,11 @@ func (repman *ReplicationManager) PullCloud18Configs() {
 	filePath := pullDir + "/cloud18.toml"
 
 	if repman.Conf.GitUrlPull != "" {
-		repman.Conf.CloneConfigFromGit(repman.Conf.GitUrlPull, repman.Conf.GitUsername, repman.Conf.Secrets["git-acces-token"].Value, pullDir)
+		err := repman.Conf.CloneConfigFromGit(repman.Conf.GitUrlPull, repman.Conf.GitUsername, repman.Conf.Secrets["git-acces-token"].Value, pullDir)
+		if err != nil {
+			os.RemoveAll(pullDir + "/.git")
+			repman.Conf.CloneConfigFromGit(repman.Conf.GitUrlPull, repman.Conf.GitUsername, repman.Conf.Secrets["git-acces-token"].Value, pullDir)
+		}
 
 		//to check cloud18.toml for the first time
 		if repman.Conf.Cloud18 {
