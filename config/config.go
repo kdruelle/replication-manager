@@ -1702,20 +1702,27 @@ func (conf *Config) PushConfigToGit(url string, tok string, user string, dir str
 		return
 	}
 
-	err = w.Pull(&git.PullOptions{
+	errPull := w.Pull(&git.PullOptions{
 		RemoteName: "origin",
 		Auth:       auth,
 		RemoteURL:  url,
 		Force:      true,
 	})
 
-	if err != nil && fmt.Sprintf("%v", err) != "already up-to-date" {
-		log.Errorf("Git error : cannot Pull %s repository : %s", url, err)
+	if errPull != nil && fmt.Sprintf("%v", errPull) != "already up-to-date" {
+		log.Errorf("Git error : cannot Pull %s repository : %s", url, errPull)
 	}
 
 	// push using default options
-	err = r.Push(&git.PushOptions{Auth: auth, ForceWithLease: &git.ForceWithLease{}})
-	if err != nil && conf.LogGit {
+	err = r.Push(&git.PushOptions{Auth: auth})
+	if err != nil {
+		// If repo is empty and old .git folder still exist
+		if err == transport.ErrRepositoryNotFound && errPull == transport.ErrEmptyRemoteRepository {
+			// Remove .git and retry
+			os.RemoveAll(dir + "/.git")
+			conf.PushConfigToGit(url, tok, user, dir, clusterList)
+			return
+		}
 		log.Errorf("Git error : cannot Push : %s", err)
 
 	}

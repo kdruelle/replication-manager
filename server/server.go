@@ -1947,7 +1947,8 @@ func (repman *ReplicationManager) Run() error {
 					//to obtain new app access token
 					repman.OAuthAccessToken.AccessToken, repman.OAuthAccessToken.RefreshToken, err = githelper.RefreshAccessToken(repman.OAuthAccessToken.RefreshToken, repman.Conf.OAuthClientID, repman.Conf.GetDecryptedPassword("api-oauth-client-secret", repman.Conf.OAuthClientSecret), repman.Conf.IsEligibleForPrinting(config.ConstLogModGit, config.LvlDbg))
 					//to obtain a new PAT
-					new_tok, _ := githelper.GetGitLabTokenOAuth(repman.OAuthAccessToken.AccessToken, repman.Conf.IsEligibleForPrinting(config.ConstLogModGit, config.LvlDbg))
+					tokenName := conf.Cloud18Domain + "-" + conf.Cloud18SubDomain + "-" + conf.Cloud18SubDomainZone
+					new_tok, _ := githelper.GetGitLabTokenOAuth(repman.OAuthAccessToken.AccessToken, tokenName, repman.Conf.IsEligibleForPrinting(config.ConstLogModGit, config.LvlDbg))
 
 					//save the new PAT
 					newSecret := repman.Conf.Secrets["git-acces-token"]

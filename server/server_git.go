@@ -94,7 +94,15 @@ func (repman *ReplicationManager) InitGitConfig(conf *config.Config) error {
 			return err
 		}
 
-		personal_access_token, _ := githelper.GetGitLabTokenOAuth(acces_tok, conf.IsEligibleForPrinting(config.ConstLogModGit, config.LvlDbg))
+		tokenName := conf.Cloud18Domain + "-" + conf.Cloud18SubDomain + "-" + conf.Cloud18SubDomainZone
+		personal_access_token, _ := githelper.GetGitLabTokenOAuth(acces_tok, tokenName, conf.IsEligibleForPrinting(config.ConstLogModGit, config.LvlDbg))
+		if personal_access_token == "" {
+			personal_access_token, err = githelper.CreatePersonalAccessTokenCSRF(conf.Cloud18GitUser, conf.GetDecryptedValue("cloud18-gitlab-password"), tokenName)
+			if err != nil && (conf.Verbose || conf.IsEligibleForPrinting(config.ConstLogModGit, config.LvlErr)) {
+				repman.Logrus.Errorf("%v", err.Error())
+			}
+		}
+
 		if personal_access_token != "" {
 			var Secrets config.Secret
 			Secrets.Value = personal_access_token
@@ -122,7 +130,7 @@ func (repman *ReplicationManager) InitGitConfig(conf *config.Config) error {
 			}
 			//conf.GitAddReadMe(conf.GitUrl, conf.GitAccesToken, conf.GitUsername, conf.WorkingDir)
 
-		} else if conf.LogGit {
+		} else if conf.IsEligibleForPrinting(config.ConstLogModGit, config.LvlInfo) {
 			err := fmt.Errorf("Could not get personal access token from gitlab")
 			repman.Logrus.WithField("group", repman.ClusterList[cfgGroupIndex]).Infof(err.Error())
 			return err

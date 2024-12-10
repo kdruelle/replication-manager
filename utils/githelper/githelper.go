@@ -254,7 +254,7 @@ type RequestUserId struct {
 	UserId []string `json:"user_id"`
 }
 
-func GetGitLabTokenOAuth(acces_token string, log_git bool) (string, int) {
+func GetGitLabTokenOAuth(acces_token string, token_name string, log_git bool) (string, int) {
 
 	uid, err := GetGitLabUserId(acces_token, log_git)
 	if err != nil {
@@ -288,6 +288,11 @@ func GetGitLabTokenOAuth(acces_token string, log_git bool) (string, int) {
 	err = json.Unmarshal(body, &tokenInfos)
 	if err != nil {
 		Logrus.Println("Gitlab API Error: ", err)
+		return "", -1
+	}
+
+	if len(tokenInfos) == 0 {
+		Logrus.Println("Gitlab API Error: No PAT")
 		return "", -1
 	}
 
