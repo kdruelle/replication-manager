@@ -265,7 +265,7 @@ func GetGitLabTokenOAuth(acces_token string, token_name string, log_git bool) (s
 		return "", -1
 	}
 
-	req, err := http.NewRequest("GET", fmt.Sprintf("https://gitlab.signal18.io/api/v4/personal_access_tokens?revoked=false&user_id=%d", uid), nil)
+	req, err := http.NewRequest("GET", fmt.Sprintf("https://gitlab.signal18.io/api/v4/personal_access_tokens?revoked=false&user_id=%d&search=%s", uid, token_name), nil)
 	if err != nil {
 		Logrus.Println("Gitlab API Error: ", err)
 	}
