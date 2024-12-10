@@ -2016,7 +2016,9 @@ func (repman *ReplicationManager) Run() error {
 			}
 
 			if repman.Conf.GitUrlPull != "" {
-				repman.PullCloud18Configs()
+				if counter%5 == 0 {
+					repman.PullCloud18Configs()
+				}
 			}
 		}
 
