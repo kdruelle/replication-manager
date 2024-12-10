@@ -22,6 +22,8 @@ func (repman *ReplicationManager) SetIsGitPush(val bool) {
 	for _, cl := range repman.Clusters {
 		cl.IsGitPush = val
 	}
+
+	repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlDbg, "Git push changed: %t", val)
 }
 
 func (repman *ReplicationManager) SetIsGitPull(val bool) {
@@ -29,9 +31,15 @@ func (repman *ReplicationManager) SetIsGitPull(val bool) {
 	for _, cl := range repman.Clusters {
 		cl.IsGitPull = val
 	}
+
+	repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlDbg, "Git pull changed: %t", val)
 }
 
 func (repman *ReplicationManager) InitGitConfig(conf *config.Config) error {
+	if repman.IsGitPush {
+		return nil
+	}
+
 	repman.SetIsGitPush(true)
 	defer repman.SetIsGitPush(false)
 
@@ -142,6 +150,10 @@ func (repman *ReplicationManager) InitGitConfig(conf *config.Config) error {
 }
 
 func (repman *ReplicationManager) PushAllConfigsToGit() {
+	if repman.IsGitPush {
+		return
+	}
+
 	// Set Flag as Git Push, prevent new cluster save is processed
 	repman.SetIsGitPush(true)
 	defer repman.SetIsGitPush(false)
@@ -161,6 +173,9 @@ func (repman *ReplicationManager) PushAllConfigsToGit() {
 }
 
 func (repman *ReplicationManager) PullCloud18Configs() {
+	if repman.IsGitPull {
+		return
+	}
 	// Set Flag as Git Pull, prevent new cluster save / push is processed
 	repman.SetIsGitPull(true)
 	defer repman.SetIsGitPull(false)
