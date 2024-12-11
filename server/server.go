@@ -2003,26 +2003,11 @@ func (repman *ReplicationManager) Run() error {
 			repman.Save()
 
 			if repman.Conf.GitUrl != "" {
-				isNeedPush := repman.IsNeedGitPush
-				for _, cl := range repman.Clusters {
-					if cl.IsNeedGitPush {
-						repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlInfo, "Cluster %s need Git Push", cl.Name)
-						// flag as changed for git push
-						isNeedPush = true
+				repman.PushAllConfigsToGit()
+			}
 
-						// Remove old need push flag
-						cl.IsNeedGitPush = false
-					}
-				}
-
-				if isNeedPush {
-					repman.IsNeedGitPush = false
-					repman.PushAllConfigsToGit()
-				}
-
-				if repman.Conf.GitUrlPull != "" {
-					repman.PullCloud18Configs()
-				}
+			if repman.Conf.Cloud18 && repman.Conf.GitUrlPull != "" {
+				repman.PullCloud18Configs()
 			}
 		}
 
