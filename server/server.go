@@ -2000,30 +2000,11 @@ func (repman *ReplicationManager) Run() error {
 		time.Sleep(time.Second * time.Duration(repman.Conf.MonitoringTicker))
 		if counter%60 == 0 {
 			repman.Save()
-		}
-
-		if repman.Conf.GitUrl != "" {
-			isNeedPush := repman.IsNeedGitPush
-			for _, cl := range repman.Clusters {
-				if cl.IsNeedGitPush {
-					repman.Logrus.Infof("Cluster %s need Git Push", cl.Name)
-					// flag as changed for git push
-					isNeedPush = true
-
-					// Remove old need push flag
-					cl.IsNeedGitPush = false
-				}
-			}
-
-			if isNeedPush {
-				repman.IsNeedGitPush = false
+			if repman.Conf.GitUrl != "" {
 				repman.PushAllConfigsToGit()
 			}
-
 			if repman.Conf.GitUrlPull != "" {
-				if counter%5 == 0 {
-					repman.PullCloud18Configs()
-				}
+				repman.PullCloud18Configs()
 			}
 		}
 

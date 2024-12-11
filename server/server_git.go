@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-git/go-git/v5/plumbing/transport"
 	"github.com/signal18/replication-manager/config"
 	"github.com/signal18/replication-manager/utils/githelper"
 )
@@ -168,7 +169,11 @@ func (repman *ReplicationManager) PushAllConfigsToGit() {
 	if repman.Conf.GitUrl != "" {
 		repman.AddPullToGitignore()
 		repman.Logrus.Infof("Pushing All Configs To Git")
-		repman.Conf.PushConfigToGit(repman.Conf.GitUrl, repman.Conf.Secrets["git-acces-token"].Value, repman.Conf.GitUsername, repman.Conf.WorkingDir, repman.ClusterList)
+		err := repman.Conf.PushConfigToGit(repman.Conf.GitUrl, repman.Conf.Secrets["git-acces-token"].Value, repman.Conf.GitUsername, repman.Conf.WorkingDir, repman.ClusterList)
+		if err != nil && err == transport.ErrRepositoryNotFound {
+			os.RemoveAll(repman.Conf.WorkingDir + "/.git")
+			repman.Conf.PushConfigToGit(repman.Conf.GitUrl, repman.Conf.Secrets["git-acces-token"].Value, repman.Conf.GitUsername, repman.Conf.WorkingDir, repman.ClusterList)
+		}
 	}
 }
 

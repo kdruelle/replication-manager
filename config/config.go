@@ -1579,7 +1579,7 @@ func (conf *Config) CloneConfigFromGit(url string, user string, tok string, dir 
 	return err
 }
 
-func (conf *Config) PushConfigToGit(url string, tok string, user string, dir string, clusterList []string) {
+func (conf *Config) PushConfigToGit(url string, tok string, user string, dir string, clusterList []string) error {
 
 	if conf.IsEligibleForPrinting(ConstLogModGit, LvlDbg) {
 		log.Debugf("Push to git : tok %s, dir %s, user %s, clustersList : %v\n", conf.PrintSecret(tok), dir, user, clusterList)
@@ -1596,17 +1596,14 @@ func (conf *Config) PushConfigToGit(url string, tok string, user string, dir str
 			URL:               url,
 			RecurseSubmodules: git.DefaultSubmoduleRecursionDepth,
 			Auth:              auth,
-			NoCheckout:        true,
 		})
 		if err != nil {
 			if err == transport.ErrRepositoryNotFound {
 				conf.CreateGitlabProjects()
-
 				r, err = git.PlainClone(path, false, &git.CloneOptions{
 					URL:               url,
 					RecurseSubmodules: git.DefaultSubmoduleRecursionDepth,
 					Auth:              auth,
-					NoCheckout:        true,
 				})
 				if err != nil {
 					log.Errorf("Git error : cannot Clone %s repository : %s", url, err)
@@ -1623,7 +1620,7 @@ func (conf *Config) PushConfigToGit(url string, tok string, user string, dir str
 			if conf.IsEligibleForPrinting(ConstLogModGit, LvlErr) {
 				log.Errorf("Git error : cannot Worktree : %s", err)
 			}
-			return
+			return err
 		}
 
 		// checkout and keep files
@@ -1634,7 +1631,7 @@ func (conf *Config) PushConfigToGit(url string, tok string, user string, dir str
 			if conf.IsEligibleForPrinting(ConstLogModGit, LvlErr) {
 				log.Errorf("Git error : cannot PlainOpen : %s", err)
 			}
-			return
+			return err
 		}
 	}
 
@@ -1643,7 +1640,7 @@ func (conf *Config) PushConfigToGit(url string, tok string, user string, dir str
 		if conf.IsEligibleForPrinting(ConstLogModGit, LvlErr) {
 			log.Errorf("Git error : cannot Worktree : %s", err)
 		}
-		return
+		return err
 	}
 
 	if len(clusterList) != 0 {
@@ -1704,7 +1701,7 @@ func (conf *Config) PushConfigToGit(url string, tok string, user string, dir str
 
 	if err != nil {
 		log.Errorf("Git error : cannot Commit : %s", err)
-		return
+		return err
 	}
 
 	errPull := w.Pull(&git.PullOptions{
@@ -1714,23 +1711,17 @@ func (conf *Config) PushConfigToGit(url string, tok string, user string, dir str
 		Force:      true,
 	})
 
-	if errPull != nil && fmt.Sprintf("%v", errPull) != "already up-to-date" {
+	if errPull != nil && fmt.Sprintf("%v", err) != "already up-to-date" && errPull != transport.ErrEmptyRemoteRepository {
 		log.Errorf("Git error : cannot Pull %s repository : %s", url, errPull)
 	}
 
 	// push using default options
-	err = r.Push(&git.PushOptions{Auth: auth})
+	err = r.Push(&git.PushOptions{Auth: auth, RemoteURL: url})
 	if err != nil {
-		// If repo is empty and old .git folder still exist
-		if err == transport.ErrRepositoryNotFound && errPull == transport.ErrEmptyRemoteRepository {
-			// Remove .git and retry
-			os.RemoveAll(dir + "/.git")
-			conf.PushConfigToGit(url, tok, user, dir, clusterList)
-			return
-		}
 		log.Errorf("Git error : cannot Push : %s", err)
-
 	}
+
+	return err
 }
 
 // PullAndMergeWithConflictResolution pulls and merges changes, handling conflicts manually.
