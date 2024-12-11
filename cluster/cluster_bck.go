@@ -53,21 +53,24 @@ func (cluster *Cluster) ResticPurgeRepo() error {
 		resticcmd := exec.Command(cluster.Conf.BackupResticBinaryPath, "forget", "--prune", "--keep-last", "10", "--keep-hourly", strconv.Itoa(cluster.Conf.BackupKeepHourly), "--keep-daily", strconv.Itoa(cluster.Conf.BackupKeepDaily), "--keep-weekly", strconv.Itoa(cluster.Conf.BackupKeepWeekly), "--keep-monthly", strconv.Itoa(cluster.Conf.BackupKeepMonthly), "--keep-yearly", strconv.Itoa(cluster.Conf.BackupKeepYearly))
 		stdoutIn, _ := resticcmd.StdoutPipe()
 		stderrIn, _ := resticcmd.StderrPipe()
-		stdout := io.MultiWriter(os.Stdout, &stdoutBuf)
-		stderr := io.MultiWriter(os.Stderr, &stderrBuf)
+		stdoutTee := io.TeeReader(stdoutIn, &stdoutBuf)
+		stderrTee := io.TeeReader(stderrIn, &stderrBuf)
 		resticcmd.Env = cluster.ResticGetEnv()
 		if err := resticcmd.Start(); err != nil {
 			cluster.SetState("WARN0094", state.State{ErrType: "WARNING", ErrDesc: fmt.Sprintf(clusterError["WARN0094"], resticcmd.Path, err, ""), ErrFrom: "BACKUP"})
 			return err
 		}
 		var wg sync.WaitGroup
-		wg.Add(1)
+		wg.Add(2)
 		go func() {
-			_, errStdout = io.Copy(stdout, stdoutIn)
-			wg.Done()
+			defer wg.Done()
+			cluster.CopyLogs(stdoutTee, config.ConstLogModSST, config.LvlDbg, "restic")
 		}()
 
-		_, errStderr = io.Copy(stderr, stderrIn)
+		go func() {
+			defer wg.Done()
+			cluster.CopyLogs(stderrTee, config.ConstLogModSST, config.LvlDbg, "restic")
+		}()
 		wg.Wait()
 
 		err := resticcmd.Wait()
@@ -108,8 +111,8 @@ func (cluster *Cluster) ResticInitRepo() error {
 		resticcmd := exec.Command(cluster.Conf.BackupResticBinaryPath, "init")
 		stdoutIn, _ := resticcmd.StdoutPipe()
 		stderrIn, _ := resticcmd.StderrPipe()
-		stdout := io.MultiWriter(os.Stdout, &stdoutBuf)
-		stderr := io.MultiWriter(os.Stderr, &stderrBuf)
+		stdoutTee := io.TeeReader(stdoutIn, &stdoutBuf)
+		stderrTee := io.TeeReader(stderrIn, &stderrBuf)
 
 		resticcmd.Env = cluster.ResticGetEnv()
 		if err := resticcmd.Start(); err != nil {
@@ -117,13 +120,16 @@ func (cluster *Cluster) ResticInitRepo() error {
 			return err
 		}
 		var wg sync.WaitGroup
-		wg.Add(1)
+		wg.Add(2)
 		go func() {
-			_, errStdout = io.Copy(stdout, stdoutIn)
-			wg.Done()
+			defer wg.Done()
+			cluster.CopyLogs(stdoutTee, config.ConstLogModSST, config.LvlDbg, "restic")
 		}()
 
-		_, errStderr = io.Copy(stderr, stderrIn)
+		go func() {
+			defer wg.Done()
+			cluster.CopyLogs(stderrTee, config.ConstLogModSST, config.LvlDbg, "restic")
+		}()
 		wg.Wait()
 
 		err := resticcmd.Wait()
@@ -148,8 +154,8 @@ func (cluster *Cluster) ResticFetchRepo() error {
 		resticcmd := exec.Command(cluster.Conf.BackupResticBinaryPath, "snapshots", "--json")
 		stdoutIn, _ := resticcmd.StdoutPipe()
 		stderrIn, _ := resticcmd.StderrPipe()
-		stdout := io.MultiWriter(os.Stdout, &stdoutBuf)
-		stderr := io.MultiWriter(os.Stderr, &stderrBuf)
+		stdoutTee := io.TeeReader(stdoutIn, &stdoutBuf)
+		stderrTee := io.TeeReader(stderrIn, &stderrBuf)
 
 		resticcmd.Env = cluster.ResticGetEnv()
 		if err := resticcmd.Start(); err != nil {
@@ -157,13 +163,16 @@ func (cluster *Cluster) ResticFetchRepo() error {
 			return err
 		}
 		var wg sync.WaitGroup
-		wg.Add(1)
+		wg.Add(2)
 		go func() {
-			_, errStdout = io.Copy(stdout, stdoutIn)
-			wg.Done()
+			defer wg.Done()
+			cluster.CopyLogs(stdoutTee, config.ConstLogModSST, config.LvlDbg, "restic")
 		}()
 
-		_, errStderr = io.Copy(stderr, stderrIn)
+		go func() {
+			defer wg.Done()
+			cluster.CopyLogs(stderrTee, config.ConstLogModSST, config.LvlDbg, "restic")
+		}()
 		wg.Wait()
 
 		err := resticcmd.Wait()
@@ -203,8 +212,8 @@ func (cluster *Cluster) ResticFetchRepoStat() error {
 	resticcmd := exec.Command(cluster.Conf.BackupResticBinaryPath, "stats", "--mode", "raw-data", "--json")
 	stdoutIn, _ := resticcmd.StdoutPipe()
 	stderrIn, _ := resticcmd.StderrPipe()
-	stdout := io.MultiWriter(os.Stdout, &stdoutBuf)
-	stderr := io.MultiWriter(os.Stderr, &stderrBuf)
+	stdoutTee := io.TeeReader(stdoutIn, &stdoutBuf)
+	stderrTee := io.TeeReader(stderrIn, &stderrBuf)
 
 	resticcmd.Env = cluster.ResticGetEnv()
 	if err := resticcmd.Start(); err != nil {
@@ -212,13 +221,16 @@ func (cluster *Cluster) ResticFetchRepoStat() error {
 		return err
 	}
 	var wg sync.WaitGroup
-	wg.Add(1)
+	wg.Add(2)
 	go func() {
-		_, errStdout = io.Copy(stdout, stdoutIn)
-		wg.Done()
+		defer wg.Done()
+		cluster.CopyLogs(stdoutTee, config.ConstLogModSST, config.LvlDbg, "restic")
 	}()
 
-	_, errStderr = io.Copy(stderr, stderrIn)
+	go func() {
+		defer wg.Done()
+		cluster.CopyLogs(stderrTee, config.ConstLogModSST, config.LvlDbg, "restic")
+	}()
 	wg.Wait()
 
 	err := resticcmd.Wait()

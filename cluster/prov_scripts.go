@@ -142,11 +142,11 @@ func (cluster *Cluster) UnprovisionProxyScript(server DatabaseProxy) error {
 	wg.Add(2)
 	go func() {
 		defer wg.Done()
-		cluster.provCopyLogs(stdoutIn, config.ConstLogModOrchestrator, config.LvlDbg, server.GetName())
+		cluster.CopyLogs(stdoutIn, config.ConstLogModOrchestrator, config.LvlDbg, server.GetName())
 	}()
 	go func() {
 		defer wg.Done()
-		cluster.provCopyLogs(stderrIn, config.ConstLogModOrchestrator, config.LvlDbg, server.GetName())
+		cluster.CopyLogs(stderrIn, config.ConstLogModOrchestrator, config.LvlDbg, server.GetName())
 	}()
 	wg.Wait()
 	if err := scriptCmd.Wait(); err != nil {
@@ -170,11 +170,11 @@ func (cluster *Cluster) ProvisionProxyScript(server DatabaseProxy) error {
 	wg.Add(2)
 	go func() {
 		defer wg.Done()
-		cluster.provCopyLogs(stdoutIn, config.ConstLogModOrchestrator, config.LvlDbg, server.GetName())
+		cluster.CopyLogs(stdoutIn, config.ConstLogModOrchestrator, config.LvlDbg, server.GetName())
 	}()
 	go func() {
 		defer wg.Done()
-		cluster.provCopyLogs(stderrIn, config.ConstLogModOrchestrator, config.LvlDbg, server.GetName())
+		cluster.CopyLogs(stderrIn, config.ConstLogModOrchestrator, config.LvlDbg, server.GetName())
 	}()
 	wg.Wait()
 	if err := scriptCmd.Wait(); err != nil {
@@ -198,11 +198,11 @@ func (cluster *Cluster) StartProxyScript(server DatabaseProxy) error {
 	wg.Add(2)
 	go func() {
 		defer wg.Done()
-		cluster.provCopyLogs(stdoutIn, config.ConstLogModOrchestrator, config.LvlDbg, server.GetName())
+		cluster.CopyLogs(stdoutIn, config.ConstLogModOrchestrator, config.LvlDbg, server.GetName())
 	}()
 	go func() {
 		defer wg.Done()
-		cluster.provCopyLogs(stderrIn, config.ConstLogModOrchestrator, config.LvlDbg, server.GetName())
+		cluster.CopyLogs(stderrIn, config.ConstLogModOrchestrator, config.LvlDbg, server.GetName())
 	}()
 	wg.Wait()
 	if err := scriptCmd.Wait(); err != nil {
@@ -226,11 +226,11 @@ func (cluster *Cluster) StopProxyScript(server DatabaseProxy) error {
 	wg.Add(2)
 	go func() {
 		defer wg.Done()
-		cluster.provCopyLogs(stdoutIn, config.ConstLogModOrchestrator, config.LvlDbg, server.GetName())
+		cluster.CopyLogs(stdoutIn, config.ConstLogModOrchestrator, config.LvlDbg, server.GetName())
 	}()
 	go func() {
 		defer wg.Done()
-		cluster.provCopyLogs(stderrIn, config.ConstLogModOrchestrator, config.LvlDbg, server.GetName())
+		cluster.CopyLogs(stderrIn, config.ConstLogModOrchestrator, config.LvlDbg, server.GetName())
 	}()
 	wg.Wait()
 	if err := scriptCmd.Wait(); err != nil {

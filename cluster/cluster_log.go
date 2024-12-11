@@ -562,7 +562,7 @@ func (cluster *Cluster) LogPrintState(st state.State, resolved bool) int {
 	return line
 }
 
-func (cluster *Cluster) provCopyLogs(r io.Reader, module int, level string, name string) {
+func (cluster *Cluster) CopyLogs(r io.Reader, module int, level string, name string) {
 	//	buf := make([]byte, 1024)
 	s := bufio.NewScanner(r)
 	for {
