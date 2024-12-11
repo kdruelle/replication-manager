@@ -1182,9 +1182,6 @@ func (repman *ReplicationManager) InitConfig(conf config.Config) {
 		tmp_read.Unmarshal(&conf)
 	}
 
-	savedRead := viper.GetViper()
-	savedRead.SetConfigType("toml")
-
 	// Proceed dynamic config
 	if fistRead.GetBool("default.monitoring-save-config") {
 		//read working dir from config
@@ -1202,8 +1199,8 @@ func (repman *ReplicationManager) InitConfig(conf config.Config) {
 		if _, err := os.Stat(conf.WorkingDir + "/default.toml"); os.IsNotExist(err) {
 			repman.Logrus.Infof("No monitoring overwrite default config found %s", conf.WorkingDir+"/default.toml")
 		} else {
-			savedRead.SetConfigFile(conf.WorkingDir + "/default.toml")
-			err = savedRead.MergeInConfig()
+			fistRead.SetConfigFile(conf.WorkingDir + "/default.toml")
+			err = fistRead.MergeInConfig()
 			if err != nil {
 				repman.Logrus.Error("Config error in " + conf.WorkingDir + "/default.toml" + err.Error())
 			}
@@ -1211,19 +1208,19 @@ func (repman *ReplicationManager) InitConfig(conf config.Config) {
 			// repman.Logrus.WithField("cnf", savedConf.AllSettings()).Infof("Dynamic values after merge %s", conf.WorkingDir+"/default.toml")
 		}
 
-		// Preserve overwrite immutable config after restart
-		if _, err := os.Stat(conf.WorkingDir + "/overwrite.toml"); os.IsNotExist(err) {
-			repman.Logrus.Infof("No monitoring overwrite default config found %s", conf.WorkingDir+"/overwrite.toml")
-		} else {
-			savedRead.SetConfigFile(conf.WorkingDir + "/overwrite.toml")
-			err = savedRead.MergeInConfig()
-			if err != nil {
-				repman.Logrus.Error("Config error in " + conf.WorkingDir + "/overwrite.toml" + err.Error())
-			}
-		}
-
 		dynRead := viper.GetViper()
 		dynRead.SetConfigType("toml")
+
+		// // Preserve overwrite immutable config after restart
+		// if _, err := os.Stat(conf.WorkingDir + "/overwrite.toml"); os.IsNotExist(err) {
+		// 	repman.Logrus.Infof("No monitoring overwrite default config found %s", conf.WorkingDir+"/overwrite.toml")
+		// } else {
+		// 	dynRead.SetConfigFile(conf.WorkingDir + "/overwrite.toml")
+		// 	err = savedRead.MergeInConfig()
+		// 	if err != nil {
+		// 		repman.Logrus.Error("Config error in " + conf.WorkingDir + "/overwrite.toml" + err.Error())
+		// 	}
+		// }
 
 		for _, f := range files {
 			if f.IsDir() && f.Name() != "graphite" && f.Name() != ".pull" && f.Name() != ".git" {
@@ -1285,19 +1282,27 @@ func (repman *ReplicationManager) InitConfig(conf config.Config) {
 		cf1.SetEnvPrefix("DEFAULT")
 		repman.initAlias(cf1)
 		cf1.Unmarshal(&conf)
-		if fistRead.GetBool("default.monitoring-save-config") {
-			savedConf := savedRead.Sub("saved-default")
-			if savedConf != nil {
-				for _, f := range savedConf.AllKeys() {
+
+		//if dynamic config, load modified parameter from the saved config
+		if conf.ConfRewrite {
+
+			cf3 := fistRead.Sub("saved-default")
+
+			//cf4 := repman.CleanupDynamicConfig(clustImmuableMap, cf3)
+			if cf3 == nil {
+				repman.Logrus.WithField("group", "default").Info("Could not parse saved configuration group")
+			} else {
+				for _, f := range cf3.AllKeys() {
 					v, ok := ImmuableMap[f]
-					if ok && v != nil {
-						savedConf.Set(f, v)
+					if ok {
+						cf3.Set(f, v)
 					}
 				}
-				repman.initAlias(savedConf)
-				savedConf.Unmarshal(&conf)
-				for _, f := range savedConf.AllKeys() {
-					v := savedConf.Get(f)
+				repman.initAlias(cf3)
+				cf3.Unmarshal(&conf)
+				//to add flag in cluster dynamic map only if not defined yet or if the flag value read is diff from immuable flag value
+				for _, f := range cf3.AllKeys() {
+					v := cf3.Get(f)
 					if v != nil {
 						imm_v, ok := ImmuableMap[f]
 						if ok && imm_v != v {
