@@ -1458,7 +1458,11 @@ func (repman *ReplicationManager) handlerMuxSetGlobalSettings(w http.ResponseWri
 			// || (user != "" && mycluster.IsURLPassACL(user, path, false)) {
 			//Set server scope
 			mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, "INFO", "Option '%s' is a shared values between clusters", setting)
-			repman.setServerSetting(user, r.URL.Path, setting, vars["settingValue"])
+			err := repman.setServerSetting(user, r.URL.Path, setting, vars["settingValue"])
+			if err != nil {
+				http.Error(w, err.Error(), 501)
+				return
+			}
 		} else {
 			http.Error(w, fmt.Sprintf("User doesn't have required ACL for global setting: %s. path: %s", setting, r.URL.Path), 403)
 			return
@@ -1864,14 +1868,29 @@ func (repman *ReplicationManager) setRepmanSetting(name string, value string) er
 		val, _ := strconv.Atoi(value)
 		repman.Conf.SetApiTokenTimeout(val)
 	case "cloud18-domain":
+		if repman.Conf.Cloud18 {
+			return errors.New("Unable to change setting when cloud18 is ON")
+		}
 		repman.Conf.Cloud18Domain = value
 	case "cloud18-sub-domain":
+		if repman.Conf.Cloud18 {
+			return errors.New("Unable to change setting when cloud18 is ON")
+		}
 		repman.Conf.Cloud18SubDomain = value
 	case "cloud18-sub-domain-zone":
+		if repman.Conf.Cloud18 {
+			return errors.New("Unable to change setting when cloud18 is ON")
+		}
 		repman.Conf.Cloud18SubDomainZone = value
 	case "cloud18-gitlab-user":
+		if repman.Conf.Cloud18 {
+			return errors.New("Unable to change setting when cloud18 is ON")
+		}
 		repman.Conf.Cloud18GitUser = value
 	case "cloud18-gitlab-password":
+		if repman.Conf.Cloud18 {
+			return errors.New("Unable to change setting when cloud18 is ON")
+		}
 		val, err := base64.StdEncoding.DecodeString(value)
 		if err != nil {
 			return errors.New("Unable to decode")
@@ -1881,8 +1900,6 @@ func (repman *ReplicationManager) setRepmanSetting(name string, value string) er
 		new_secret.Value = repman.Conf.Cloud18GitPassword
 		new_secret.OldValue = repman.Conf.GetDecryptedValue("cloud18-gitlab-password")
 		repman.Conf.Secrets["cloud18-gitlab-password"] = new_secret
-	case "cloud18-platform-description":
-		repman.Conf.Cloud18PlatformDescription = value
 	case "api-bind":
 		repman.Conf.APIBind = value
 	case "api-port ":
@@ -2029,8 +2046,11 @@ func (repman *ReplicationManager) switchRepmanSetting(name string) error {
 	return nil
 }
 
-func (repman *ReplicationManager) setServerSetting(user string, URL string, name string, value string) {
-	repman.setRepmanSetting(name, value)
+func (repman *ReplicationManager) setServerSetting(user string, URL string, name string, value string) error {
+	err := repman.setRepmanSetting(name, value)
+	if err != nil {
+		return err
+	}
 
 	for _, cl := range repman.Clusters {
 		//Don't print error with no valid ACL
@@ -2038,6 +2058,8 @@ func (repman *ReplicationManager) setServerSetting(user string, URL string, name
 			repman.setClusterSetting(cl, name, value)
 		}
 	}
+
+	return nil
 }
 
 func (repman *ReplicationManager) switchServerSetting(user string, URL string, name string) error {
