@@ -1704,15 +1704,15 @@ func (conf *Config) PushConfigToGit(url string, tok string, user string, dir str
 		return err
 	}
 
-	errPull := w.Pull(&git.PullOptions{
+	err = w.Pull(&git.PullOptions{
 		RemoteName: "origin",
 		Auth:       auth,
 		RemoteURL:  url,
 		Force:      true,
 	})
 
-	if errPull != nil && fmt.Sprintf("%v", err) != "already up-to-date" && errPull != transport.ErrEmptyRemoteRepository {
-		log.Errorf("Git error : cannot Pull %s repository : %s", url, errPull)
+	if err != nil && fmt.Sprintf("%v", err) != "already up-to-date" && err != transport.ErrEmptyRemoteRepository {
+		log.Errorf("Git error : cannot Pull %s repository : %s", url, err)
 	}
 
 	// push using default options

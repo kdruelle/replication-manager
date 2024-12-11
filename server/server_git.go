@@ -168,7 +168,7 @@ func (repman *ReplicationManager) PushAllConfigsToGit() {
 
 	if repman.Conf.GitUrl != "" {
 		repman.AddPullToGitignore()
-		repman.Logrus.Infof("Pushing All Configs To Git")
+		repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlInfo, "Pushing All Configs To Git")
 		err := repman.Conf.PushConfigToGit(repman.Conf.GitUrl, repman.Conf.Secrets["git-acces-token"].Value, repman.Conf.GitUsername, repman.Conf.WorkingDir, repman.ClusterList)
 		if err != nil && err == transport.ErrRepositoryNotFound {
 			os.RemoveAll(repman.Conf.WorkingDir + "/.git")

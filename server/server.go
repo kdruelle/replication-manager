@@ -1998,13 +1998,31 @@ func (repman *ReplicationManager) Run() error {
 			//			agents = svc.GetNodes()
 		}
 		time.Sleep(time.Second * time.Duration(repman.Conf.MonitoringTicker))
+
 		if counter%60 == 0 {
 			repman.Save()
+
 			if repman.Conf.GitUrl != "" {
-				repman.PushAllConfigsToGit()
-			}
-			if repman.Conf.GitUrlPull != "" {
-				repman.PullCloud18Configs()
+				isNeedPush := repman.IsNeedGitPush
+				for _, cl := range repman.Clusters {
+					if cl.IsNeedGitPush {
+						repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGit, config.LvlInfo, "Cluster %s need Git Push", cl.Name)
+						// flag as changed for git push
+						isNeedPush = true
+
+						// Remove old need push flag
+						cl.IsNeedGitPush = false
+					}
+				}
+
+				if isNeedPush {
+					repman.IsNeedGitPush = false
+					repman.PushAllConfigsToGit()
+				}
+
+				if repman.Conf.GitUrlPull != "" {
+					repman.PullCloud18Configs()
+				}
 			}
 		}
 
