@@ -30,7 +30,7 @@ var decryptCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		RepMan.CommandLineFlag = GetCommandLineFlag(cmd)
 		RepMan.DefaultFlagMap = defaultFlagMap
-		RepMan.InitConfig(conf)
+		RepMan.InitConfig(conf, false)
 		for cluster, conf := range RepMan.Confs {
 			conf.Reveal(cluster, "/etc/replication-manager")
 		}

@@ -2219,16 +2219,21 @@ func (conf Config) MergeConfig(path string, name string, ImmMap map[string]inter
 
 	dynMap := make(map[string]interface{})
 
-	if _, err := os.Stat(path + "/" + name + "/overwrite.toml"); os.IsNotExist(err) {
+	dirPath := path + "/" + name
+	if strings.ToLower(name) == "default" {
+		dirPath = path
+	}
+
+	if _, err := os.Stat(dirPath + "/overwrite.toml"); os.IsNotExist(err) {
 		log.WithFields(log.Fields{"cluster": "none", "type": "log", "module": "config"}).Infof("No monitoring saved config found %s", path+"/"+name+"/overwrite.toml")
 		return err
 	} else {
 		log.WithFields(log.Fields{"cluster": "none", "type": "log", "module": "config"}).Infof("Parsing saved config from working directory %s", path+"/"+name+"/overwrite.toml")
 
-		dynRead.AddConfigPath(path + "/" + name)
+		dynRead.AddConfigPath(dirPath)
 		err := dynRead.ReadInConfig()
 		if err != nil {
-			fmt.Printf("Could not read in config : " + path + "/" + name + "/overwrite.toml")
+			fmt.Printf("Could not read in config : " + dirPath + "/overwrite.toml")
 		}
 		dynRead = dynRead.Sub("overwrite-" + name)
 		//fmt.Printf("%v\n", dynRead.AllSettings())

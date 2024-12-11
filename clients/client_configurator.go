@@ -66,7 +66,7 @@ var configuratorCmd = &cobra.Command{
 		RepMan.SetDefaultFlags(viper.GetViper())
 		conf.HttpServ = false
 		conf.ApiServ = false
-		RepMan.InitConfig(conf)
+		RepMan.InitConfig(conf, false)
 		go RepMan.Run()
 		time.Sleep(2 * time.Second)
 		cluster := RepMan.Clusters[RepMan.ClusterList[0]]

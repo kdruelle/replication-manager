@@ -1033,7 +1033,7 @@ func (repman *ReplicationManager) initFS(conf config.Config) error {
 	return nil
 }
 
-func (repman *ReplicationManager) InitConfig(conf config.Config) {
+func (repman *ReplicationManager) InitConfig(conf config.Config, init_git bool) {
 	repman.Logrus = log.New()
 	repman.PeerClusters = make([]config.PeerCluster, 0)
 	repman.ServerScopeList = make(map[string]bool)
@@ -1351,7 +1351,9 @@ func (repman *ReplicationManager) InitConfig(conf config.Config) {
 
 	githelper.Logrus = repman.Logrus
 
-	repman.InitGitConfig(&conf)
+	if init_git {
+		repman.InitGitConfig(&conf)
+	}
 
 	//add config from cluster to the config map
 	for _, cluster := range repman.ClusterList {

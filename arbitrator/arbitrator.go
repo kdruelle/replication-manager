@@ -108,7 +108,7 @@ var arbitratorCmd = &cobra.Command{
 	Long:  `The arbitrator is used for false positive detection`,
 	Run: func(cmd *cobra.Command, args []string) {
 		RepMan = new(server.ReplicationManager)
-		RepMan.InitConfig(conf)
+		RepMan.InitConfig(conf, false)
 
 		if _, ok := RepMan.Confs["arbitrator"]; !ok {
 			log.Fatal("Could not find arbitrator configuration section")

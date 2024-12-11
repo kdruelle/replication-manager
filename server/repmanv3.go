@@ -471,7 +471,7 @@ func (s *ReplicationManager) SetActionForClusterSettings(ctx context.Context, in
 		if err = user.Granted(config.GrantClusterSettings); err != nil {
 			return nil, err
 		}
-		s.InitConfig(s.Conf)
+		s.InitConfig(s.Conf, true)
 		mycluster.ReloadConfig(s.Confs[in.Cluster.Name])
 
 	case v3.ClusterSetting_ADD_PROXY_TAG:

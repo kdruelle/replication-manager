@@ -85,7 +85,7 @@ For interacting with this daemon use,
 		RepMan.SetDefaultFlags(viper.GetViper())
 		RepMan.CommandLineFlag = GetCommandLineFlag(cmd)
 		//	RepMan.DefaultFlagMap = defaultFlagMap
-		RepMan.InitConfig(conf)
+		RepMan.InitConfig(conf, true)
 		RepMan.Run()
 	},
 	PostRun: func(cmd *cobra.Command, args []string) {
@@ -105,7 +105,7 @@ var configMergeCmd = &cobra.Command{
 		RepMan.SetDefaultFlags(viper.GetViper())
 		//		RepMan.DefaultFlagMap = defaultFlagMap
 
-		RepMan.InitConfig(conf)
+		RepMan.InitConfig(conf, false)
 		ImmFlagMap := RepMan.ImmuableFlagMaps[cfgGroup]
 		err := conf.MergeConfig(conf.WorkingDir, cfgGroup, ImmFlagMap, RepMan.DefaultFlagMap, conf.ConfigFile)
 		if err != nil {

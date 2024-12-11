@@ -2265,7 +2265,7 @@ func (repman *ReplicationManager) handlerMuxTests(w http.ResponseWriter, r *http
 func (repman *ReplicationManager) handlerMuxSettingsReload(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
-	repman.InitConfig(repman.Conf)
+	repman.InitConfig(repman.Conf, true)
 	mycluster := repman.getClusterByName(vars["clusterName"])
 	if mycluster != nil {
 		//mycluster.ReloadConfig(repman.Confs[vars["clusterName"]])
