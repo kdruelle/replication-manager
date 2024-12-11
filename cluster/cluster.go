@@ -570,6 +570,7 @@ func (cluster *Cluster) initScheduler() {
 }
 
 func (cluster *Cluster) Run() {
+	defer cluster.LogPanicToFile("cluster")
 	interval := time.Second
 
 	// createKeys do nothing yet
