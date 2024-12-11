@@ -1996,8 +1996,8 @@ func (repman *ReplicationManager) switchRepmanSetting(name string) error {
 				}
 				return err
 			}
-			repman.Conf.SwitchCloud18()
 		}
+		repman.Conf.SwitchCloud18()
 	case "cloud18-shared":
 		repman.Conf.SwitchCloud18Shared()
 	case "api-https-bind":
