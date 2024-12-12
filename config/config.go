@@ -891,10 +891,10 @@ type ServicePlan struct {
 	Infra         string  `json:"infra"`
 	Zone          string  `json:"zone"`
 	DC            string  `json:"dc"`
-	ResponseTime  float64 `json:"gti"`
-	RepairTime    float64 `json:"gtr"`
-	ProvisionTime float64 `json:"provtime"`
-	PromotionPct  float64 `json:"promo"`
+	ResponseTime  float64 `json:"gti,string"`
+	RepairTime    float64 `json:"gtr,string"`
+	ProvisionTime float64 `json:"provtime,string"`
+	PromotionPct  float64 `json:"promo,string"`
 	BP            float64 `json:"bp,string"`
 }
 
