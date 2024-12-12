@@ -78,6 +78,19 @@ export const setGlobalSetting = createAsyncThunk(
   }
 )
 
+export const reloadClustersPlan = createAsyncThunk('globalClusters/reloadClustersPlan',async ({}, thunkAPI) => {
+    try {
+      const { data, status } = await globalClustersService.reloadClustersPlan()
+      showSuccessBanner('All clusters plan reloaded!', status, thunkAPI)
+      return { data, status }
+    } catch (error) {
+      console.log('error::', error)
+      showErrorBanner('Failed to reload clusters plans!', error, thunkAPI)
+      handleError(error, thunkAPI)
+    }
+  }
+)
+
 const initialState = {
   loading: false,
   error: null,

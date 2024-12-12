@@ -111,6 +111,10 @@ func (repman *ReplicationManager) apiClusterProtectedHandler(router *mux.Router)
 		negroni.HandlerFunc(repman.validateTokenMiddleware),
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxSetSettings)),
 	))
+	router.Handle("/api/clusters/settings/actions/reload-clusters-plans", negroni.New(
+		negroni.HandlerFunc(repman.validateTokenMiddleware),
+		negroni.Wrap(http.HandlerFunc(repman.handlerMuxReloadPlans)),
+	))
 	router.Handle("/api/clusters/{clusterName}/settings/actions/set-cron/{settingName}/{settingValue:.*}", negroni.New(
 		negroni.HandlerFunc(repman.validateTokenMiddleware),
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxSetCron)),
@@ -2075,6 +2079,36 @@ func (repman *ReplicationManager) switchServerSetting(user string, URL string, n
 	}
 
 	return nil
+}
+
+func (repman *ReplicationManager) handlerMuxReloadPlans(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	var mycluster *cluster.Cluster
+	for _, v := range repman.Clusters {
+		if v != nil {
+			mycluster = v
+			break
+		}
+	}
+
+	if mycluster != nil {
+		valid, user := repman.IsValidClusterACL(r, mycluster)
+		if valid {
+			for _, cl := range repman.Clusters {
+				//Don't print error with no valid ACL
+				if cl.IsURLPassACL(user, r.URL.Path, false) {
+					cl.SetServicePlan(cl.Conf.ProvServicePlan)
+				}
+			}
+		} else {
+			http.Error(w, fmt.Sprintf("User doesn't have required ACL for global setting: %s", r.URL.Path), 403)
+			return
+		}
+	} else {
+		http.Error(w, "No cluster", 500)
+		return
+	}
 }
 
 func (repman *ReplicationManager) handlerMuxAddTag(w http.ResponseWriter, r *http.Request) {

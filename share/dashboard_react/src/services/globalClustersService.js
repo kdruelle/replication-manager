@@ -6,7 +6,8 @@ export const globalClustersService = {
   getMonitoredData,
   switchGlobalSetting,
   setGlobalSetting,
-  addCluster
+  addCluster,
+  reloadClustersPlan
 }
 
 function getClusterPeers(baseURL) {
@@ -31,4 +32,8 @@ function setGlobalSetting(setting, value) {
 
 function addCluster(clusterName, formdata) {
   return getApi().post(`clusters/actions/add/${clusterName}`, formdata)
+}
+
+function reloadClustersPlan() {
+  return getApi().get(`clusters/settings/actions/reload-clusters-plans`)
 }

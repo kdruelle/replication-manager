@@ -1294,7 +1294,7 @@ func (cluster *Cluster) SetServicePlanInfos(theplan string) error {
 			return nil
 		}
 	}
-	cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlErr, "Service plan not found %s", theplan)
+	cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlErr, "Service plan not found %s", theplan)
 	return errors.New("Plan not found in repository")
 }
 
@@ -1303,13 +1303,13 @@ func (cluster *Cluster) SetServicePlan(theplan string) error {
 
 	for _, plan := range plans {
 		if plan.Plan == theplan {
-			cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "Attaching service plan %s", theplan)
+			cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlInfo, "Attaching service plan %s", theplan)
 			srvcount, err := strconv.Atoi(string(strings.TrimPrefix(theplan, "x")[0]))
 			if err != nil {
-				cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "Can't add database monitor error %s ", err)
+				cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlInfo, "Can't add database monitor error %s ", err)
 			}
 			srvcountnow := len(strings.Split(cluster.Conf.Hosts, ","))
-			cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "Count exiting databases monitor: %d,", srvcountnow)
+			cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlInfo, "Count exiting databases monitor: %d,", srvcountnow)
 			if !cluster.IsProvision {
 
 				if cluster.Conf.User == "" {

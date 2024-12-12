@@ -1,19 +1,34 @@
 import { Flex, Link } from '@chakra-ui/react'
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import styles from './styles.module.scss'
 import RMSwitch from '../../components/RMSwitch'
 import { useDispatch } from 'react-redux'
 import TableType2 from '../../components/TableType2'
-import { switchGlobalSetting, setGlobalSetting } from '../../redux/globalClustersSlice'
+import { switchGlobalSetting, setGlobalSetting, reloadClustersPlan } from '../../redux/globalClustersSlice'
 import TextForm from '../../components/TextForm'
+import RMIconButton from '../../components/RMIconButton'
+import { HiRefresh } from 'react-icons/hi'
+import ConfirmModal from '../../components/Modals/ConfirmModal'
 
 function CloudSettings({ config }) {
   const dispatch = useDispatch()
+  const [title, setTitle] = useState("")
   const errInvalidGrant = (err) => { if (err?.message?.includes("invalid_grant")) err.message = <>{err.message}. <Link href="https://gitlab.signal18.io/users/sign_up" target='_blank'><u>Click here to Sign Up</u></Link></>; return err }
+
+
+  const openConfirmModal = () => {
+    setIsConfirmModalOpen(true)
+  }
+
+  const closeConfirmModal = () => {
+    setIsConfirmModalOpen(false)
+  }
+
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false)
 
   useEffect(() => {
     // Re-render when the config prop changes
-  }, [config]);
+  }, [config, title]);
 
   const dataObject = [
     {
@@ -98,11 +113,30 @@ function CloudSettings({ config }) {
         />
       )
     },
+    {
+      key: 'Reload All Clusters Plans',
+      value: (
+        <RMIconButton icon={HiRefresh} onClick={() => { setTitle('Confirm reload all clusters plans?'); openConfirmModal() }}/>
+      )
+    },
   ]
 
   return (
     <Flex justify='space-between' gap='0'>
       <TableType2 dataArray={dataObject} className={styles.table} />
+      {isConfirmModalOpen && (
+        <ConfirmModal
+          isOpen={isConfirmModalOpen}
+          closeModal={() => {
+            closeConfirmModal()
+          }}
+          title={title}
+          onConfirmClick={() => {
+            dispatch(reloadClustersPlan({}))
+            closeConfirmModal()
+          }}
+        />
+      )}
     </Flex>
   )
 }
