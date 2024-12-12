@@ -2302,13 +2302,13 @@ func (repman *ReplicationManager) InitServicePlans(u *user.User) error {
 	if err != nil {
 		repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGeneral, config.LvlErr, "GetServicePlans download csv  %s", err)
 
-		if repman.Conf.Test {
-			// copy from share if not downloadable
-			if _, err := os.Stat(repman.Conf.WorkingDir + "/serviceplan.csv"); os.IsNotExist(err) {
+		if _, err := os.Stat(repman.Conf.WorkingDir + "/serviceplan.csv"); os.IsNotExist(err) {
+			if repman.Conf.Test {
+				// copy from share if not downloadable
 				misc.CopyFile(repman.Conf.ShareDir+"/serviceplan.csv", repman.Conf.WorkingDir+"/serviceplan.csv")
+			} else {
+				misc.CopyEmbedFSFile("serviceplan.csv", repman.Conf.WorkingDir+"/serviceplan.csv")
 			}
-		} else {
-			misc.CopyEmbedFSFile("serviceplan.csv", repman.Conf.WorkingDir+"/serviceplan.csv")
 		}
 
 		err = misc.ConvertCSVtoJSON(repman.Conf.WorkingDir+"/serviceplan.csv", repman.Conf.WorkingDir+"/serviceplan.json", ",")
