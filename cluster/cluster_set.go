@@ -482,15 +482,19 @@ func (cluster *Cluster) SetCloud18InfraGeoLocalizations(value string) {
 	cluster.Conf.Cloud18InfraGeoLocalizations = value
 }
 
-func (cluster *Cluster) SetCloud18SlaResponseTime(value string) {
+func (cluster *Cluster) SetCloud18SlaResponseTime(value float64) {
 	cluster.Conf.Cloud18SlaResponseTime = value
 }
 
-func (cluster *Cluster) SetCloud18SlaRepairTime(value string) {
+func (cluster *Cluster) SetCloud18SlaRepairTime(value float64) {
 	cluster.Conf.Cloud18SlaRepairTime = value
 }
 
-func (cluster *Cluster) SetCloud18SlaProvisionTime(value string) {
+func (cluster *Cluster) SetCloud18SlaProvisionTime(value float64) {
+	cluster.Conf.Cloud18SlaProvisionTime = value
+}
+
+func (cluster *Cluster) SetCloud18PromotionPct(value float64) {
 	cluster.Conf.Cloud18SlaProvisionTime = value
 }
 
@@ -1290,6 +1294,7 @@ func (cluster *Cluster) SetServicePlanInfos(theplan string) error {
 			cluster.SetCloud18SlaResponseTime(plan.ResponseTime)
 			cluster.SetCloud18SlaRepairTime(plan.RepairTime)
 			cluster.SetCloud18SlaProvisionTime(plan.ProvisionTime)
+			cluster.SetCloud18PromotionPct(plan.PromotionPct)
 			cluster.Save()
 			return nil
 		}
