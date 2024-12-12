@@ -63,6 +63,7 @@ type Config struct {
 	ConfDirExtra                              string                 `scope:"server" mapstructure:"monitoring-confdir-extra" toml:"monitoring-confdir-extra" json:"monitoringConfdirExtra"`
 	ConfRewrite                               bool                   `scope:"server" mapstructure:"monitoring-save-config" toml:"monitoring-save-config" json:"monitoringSaveConfig"`
 	ConfRestoreOnStart                        bool                   `scope:"server" mapstructure:"monitoring-restore-config-on-start"  toml:"monitoring-restore-config-on-start" json:"monitoringRestoreConfigOnStart"`
+	MonitoringMergeConfigOnStart              bool                   `scope:"server" mapstructure:"monitoring-merge-config-on-start"  toml:"monitoring-merge-config-on-start" json:"monitoringMergeConfigOnStart"`
 	MonitoringSSLCert                         string                 `scope:"server" mapstructure:"monitoring-ssl-cert" toml:"monitoring-ssl-cert" json:"monitoringSSLCert"`
 	MonitoringSSLKey                          string                 `scope:"server" mapstructure:"monitoring-ssl-key" toml:"monitoring-ssl-key" json:"monitoringSSLKey"`
 	MonitoringKeyPath                         string                 `scope:"server" mapstructure:"monitoring-key-path" toml:"monitoring-key-path" json:"monitoringKeyPath"`
@@ -2225,28 +2226,29 @@ func (conf Config) MergeConfig(path string, name string, ImmMap map[string]inter
 	}
 
 	if _, err := os.Stat(dirPath + "/overwrite.toml"); os.IsNotExist(err) {
-		log.WithFields(log.Fields{"cluster": "none", "type": "log", "module": "config"}).Infof("No monitoring saved config found %s", path+"/"+name+"/overwrite.toml")
+		log.WithFields(log.Fields{"cluster": "none", "type": "log", "module": "config"}).Infof("No monitoring saved config found %s", dirPath+"/overwrite.toml")
 		return err
 	} else {
-		log.WithFields(log.Fields{"cluster": "none", "type": "log", "module": "config"}).Infof("Parsing saved config from working directory %s", path+"/"+name+"/overwrite.toml")
-
+		log.WithFields(log.Fields{"cluster": "none", "type": "log", "module": "config"}).Infof("Parsing saved config from working directory %s", dirPath+"/overwrite.toml")
 		dynRead.AddConfigPath(dirPath)
 		err := dynRead.ReadInConfig()
 		if err != nil {
 			fmt.Printf("Could not read in config : " + dirPath + "/overwrite.toml")
 		}
-		dynRead = dynRead.Sub("overwrite-" + name)
-		//fmt.Printf("%v\n", dynRead.AllSettings())
-		for _, f := range dynRead.AllKeys() {
-			v := dynRead.Get(f)
-			_, ok := ImmMap[f]
-			if ok && v != nil && v != ImmMap[f] {
-				_, ok := DefMap[f]
-				if ok && v != DefMap[f] {
-					dynMap[f] = dynRead.Get(f)
-				}
-				if !ok {
-					dynMap[f] = dynRead.Get(f)
+
+		dynSub := dynRead.Sub("overwrite-" + name)
+		if dynSub != nil {
+			for _, f := range dynSub.AllKeys() {
+				v := dynSub.Get(f)
+				_, ok := ImmMap[f]
+				if ok && v != nil && v != ImmMap[f] {
+					_, ok := DefMap[f]
+					if ok && v != DefMap[f] {
+						dynMap[f] = dynSub.Get(f)
+					}
+					if !ok {
+						dynMap[f] = dynSub.Get(f)
+					}
 				}
 			}
 		}

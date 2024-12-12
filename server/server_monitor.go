@@ -19,6 +19,7 @@ import (
 	mysqllog "log"
 
 	"github.com/go-sql-driver/mysql"
+	"github.com/signal18/replication-manager/config"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/spf13/cobra"
@@ -85,6 +86,18 @@ For interacting with this daemon use,
 		RepMan.SetDefaultFlags(viper.GetViper())
 		RepMan.CommandLineFlag = GetCommandLineFlag(cmd)
 		//	RepMan.DefaultFlagMap = defaultFlagMap
+
+		err := RepMan.MergeOnStart(conf)
+		if err != nil {
+			if err.Error() == ConfigMergeInactive {
+				RepMan.LogModulePrintf(RepMan.Conf.Verbose, config.ConstLogModGeneral, config.LvlInfo, ConfigMergeInactive)
+			} else {
+				RepMan.LogModulePrintf(RepMan.Conf.Verbose, config.ConstLogModGeneral, config.LvlErr, err.Error())
+			}
+		} else {
+			RepMan.LogModulePrintf(RepMan.Conf.Verbose, config.ConstLogModGeneral, config.LvlInfo, "Success of the configuration merge command!")
+		}
+
 		RepMan.InitConfig(conf, true)
 		RepMan.Run()
 	},

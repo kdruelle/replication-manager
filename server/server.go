@@ -154,6 +154,8 @@ const (
 	ConstMonitorStandby string = "S"
 )
 
+const ConfigMergeInactive string = "monitoring-merge-config-on-start is inactive"
+
 type authTry struct {
 	User string    `json:"username"`
 	Try  int       `json:"try"`
@@ -298,6 +300,8 @@ func (repman *ReplicationManager) AddFlags(flags *pflag.FlagSet, conf *config.Co
 
 	// Important flags for monitoring
 	flags.BoolVar(&conf.ConfRewrite, "monitoring-save-config", true, "Save configuration changes to <monitoring-datadir>/<cluster_name> ")
+	flags.BoolVar(&conf.ConfRestoreOnStart, "monitoring-restore-config-on-start", false, "Wipe working directory and restore config")
+	flags.BoolVar(&conf.MonitoringMergeConfigOnStart, "monitoring-merge-config-on-start", false, "Merge configuration changes to source config.toml file (/etc or other source location) ")
 	flags.Int64Var(&conf.MonitoringTicker, "monitoring-ticker", 2, "Monitoring interval in seconds")
 
 	//not working so far
@@ -850,9 +854,6 @@ func (repman *ReplicationManager) AddFlags(flags *pflag.FlagSet, conf *config.Co
 	flags.Float64Var(&conf.Cloud18MonthlySysopsCost, "cloud18-monthly-sysops-cost", 0, "Monthly sysops cost")
 	flags.Float64Var(&conf.Cloud18MonthlyDbopsCost, "cloud18-monthly-dbops-cost", 0, "Monthly dbops cost")
 	flags.StringVar(&conf.Cloud18CostCurrency, "cloud18-cost-currency", "", "Cost currency")
-
-	flags.BoolVar(&conf.ConfRestoreOnStart, "monitoring-restore-config-on-start", false, "Wipe working directory and restore config")
-
 	if WithProvisioning == "ON" {
 		flags.StringVar(&conf.ProvDatadirVersion, "prov-db-datadir-version", "10.2", "Empty datadir to deploy for localtest")
 		flags.StringVar(&conf.ProvDiskSystemSize, "prov-db-disk-system-size", "2", "Disk in g for micro service VM")
@@ -1030,6 +1031,39 @@ func (repman *ReplicationManager) initFS(conf config.Config) error {
 		}
 	}
 
+	return nil
+}
+
+func (repman *ReplicationManager) MergeOnStart(conf config.Config) error {
+	repman.InitConfig(conf, false)
+
+	if !repman.Conf.MonitoringMergeConfigOnStart {
+		return fmt.Errorf(ConfigMergeInactive)
+	}
+
+	ImmFlagMap := repman.ImmuableFlagMaps["default"]
+	configPath := repman.Conf.ConfigFile
+	if configPath == "" {
+		if conf.WithTarball == "ON" {
+			configPath = "/usr/local/replication-manager/etc/config.toml"
+		} else if conf.WithEmbed == "ON" {
+			configPath = repman.Conf.ConfDirExtra + "/config.toml"
+		} else {
+			configPath = "/etc/replication-manager/config.toml"
+		}
+	}
+
+	if err := repman.Conf.MergeConfig(repman.Conf.WorkingDir, "default", ImmFlagMap, repman.DefaultFlagMap, configPath); err != nil {
+		return fmt.Errorf("Merge failed at default conf. Path: %s. Error: %v", configPath, err)
+	}
+
+	for _, clusterName := range repman.ClusterList {
+		configPath = repman.Conf.ClusterConfigPath + "/" + clusterName + ".toml"
+		ImmFlagMap = repman.ImmuableFlagMaps[clusterName]
+		if err := repman.Conf.MergeConfig(repman.Conf.WorkingDir, clusterName, ImmFlagMap, repman.DefaultFlagMap, configPath); err != nil {
+			return fmt.Errorf("Merge failed at cluster %s conf. Path: %s. Error: %v", clusterName, configPath, err)
+		}
+	}
 	return nil
 }
 
