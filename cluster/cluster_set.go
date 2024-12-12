@@ -462,6 +462,10 @@ func (cluster *Cluster) SetCloud18InfraCPUModel(value string) {
 	cluster.Conf.Cloud18InfraCPUModel = value
 }
 
+func (cluster *Cluster) SetCloud18InfraCPUFreq(value string) {
+	cluster.Conf.Cloud18InfraCPUFreq = value
+}
+
 func (cluster *Cluster) SetCloud18InfraDescription(value string) {
 	cluster.Conf.Cloud18InfraDescription = value
 }
@@ -476,6 +480,18 @@ func (cluster *Cluster) SetCloud18InfraPublicBandwidth(value float64) {
 
 func (cluster *Cluster) SetCloud18InfraGeoLocalizations(value string) {
 	cluster.Conf.Cloud18InfraGeoLocalizations = value
+}
+
+func (cluster *Cluster) SetCloud18SlaResponseTime(value string) {
+	cluster.Conf.Cloud18SlaResponseTime = value
+}
+
+func (cluster *Cluster) SetCloud18SlaRepairTime(value string) {
+	cluster.Conf.Cloud18SlaRepairTime = value
+}
+
+func (cluster *Cluster) SetCloud18SlaProvisionTime(value string) {
+	cluster.Conf.Cloud18SlaProvisionTime = value
 }
 
 func (cluster *Cluster) SetTraffic(traffic bool) {
@@ -1265,11 +1281,15 @@ func (cluster *Cluster) SetServicePlanInfos(theplan string) error {
 			cluster.SetCloud18MonthlySysopsCost(plan.SysCost)
 			cluster.SetCloud18MonthlyDbopsCost(plan.DbaCost)
 			cluster.SetCloud18CostCurrency(plan.Devise)
+			cluster.SetCloud18InfraCPUFreq(plan.CPUFreq)
 			cluster.SetCloud18InfraCPUModel(plan.CPU)
 			cluster.SetCloud18InfraDescription(plan.Infra)
 			cluster.SetCloud18InfraDataCenters(plan.DC)
 			cluster.SetCloud18InfraPublicBandwidth(plan.BP)
 			cluster.SetCloud18InfraGeoLocalizations(plan.Zone)
+			cluster.SetCloud18SlaResponseTime(plan.ResponseTime)
+			cluster.SetCloud18SlaRepairTime(plan.RepairTime)
+			cluster.SetCloud18SlaProvisionTime(plan.ProvisionTime)
 			cluster.Save()
 			return nil
 		}
@@ -1278,21 +1298,19 @@ func (cluster *Cluster) SetServicePlanInfos(theplan string) error {
 	return errors.New("Plan not found in repository")
 }
 
-
-
 func (cluster *Cluster) SetServicePlan(theplan string) error {
 	plans := cluster.GetServicePlans()
 
 	for _, plan := range plans {
 		if plan.Plan == theplan {
-				cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "Attaching service plan %s", theplan)
-				srvcount, err := strconv.Atoi(string(strings.TrimPrefix(theplan, "x")[0]))
-				if err != nil {
-					cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "Can't add database monitor error %s ", err)
-				}
-				srvcountnow:=len(strings.Split(cluster.Conf.Hosts,","))
-				cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "Count exiting databases monitor: %d,"  ,srvcountnow)
-				if !cluster.IsProvision   {
+			cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "Attaching service plan %s", theplan)
+			srvcount, err := strconv.Atoi(string(strings.TrimPrefix(theplan, "x")[0]))
+			if err != nil {
+				cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "Can't add database monitor error %s ", err)
+			}
+			srvcountnow := len(strings.Split(cluster.Conf.Hosts, ","))
+			cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "Count exiting databases monitor: %d,", srvcountnow)
+			if !cluster.IsProvision {
 
 				if cluster.Conf.User == "" {
 					cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "Settting default database root credential to admin:repman ")
@@ -1309,20 +1327,20 @@ func (cluster *Cluster) SetServicePlan(theplan string) error {
 					for i := 1; i <= srvcount; i++ {
 						cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "'%s' '%s'", cluster.Conf.ProvOrchestrator, config.ConstOrchestratorLocalhost)
 						if i <= srvcountnow {
-							 hosts = append(hosts, strings.Split(cluster.Conf.Hosts,",")[i])
+							hosts = append(hosts, strings.Split(cluster.Conf.Hosts, ",")[i])
 						} else {
-  						if cluster.GetOrchestrator() == config.ConstOrchestratorLocalhost {
-	  						port, err := cluster.LocalhostGetFreePort()
-		  					if err != nil {
-			  					cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlErr, "Adding DB monitor on 127.0.0.1 %s", err)
-				  			} else {
-					  			cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "Adding DB monitor 127.0.0.1:%s", port)
-						  	}
-							  hosts = append(hosts, "127.0.0.1:"+port)
-						  } else if cluster.GetOrchestrator() != config.ConstOrchestratorOnPremise {
-					  		hosts = append(hosts, "db"+strconv.Itoa(i))
-						  }
-					  }
+							if cluster.GetOrchestrator() == config.ConstOrchestratorLocalhost {
+								port, err := cluster.LocalhostGetFreePort()
+								if err != nil {
+									cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlErr, "Adding DB monitor on 127.0.0.1 %s", err)
+								} else {
+									cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlInfo, "Adding DB monitor 127.0.0.1:%s", port)
+								}
+								hosts = append(hosts, "127.0.0.1:"+port)
+							} else if cluster.GetOrchestrator() != config.ConstOrchestratorOnPremise {
+								hosts = append(hosts, "db"+strconv.Itoa(i))
+							}
+						}
 					}
 					//	cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology,config.LvlErr, strings.Join(hosts, ","))
 					err = cluster.SetDbServerHosts(strings.Join(hosts, ","))
@@ -1417,9 +1435,6 @@ func (cluster *Cluster) SetServicePlan(theplan string) error {
 	cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTopology, config.LvlErr, "Service plan not found %s", theplan)
 	return errors.New("Plan not found in repository")
 }
-
-
-
 
 func (cluster *Cluster) SetProvNetCniCluster(value string) error {
 	cluster.Conf.ProvNetCNICluster = value

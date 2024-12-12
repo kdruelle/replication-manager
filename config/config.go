@@ -688,10 +688,14 @@ type Config struct {
 	Cloud18MonthlyDbopsCost                   float64                `mapstructure:"cloud18-monthly-dbops-cost"  toml:"cloud18-monthly-dbops-cost" json:"cloud18MonthlyDbopsCost"`
 	Cloud18CostCurrency                       string                 `mapstructure:"cloud18-cost-currency"  toml:"cloud18-cost-currency" json:"cloud18CostCurrency"`
 	Cloud18InfraCPUModel                      string                 `mapstructure:"cloud18-infra-cpu-model"  toml:"cloud18-infra-cpu-model" json:"cloud18InfraCpuModel"`
+	Cloud18InfraCPUFreq                       string                 `mapstructure:"cloud18-infra-cpu-freq"  toml:"cloud18-infra-cpu-freq" json:"cloud18InfraCpuFreq"`
 	Cloud18InfraDescription                   string                 `mapstructure:"cloud18-infra-description"  toml:"cloud18-infra-description" json:"cloud18InfraDescription"`
 	Cloud18InfraDataCenters                   string                 `mapstructure:"cloud18-infra-data-centers"  toml:"cloud18-infra-data-centers" json:"cloud18InfraDataCenters"`
 	Cloud18InfraPublicBandwidth               float64                `mapstructure:"cloud18-infra-public-bandwidth"  toml:"cloud18-infra-public-bandwidth" json:"cloud18InfraPublicBandwidth"`
 	Cloud18InfraGeoLocalizations              string                 `mapstructure:"cloud18-infra-geo-localizations"  toml:"cloud18-infra-geo-localizations" json:"cloud18InfraGeoLocalizations"`
+	Cloud18SlaResponseTime                    string                 `mapstructure:"cloud18-sla-response-time"  toml:"cloud18-sla-response-time" json:"cloud18SlaResponseTime"`
+	Cloud18SlaRepairTime                      string                 `mapstructure:"cloud18-sla-repair-time"  toml:"cloud18-sla-repair-time" json:"cloud18SlaRepairTime"`
+	Cloud18SlaProvisionTime                   string                 `mapstructure:"cloud18-sla-provision-time"  toml:"cloud18-sla-provision-time" json:"cloud18SlaProvisionTime"`
 	Cloud18OpenDbops                          bool                   `mapstructure:"cloud18-open-dbops"  toml:"cloud18-open-dbops" json:"cloud18OpenDbops"`
 	Cloud18SubscribedDbops                    bool                   `mapstructure:"cloud18-subscribed-dbops"  toml:"cloud18-subscribed-dbops" json:"cloud18SubscribedDbops"`
 	Cloud18OpenSysops                         bool                   `mapstructure:"cloud18-open-sysops"  toml:"cloud18-open-sysops" json:"cloud18OpenSysops"`
@@ -761,6 +765,7 @@ type PeerCluster struct {
 	Cloud18MonthlySysopsCost         float64  `json:"cloud18-monthly-sysops-cost,string"`
 	Cloud18MonthlyDbopsCost          float64  `json:"cloud18-monthly-dbops-cost,string"`
 	Cloud18CostCurrency              string   `json:"cloud18-cost-currency"`
+	Cloud18InfraCPUFreq              string   `json:"cloud18-infra-cpu-freq"`
 	Cloud18InfraCPUModel             string   `json:"cloud18-infra-cpu-model"`
 	Cloud18InfraGeoLocalizations     string   `json:"cloud18-infra-geo-localizations"`
 	Cloud18InfraPublicBandwidth      float64  `json:"cloud18-infra-public-bandwidth,string"`
@@ -771,6 +776,9 @@ type PeerCluster struct {
 	Cloud18DatabseWriteSrvRecord     string   `json:"cloud18-database-write-srv-record"`
 	Cloud18DatabseReadSrvRecord      string   `json:"cloud18-database-read-srv-record"`
 	Cloud18DatabseReadWriteSrvRecord string   `json:"cloud18-database-read-write-srv-record"`
+	Cloud18SlaResponseTime           string   `json:"cloud18-sla-response-time"`
+	Cloud18SlaRepairTime             string   `json:"cloud18-sla-repair-time"`
+	Cloud18SlaProvisionTime          string   `json:"cloud18-sla-provision-time"`
 }
 
 // Compliance created in OpenSVC collector and exported as JSON
@@ -862,25 +870,29 @@ const (
 )
 
 type ServicePlan struct {
-	Id           int     `json:"id,string"`
-	Plan         string  `json:"plan"`
-	DbMemory     int     `json:"dbmemory,string"`
-	DbCores      int     `json:"dbcores,string"`
-	DbDataSize   int     `json:"dbdatasize,string"`
-	DbSystemSize int     `json:"dbSystemSize,string"`
-	DbIops       int     `json:"dbiops,string"`
-	PrxDataSize  int     `json:"prxdatasize,string"`
-	PrxCores     int     `json:"prxcores,string"`
-	InfraCost    float64 `json:"infracost,string"`
-	LicenceCost  float64 `json:"licencecost,string"`
-	DbaCost      float64 `json:"dbacost,string"`
-	SysCost      float64 `json:"syscost,string"`
-	Devise       string  `json:"devise"`
-	CPU          string  `json:"cpu"`
-	Infra        string  `json:"infra"`
-	Zone         string  `json:"zone"`
-	DC           string  `json:"dc"`
-	BP           float64 `json:"bp,string"`
+	Id            int     `json:"id,string"`
+	Plan          string  `json:"plan"`
+	DbMemory      int     `json:"dbmemory,string"`
+	DbCores       int     `json:"dbcores,string"`
+	DbDataSize    int     `json:"dbdatasize,string"`
+	DbSystemSize  int     `json:"dbSystemSize,string"`
+	DbIops        int     `json:"dbiops,string"`
+	PrxDataSize   int     `json:"prxdatasize,string"`
+	PrxCores      int     `json:"prxcores,string"`
+	InfraCost     float64 `json:"infracost,string"`
+	LicenceCost   float64 `json:"licencecost,string"`
+	DbaCost       float64 `json:"dbacost,string"`
+	SysCost       float64 `json:"syscost,string"`
+	Devise        string  `json:"devise"`
+	CPU           string  `json:"cpu"`
+	CPUFreq       string  `json:"cpufreq"`
+	Infra         string  `json:"infra"`
+	Zone          string  `json:"zone"`
+	DC            string  `json:"dc"`
+	ResponseTime  string  `json:"gti"`
+	RepairTime    string  `json:"gtr"`
+	ProvisionTime string  `json:"provtime"`
+	BP            float64 `json:"bp,string"`
 }
 
 type DockerTag struct {

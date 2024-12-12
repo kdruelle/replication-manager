@@ -62,8 +62,8 @@ function PeerClusterList({ onLogin, mode }) {
           const domain = `${clusterItem['cloud18-domain']}`
           const subDomain = `${clusterItem['cloud18-sub-domain']}`
           const subDomainZone = ` ${clusterItem['cloud18-sub-domain-zone']}`
-          const cost = clusterItem['cloud18-monthly-infra-cost']*1+clusterItem['cloud18-monthly-license-cost']*1 + clusterItem['cloud18-monthly-sysops-cost']*1 + clusterItem['cloud18-monthly-dbops-cost']*1
-          const currency  = clusterItem['cloud18-cost-currency']
+          const cost = clusterItem['cloud18-monthly-infra-cost'] * 1 + clusterItem['cloud18-monthly-license-cost'] * 1 + clusterItem['cloud18-monthly-sysops-cost'] * 1 + clusterItem['cloud18-monthly-dbops-cost'] * 1
+          const currency = clusterItem['cloud18-cost-currency']
           const price = `${cost} ${currency}/Month`
 
           const dataObject = [
@@ -81,21 +81,24 @@ function PeerClusterList({ onLogin, mode }) {
             },
             { key: 'Service Plan', value: clusterItem['prov-service-plan'] },
             { key: 'Geo Zone', value: clusterItem['cloud18-infra-geo-localizations'] },
-            { key: 'Memory', value: clusterItem['prov-db-memory']/1024 + "GB"},
+            { key: 'Memory', value: clusterItem['prov-db-memory'] / 1024 + "GB" },
             { key: 'IOps', value: clusterItem['prov-db-disk-iops'] },
-            { key: 'Disk', value: clusterItem['prov-db-disk-size']+ "GB" },
-            { key: 'CPU Core', value: clusterItem['prov-db-cpu-cores']},
+            { key: 'Disk', value: clusterItem['prov-db-disk-size'] + "GB" },
+            { key: 'CPU Core', value: clusterItem['prov-db-cpu-cores'] },
             { key: 'CPU Type', value: clusterItem['cloud18-infra-cpu-model'] },
+            { key: 'CPU Frequency', value: clusterItem['cloud18-infra-cpu-freq'] },
             { key: 'Data Centers', value: clusterItem['cloud18-infra-data-centers'] },
-            { key: 'Public Bandwidth', value: clusterItem['cloud18-infra-public-bandwidth']/1024 +"Gbps"},
-            { key: 'Price', value: price  },
-            { key: 'Infrastructure', value: clusterItem['prov-orchestrator']  + " " + clusterItem['cloud18-platform-description'] },
-
+            { key: 'Public Bandwidth', value: clusterItem['cloud18-infra-public-bandwidth'] / 1024 + "Gbps" },
+            { key: 'Price', value: price },
+            { key: 'Infrastructure', value: clusterItem['prov-orchestrator'] + " " + clusterItem['cloud18-platform-description'] },
+            { key: "SLA Response Time", value: clusterItem['cloud18-sla-response-time'] },
+            { key: 'SLA Repair Time', value: clusterItem['cloud18-sla-repair-time'] },
+            { key: 'Provision Time', value: clusterItem['cloud18-sla-provision-time'] },
             /*  {
                 key: 'Share',
                 value: (
                   <HStack spacing='4'>
-                    {clusterItem['cloud18-shared'] ? (
+                    {clusterItem['cloud18-is-multi-dc'] ? (
                       <>
                         <CheckOrCrossIcon isValid={true} />
                         <Text>Yes</Text>
@@ -106,7 +109,6 @@ function PeerClusterList({ onLogin, mode }) {
                         <Text>No</Text>
                       </>
                     )}
-
                   </HStack>
                 )
               }*/
