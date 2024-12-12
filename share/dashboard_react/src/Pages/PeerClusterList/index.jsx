@@ -90,9 +90,9 @@ function PeerClusterList({ onLogin, mode }) {
             { key: 'CPU Freq', value: clusterItem['cloud18-infra-cpu-freq'] },
             { key: 'Data Centers', value: clusterItem['cloud18-infra-data-centers'] },
             { key: 'Public Bandwidth', value: clusterItem['cloud18-infra-public-bandwidth'] / 1024 + "Gbps" },
-            { key: 'Time To Response', value: clusterItem['cloud18-sla-response-time'] },
-            { key: 'Time To Repair', value: clusterItem['cloud18-sla-repair-time'] },
-            { key: 'Time To Provision', value: clusterItem['cloud18-sla-provision-time'] },
+            { key: 'Time To Response', value: clusterItem['cloud18-sla-response-time'] + "Hours" },
+            { key: 'Time To Repair', value: clusterItem['cloud18-sla-repair-time'] + "Hours" },
+            { key: 'Time To Provision', value: clusterItem['cloud18-sla-provision-time'] + "Hours" },
             { key: 'Infrastructure', value: clusterItem['prov-orchestrator'] + " " + clusterItem['cloud18-platform-description'] },
             /*  {
                 key: 'Share',
