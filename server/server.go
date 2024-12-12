@@ -2310,10 +2310,8 @@ func (repman *ReplicationManager) InitServicePlans(u *user.User) error {
 				misc.CopyEmbedFSFile("serviceplan.csv", repman.Conf.WorkingDir+"/serviceplan.csv")
 			}
 		}
-
-		err = misc.ConvertCSVtoJSON(repman.Conf.WorkingDir+"/serviceplan.csv", repman.Conf.WorkingDir+"/serviceplan.json", ",")
 	}
-
+	err = misc.ConvertCSVtoJSON(repman.Conf.WorkingDir+"/serviceplan.csv", repman.Conf.WorkingDir+"/serviceplan.json", ",")
 	if err != nil {
 		repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGeneral, config.LvlErr, "GetServicePlans ConvertCSVtoJSON %s", err)
 		return err
