@@ -11,6 +11,8 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/signal18/replication-manager/share"
 )
 
 func ChownR(path string, uid, gid int) error {
@@ -79,6 +81,51 @@ func CopyFile(src string, dst string) (err error) {
 	if err != nil {
 		return
 	}
+	err = os.Chmod(dst, si.Mode())
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+// CopyFile copies the contents of the file named src to the file named
+// by dst. The file will be created if it does not already exist. If the
+// destination file exists, all it's contents will be replaced by the contents
+// of the source file. The file mode will be copied from the source and
+// the copied data is synced/flushed to stable storage.
+func CopyEmbedFSFile(src, dst string) (err error) {
+	in, err := share.EmbededDbModuleFS.Open(src)
+	if err == nil {
+		return
+	}
+	defer in.Close()
+
+	si, err := in.Stat()
+	if err != nil {
+		return
+	}
+
+	out, err := os.Create(dst)
+	if err != nil {
+		return
+	}
+	defer func() {
+		if e := out.Close(); e != nil {
+			err = e
+		}
+	}()
+
+	_, err = io.Copy(out, in)
+	if err != nil {
+		return
+	}
+
+	err = out.Sync()
+	if err != nil {
+		return
+	}
+
 	err = os.Chmod(dst, si.Mode())
 	if err != nil {
 		return

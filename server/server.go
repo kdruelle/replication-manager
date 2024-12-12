@@ -252,11 +252,11 @@ func (repman *ReplicationManager) AddFlags(flags *pflag.FlagSet, conf *config.Co
 		//	initDeprecated() // not needed used alias in main
 	}
 	var usr string
-	var config string
+	var configPath string
 	//var pid string
 	flag.StringVar(&usr, "user", "", "help message")
 	//flag.StringVar(&pid, "pidfile", "", "help message")
-	flag.StringVar(&config, "config", "", "help message")
+	flag.StringVar(&configPath, "config", "", "help message")
 	flag.Parse()
 
 	if usr == "" {
@@ -933,8 +933,7 @@ func (repman *ReplicationManager) AddFlags(flags *pflag.FlagSet, conf *config.Co
 				dbConfig.SetConfigType("yaml")
 				file, err := os.ReadFile(conf.ProvOpensvcCollectorAccount)
 				if err != nil {
-					repman.Logrus.Errorf("Provide OpenSVC account file : %s", err)
-
+					repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGeneral, config.LvlErr, "Provide OpenSVC account file : %s", err)
 				}
 
 				dbConfig.ReadConfig(bytes.NewBuffer(file))
@@ -1016,16 +1015,16 @@ func (repman *ReplicationManager) initFS(conf config.Config) error {
 
 			file, err := etc.EmbededDbModuleFS.ReadFile("local/embed/config.toml")
 			if err != nil {
-				repman.Logrus.Errorf("failed opening file because: %s", err.Error())
+				repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGeneral, config.LvlErr, "failed opening file because: %s", err.Error())
 				return err
 			}
 			err = os.WriteFile(conf.ConfDir+"/config.toml", file, 0644) //remplacer nil par l'obj créer pour config.toml dans etc/local/embed
 			if err != nil {
-				repman.Logrus.Errorf("failed write file because: %s", err.Error())
+				repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGeneral, config.LvlErr, "failed write file because: %s", err.Error())
 				return err
 			}
 			if _, err := os.Stat(conf.BaseDir + "/config.toml"); os.IsNotExist(err) {
-				repman.Logrus.Errorf("failed create "+conf.ConfDirBackup+"config.toml file because: %s", err.Error())
+				repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGeneral, config.LvlErr, "failed create "+conf.ConfDirBackup+"config.toml file because: %s", err.Error())
 				return err
 			}
 		}
@@ -1140,7 +1139,7 @@ func (repman *ReplicationManager) InitConfig(conf config.Config, init_git bool) 
 			"file": fistRead.ConfigFileUsed(),
 		}).Debug("Using config file")
 	} else {
-		repman.Logrus.Errorf("Could not parse config file: %s", err)
+		repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGeneral, config.LvlErr, "Could not parse config file: %s", err)
 	}
 
 	//recup tous les param set dans le default (avec les lignes de commandes)
@@ -2115,9 +2114,9 @@ func (repman *ReplicationManager) HeartbeatPeerSplitBrain(peer string, bcksplitb
 	/*	Host, _ := misc.SplitHostPort(peer)
 		ha, err := net.LookupHost(Host)
 		if err != nil {
-			repman.Logrus.Errorf("Heartbeat: Resolv %s DNS err: %s", Host, err)
+			repman.LogModulePrintf(repman.Conf.Verbose,config.ConstLogModGeneral,config.LvlErr,"Heartbeat: Resolv %s DNS err: %s", Host, err)
 		} else {
-			repman.Logrus.Errorf("Heartbeat: Resolv %s DNS say: %s", Host, ha[0])
+			repman.LogModulePrintf(repman.Conf.Verbose,config.ConstLogModGeneral,config.LvlErr,"Heartbeat: Resolv %s DNS say: %s", Host, ha[0])
 		}
 	*/
 
@@ -2277,19 +2276,19 @@ func (repman *ReplicationManager) DownloadFile(url string, file string) error {
 	}
 	response, err := client.Get(url)
 	if err != nil {
-		repman.Logrus.Errorf("Get File %s to %s : %s", url, file, err)
+		repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGeneral, config.LvlErr, "Get File %s to %s : %s", url, file, err)
 		return err
 	}
 	defer response.Body.Close()
 	contents, err := io.ReadAll(response.Body)
 	if err != nil {
-		repman.Logrus.Errorf("Read File %s to %s : %s", url, file, err)
+		repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGeneral, config.LvlErr, "Read File %s to %s : %s", url, file, err)
 		return err
 	}
 
 	err = os.WriteFile(file, contents, 0644)
 	if err != nil {
-		repman.Logrus.Errorf("Write File %s to %s : %s", url, file, err)
+		repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGeneral, config.LvlErr, "Write File %s to %s : %s", url, file, err)
 		return err
 	}
 	return nil
@@ -2297,27 +2296,26 @@ func (repman *ReplicationManager) DownloadFile(url string, file string) error {
 
 func (repman *ReplicationManager) InitServicePlans(u *user.User) error {
 	var err error
-	if !repman.Conf.Test {
+	repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGeneral, config.LvlInfo, "Downloading new service plan...")
 
-		if _, err := os.Stat(repman.Conf.WorkingDir + "/serviceplan.csv"); os.IsNotExist(err) {
-			misc.CopyFile(repman.Conf.ShareDir+"/serviceplan.csv", repman.Conf.WorkingDir+"/serviceplan.csv")
-		}
-		err = misc.ConvertCSVtoJSON(repman.Conf.WorkingDir+"/serviceplan.csv", repman.Conf.WorkingDir+"/serviceplan.json", ",", repman.Conf.Test)
-	} else {
-		err = repman.DownloadFile(repman.Conf.ProvServicePlanRegistry, repman.Conf.WorkingDir+"/serviceplan.csv")
-		if err != nil {
-			repman.Logrus.Errorf("GetServicePlans download csv  %s", err)
+	err = repman.DownloadFile(repman.Conf.ProvServicePlanRegistry, repman.Conf.WorkingDir+"/serviceplan.csv")
+	if err != nil {
+		repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGeneral, config.LvlErr, "GetServicePlans download csv  %s", err)
+
+		if repman.Conf.Test {
 			// copy from share if not downloadable
 			if _, err := os.Stat(repman.Conf.WorkingDir + "/serviceplan.csv"); os.IsNotExist(err) {
 				misc.CopyFile(repman.Conf.ShareDir+"/serviceplan.csv", repman.Conf.WorkingDir+"/serviceplan.csv")
 			}
+		} else {
+			misc.CopyEmbedFSFile("serviceplan.csv", repman.Conf.WorkingDir+"/serviceplan.csv")
 		}
-		err = misc.ConvertCSVtoJSON(repman.Conf.WorkingDir+"/serviceplan.csv", repman.Conf.WorkingDir+"/serviceplan.json", ",", true)
-		// copy from share if not downloadable
 
+		err = misc.ConvertCSVtoJSON(repman.Conf.WorkingDir+"/serviceplan.csv", repman.Conf.WorkingDir+"/serviceplan.json", ",")
 	}
+
 	if err != nil {
-		repman.Logrus.Errorf("GetServicePlans ConvertCSVtoJSON %s", err)
+		repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGeneral, config.LvlErr, "GetServicePlans ConvertCSVtoJSON %s", err)
 		return err
 	}
 
@@ -2328,7 +2326,7 @@ func (repman *ReplicationManager) InitServicePlans(u *user.User) error {
 
 	file, err := os.ReadFile(repman.Conf.WorkingDir + "/serviceplan.json")
 	if err != nil {
-		repman.Logrus.Errorf("failed opening file because: %s", err.Error())
+		repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGeneral, config.LvlErr, "failed opening file because: %s", err.Error())
 		return err
 	}
 
@@ -2338,7 +2336,7 @@ func (repman *ReplicationManager) InitServicePlans(u *user.User) error {
 	var m Message
 	err = json.Unmarshal([]byte(file), &m.Rows)
 	if err != nil {
-		repman.Logrus.Errorf("GetServicePlans  %s", err)
+		repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGeneral, config.LvlErr, "GetServicePlans  %s", err)
 		return err
 	}
 	repman.ServicePlans = m.Rows
