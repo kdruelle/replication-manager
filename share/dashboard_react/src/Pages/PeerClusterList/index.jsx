@@ -11,6 +11,7 @@ import CheckOrCrossIcon from '../../components/Icons/CheckOrCrossIcon'
 import CustomIcon from '../../components/Icons/CustomIcon'
 import TagPill from '../../components/TagPill'
 import PeerMenu from './PeerMenu'
+import { HiTag } from 'react-icons/hi'
 
 function PeerClusterList({ onLogin, mode }) {
   const dispatch = useDispatch()
@@ -63,8 +64,8 @@ function PeerClusterList({ onLogin, mode }) {
           const subDomain = `${clusterItem['cloud18-sub-domain']}`
           const subDomainZone = ` ${clusterItem['cloud18-sub-domain-zone']}`
           const cost = clusterItem['cloud18-monthly-infra-cost'] * 1 + clusterItem['cloud18-monthly-license-cost'] * 1 + clusterItem['cloud18-monthly-sysops-cost'] * 1 + clusterItem['cloud18-monthly-dbops-cost'] * 1
+          const amount = (cost * (100 - clusterItem['cloud18-promotion-pct'])) / 100
           const currency = clusterItem['cloud18-cost-currency']
-          const price = `${cost} ${currency}/Month`
 
           const dataObject = [
             {
@@ -81,7 +82,42 @@ function PeerClusterList({ onLogin, mode }) {
             },
             { key: 'Service Plan', value: clusterItem['prov-service-plan'] },
             { key: 'Geo Zone', value: clusterItem['cloud18-infra-geo-localizations'] },
-            { key: 'Price', value: price },
+            {
+              key: (
+                <HStack spacing='4'>
+                  {clusterItem['cloud18-promotion-pct'] && clusterItem['cloud18-promotion-pct'] > 0 ? (
+                    <>
+                      <Text>Price</Text>
+                      <CustomIcon color={"red"} icon={HiTag} />
+                    </>
+                  ) : (
+                    <>
+                      <Text>Price</Text>
+                    </>
+                  )}
+                </HStack>
+              ), value: (
+                <HStack spacing='4'>
+                  {clusterItem['cloud18-promotion-pct'] && clusterItem['cloud18-promotion-pct'] > 0 ? (
+                    <>
+                      <Text>
+                        <Text as={"span"} textColor="red.500" textDecorationColor="red.500" textDecoration="line-through">
+                          {cost.toFixed(2)}
+                        </Text>
+                        &nbsp;
+                        <Text as={"span"} fontWeight="bold">
+                        {amount.toFixed(2)} {currency}/Month
+                        </Text>
+                      </Text>
+                    </>
+                  ) : (
+                    <>
+                      <Text>{cost.toFixed(2)} {currency}/Month</Text>
+                    </>
+                  )}
+                </HStack>
+              )
+            },
             { key: 'Memory', value: clusterItem['prov-db-memory'] / 1024 + "GB" },
             { key: 'IOps', value: clusterItem['prov-db-disk-iops'] },
             { key: 'Disk', value: clusterItem['prov-db-disk-size'] + "GB" },
@@ -121,13 +157,11 @@ function PeerClusterList({ onLogin, mode }) {
                 width={'400px'}
                 header={
                   <HStack
-                    as='button'
                     className={styles.btnHeading}>
                     <CustomIcon icon={AiOutlineCluster} />
                     <span className={styles.cardHeaderText}>{headerText}</span>
 
                     <PeerMenu mode={mode} onLogin={onLogin} colorScheme='blue' clusterItem={clusterItem} className={styles.btnAddUser} labelClassName={styles.rowLabel} valueClassName={styles.rowValue} />
-
                   </HStack>
                 }
                 body={
