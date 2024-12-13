@@ -495,7 +495,7 @@ func (cluster *Cluster) SetCloud18SlaProvisionTime(value float64) {
 }
 
 func (cluster *Cluster) SetCloud18PromotionPct(value float64) {
-	cluster.Conf.Cloud18SlaProvisionTime = value
+	cluster.Conf.Cloud18PromotionPct = value
 }
 
 func (cluster *Cluster) SetTraffic(traffic bool) {
