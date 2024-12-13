@@ -158,7 +158,7 @@ function resetSLA(clusterName, baseURL) {
 }
 
 function toggleTraffic(clusterName, baseURL) {
-  return getApi(baseURL).get(`clusters/${clusterName}/actions/switch/database-heartbeat`)
+  return getApi(baseURL).get(`clusters/${clusterName}/settings/actions/switch/database-heartbeat`)
 }
 
 function addServer(clusterName, host, port, dbType, baseURL) {
