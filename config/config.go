@@ -879,7 +879,7 @@ type ServicePlan struct {
 	DbMemory      int     `json:"dbmemory,string"`
 	DbCores       int     `json:"dbcores,string"`
 	DbDataSize    int     `json:"dbdatasize,string"`
-	DbSystemSize  int     `json:"dbSystemSize,string"`
+	DbSystemSize  int     `json:"dbsystemsize,string"`
 	DbIops        int     `json:"dbiops,string"`
 	PrxDataSize   int     `json:"prxdatasize,string"`
 	PrxCores      int     `json:"prxcores,string"`
@@ -889,7 +889,7 @@ type ServicePlan struct {
 	SysCost       float64 `json:"syscost,string"`
 	Devise        string  `json:"devise"`
 	CPU           string  `json:"cpu"`
-	CPUFreq       string  `json:"cpufreq"`
+	CPUFreq       string  `json:"dbcpufreq"`
 	Infra         string  `json:"infra"`
 	Zone          string  `json:"zone"`
 	DC            string  `json:"dc"`
