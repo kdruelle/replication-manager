@@ -382,12 +382,12 @@ function checksumTable(clusterName, schema, table, baseURL) {
 //#endregion Database service APIs
 
 //#region Test run APIs
-function runSysbench(clusterName, baseURL) {
-  return getApi(baseURL).get(`clusters/${clusterName}/actions/sysbench`)
+function runSysbench(clusterName, threads, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/actions/sysbench?threads=${threads}`)
 }
 
-function runRegressionTests(clusterName, baseURL) {
-  return getApi(baseURL).get(`clusters/${clusterName}/actions/regression-tests`)
+function runRegressionTests(clusterName, testName, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/tests/actions/run/${testName}`)
 }
 //#endregion Test run APIs
 
