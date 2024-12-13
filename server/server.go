@@ -1729,13 +1729,7 @@ func (repman *ReplicationManager) LimitPrivileges() {
 	}
 }
 
-func (repman *ReplicationManager) Run() error {
-	var err error
-
-	// Defer to recover and log panics
-	defer repman.LogPanicToFile()
-	repman.globalScheduler = cron.New()
-
+func (repman *ReplicationManager) GetExpectedUser() *user.User {
 	ExpectedUser := repman.OsUser
 
 	if repman.OsUser.Uid == "0" && repman.Conf.MonitoringSystemUser != "" {
@@ -1744,6 +1738,18 @@ func (repman *ReplicationManager) Run() error {
 			ExpectedUser = u
 		}
 	}
+
+	return ExpectedUser
+}
+
+func (repman *ReplicationManager) Run() error {
+	var err error
+
+	// Defer to recover and log panics
+	defer repman.LogPanicToFile()
+	repman.globalScheduler = cron.New()
+
+	ExpectedUser := repman.GetExpectedUser()
 
 	repman.Version = Version
 	repman.Fullversion = FullVersion
@@ -1824,7 +1830,7 @@ func (repman *ReplicationManager) Run() error {
 	loglen := repman.termlength - 9 - (len(strings.Split(repman.Conf.Hosts, ",")) * 3)
 	repman.tlog = s18log.NewTermLog(loglen)
 	repman.Logs = s18log.NewHttpLog(80)
-	repman.InitServicePlans(ExpectedUser)
+	repman.InitServicePlans()
 	repman.ServiceOrchestrators = repman.Conf.GetOrchestratorsProv()
 	repman.InitGrants()
 	repman.InitRoles()
@@ -2297,7 +2303,8 @@ func (repman *ReplicationManager) DownloadFile(url string, file string) error {
 	return nil
 }
 
-func (repman *ReplicationManager) InitServicePlans(u *user.User) error {
+func (repman *ReplicationManager) InitServicePlans() error {
+
 	var err error
 	repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGeneral, config.LvlInfo, "Downloading new service plan...")
 
@@ -2319,6 +2326,8 @@ func (repman *ReplicationManager) InitServicePlans(u *user.User) error {
 		repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGeneral, config.LvlErr, "GetServicePlans ConvertCSVtoJSON %s", err)
 		return err
 	}
+
+	u := repman.GetExpectedUser()
 
 	if repman.OsUser.Uid == "0" && u.Uid != "0" {
 		exec.Command("chown", fmt.Sprintf("%s:%s", u.Uid, u.Gid), repman.Conf.WorkingDir+"/serviceplan.csv").Run()

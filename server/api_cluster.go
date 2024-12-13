@@ -2093,11 +2093,12 @@ func (repman *ReplicationManager) handlerMuxReloadPlans(w http.ResponseWriter, r
 	}
 
 	if mycluster != nil {
-		valid, user := repman.IsValidClusterACL(r, mycluster)
+		valid, apiuser := repman.IsValidClusterACL(r, mycluster)
 		if valid {
+			repman.InitServicePlans()
 			for _, cl := range repman.Clusters {
 				//Don't print error with no valid ACL
-				if cl.IsURLPassACL(user, r.URL.Path, false) {
+				if cl.IsURLPassACL(apiuser, r.URL.Path, false) {
 					cl.SetServicePlan(cl.Conf.ProvServicePlan)
 				}
 			}
