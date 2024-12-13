@@ -498,6 +498,18 @@ func (cluster *Cluster) SetCloud18PromotionPct(value float64) {
 	cluster.Conf.Cloud18PromotionPct = value
 }
 
+func (cluster *Cluster) SetCloud18DatabaseReadWriteSplitSrvRecord(value string) {
+	cluster.Conf.Cloud18DatabaseReadWriteSplitSrvRecord = value
+}
+
+func (cluster *Cluster) SetCloud18DatabaseReadSrvRecord(value string) {
+	cluster.Conf.Cloud18DatabaseReadSrvRecord = value
+}
+
+func (cluster *Cluster) SetCloud18DatabaseReadWriteSrvRecord(value string) {
+	cluster.Conf.Cloud18DatabaseReadWriteSrvRecord = value
+}
+
 func (cluster *Cluster) SetTraffic(traffic bool) {
 	cluster.Conf.TestInjectTraffic = traffic
 }

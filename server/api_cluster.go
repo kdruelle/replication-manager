@@ -1835,11 +1835,11 @@ func (repman *ReplicationManager) setClusterSetting(mycluster *cluster.Cluster, 
 	case "cloud18-cost-currency":
 		mycluster.Conf.Cloud18CostCurrency = value
 	case "cloud18-database-read-write-split-srv-record":
-		mycluster.Conf.Cloud18DatabaseReadWriteSplitSrvRecord = value
+		mycluster.SetCloud18DatabaseReadWriteSplitSrvRecord(value)
 	case "cloud18-database-read-srv-record":
-		mycluster.Conf.Cloud18DatabaseReadSrvRecord = value
+		mycluster.SetCloud18DatabaseReadSrvRecord(value)
 	case "cloud18-database-read-write-srv-record":
-		mycluster.Conf.Cloud18DatabaseReadWriteSrvRecord = value
+		mycluster.SetCloud18DatabaseReadWriteSrvRecord(value)
 	case "cloud18-dba-user-credentials":
 		val, err := base64.StdEncoding.DecodeString(value)
 		if err != nil {

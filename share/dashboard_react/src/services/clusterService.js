@@ -363,21 +363,22 @@ function stopProxy(clusterName, baseURL) {
 //#endregion Proxy management APIs
 
 //#region Database service APIs
-function getDatabaseService(clusterName, baseURL) {
-  return getApi(baseURL).get(`clusters/${clusterName}/services`)
+function getDatabaseService(clusterName, serviceName, dbId, baseURL) {
+  return getApi(baseURL).getRequest(`clusters/${clusterName}/servers/${dbId}/${serviceName}`)
 }
 
-function updateLongQueryTime(clusterName, time, baseURL) {
-  return getApi(baseURL).get(`clusters/${clusterName}/services/actions/long-query-time/${time}`)
+function updateLongQueryTime(clusterName, dbId, time, baseURL) {
+  return getApi(baseURL).getRequest(`clusters/${clusterName}/servers/${dbId}/actions/set-long-query-time/${time}`)
 }
 
-function toggleDatabaseActions(clusterName, action, baseURL) {
-  return getApi(baseURL).get(`clusters/${clusterName}/services/actions/${action}`)
+function toggleDatabaseActions(clusterName, serviceName, dbId, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/servers/${dbId}/actions/${serviceName}`)
 }
 
-function checksumTable(clusterName, table, baseURL) {
-  return getApi(baseURL).get(`clusters/${clusterName}/services/actions/checksum-table/${table}`)
+function checksumTable(clusterName, schema, table, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/schema/${schema}/${table}/actions/checksum-table`)
 }
+
 //#endregion Database service APIs
 
 //#region Test run APIs
