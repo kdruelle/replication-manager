@@ -852,9 +852,9 @@ func (repman *ReplicationManager) AddFlags(flags *pflag.FlagSet, conf *config.Co
 	flags.Float64Var(&conf.Cloud18SlaProvisionTime, "cloud18-sla-provision-time", 0, "Time to provision in hours")
 	flags.StringVar(&conf.Cloud18InfraGeoLocalizations, "cloud18-infra-geo-localizations", "", "Infrastucture geo zone")
 	flags.StringVar(&conf.Cloud18InfraCPUModel, "cloud18-infra-cpu-model", "", "Infrastructure CPU model")
-	flags.StringVar(&conf.Cloud18DatabseWriteSrvRecord, "cloud18-database-write-srv-record", "", "Database write SRV record host:port")
-	flags.StringVar(&conf.Cloud18DatabseReadSrvRecord, "cloud18-database-read-srv-record", "", "Database read SRV record host:port")
-	flags.StringVar(&conf.Cloud18DatabseReadWriteSrvRecord, "cloud18-database-read-write-srv-record", "", "Database read write split SRV record host:port")
+	flags.StringVar(&conf.Cloud18DatabaseReadWriteSplitSrvRecord, "cloud18-database-read-write-split-srv-record", "", "Database reead write split SRV record host:port")
+	flags.StringVar(&conf.Cloud18DatabaseReadSrvRecord, "cloud18-database-read-srv-record", "", "Database read SRV record host:port")
+	flags.StringVar(&conf.Cloud18DatabaseReadWriteSrvRecord, "cloud18-database-read-write-srv-record", "", "Database read write  SRV record host:port")
 	flags.StringVar(&conf.Cloud18DbaUserCredentials, "cloud18-dba-user-credentials", "", "Database credential")
 	flags.StringVar(&conf.Cloud18CostCurrency, "cloud18-cost-currency", "", "Cost currency")
 	if WithProvisioning == "ON" {
