@@ -202,3 +202,34 @@ func SortKeysDesc(keys []string) []string {
 	})
 	return keys
 }
+
+func GenerateRegex(whitelist, exclude []string) (*regexp.Regexp, error) {
+	// If no whitelist is provided, match anything
+	var whitelistPattern string
+	if len(whitelist) > 0 {
+		// Convert whitelist patterns and join them into a single group
+		whitelistPattern = strings.Join(ConvertWildcards(whitelist), "|")
+	} else {
+		// If no whitelist, match everything (denoted by ".*")
+		whitelistPattern = ".*"
+	}
+
+	// Convert exclude patterns and join them into a single group
+	excludePattern := strings.Join(ConvertWildcards(exclude), "|")
+
+	// Build the final pattern: match whitelist first, then exclude
+	pattern := fmt.Sprintf(`^(?:%s)(?:(?!%s).)*$`, whitelistPattern, excludePattern)
+
+	// Compile the regex
+	return regexp.Compile(pattern)
+}
+
+// ConvertWildcards converts patterns with "*" into regex-compatible ".*"
+func ConvertWildcards(patterns []string) []string {
+	converted := make([]string, len(patterns))
+	for i, p := range patterns {
+		escaped := regexp.QuoteMeta(p)                         // Escape special regex characters
+		converted[i] = strings.ReplaceAll(escaped, `\*`, `.*`) // Replace "\*" with ".*" for wildcard support
+	}
+	return converted
+}

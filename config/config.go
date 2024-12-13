@@ -650,6 +650,8 @@ type Config struct {
 	BackupMyLoaderPath                        string                 `mapstructure:"backup-myloader-path" toml:"backup-myloader-path" json:"backupMyloaderPath"`
 	BackupMyLoaderOptions                     string                 `mapstructure:"backup-myloader-options" toml:"backup-myloader-options" json:"backupMyLoaderOptions"`
 	BackupMyDumperOptions                     string                 `mapstructure:"backup-mydumper-options" toml:"backup-mydumper-options" json:"backupMyDumperOptions"`
+	BackupWhiteList                           string                 `mapstructure:"backup-white-list" toml:"backup-white-list" json:"backupWhiteList"`
+	BackupExcludeList                         string                 `mapstructure:"backup-exclude-list" toml:"backup-exclude-list" json:"backupExcludeList"`
 	BackupMysqlbinlogPath                     string                 `mapstructure:"backup-mysqlbinlog-path" toml:"backup-mysqlbinlog-path" json:"backupMysqlbinlogPath"`
 	BackupMysqlclientPath                     string                 `mapstructure:"backup-mysqlclient-path" toml:"backup-mysqlclient-path" json:"backupMysqlclientgPath"`
 	BackupBinlogs                             bool                   `mapstructure:"backup-binlogs" toml:"backup-binlogs" json:"backupBinlogs"`
