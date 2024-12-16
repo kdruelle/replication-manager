@@ -204,32 +204,46 @@ func SortKeysDesc(keys []string) []string {
 }
 
 func GenerateRegex(whitelist, exclude []string) (*regexp.Regexp, error) {
-	// If no whitelist is provided, match anything
-	var whitelistPattern string
-	if len(whitelist) > 0 {
-		// Convert whitelist patterns and join them into a single group
-		whitelistPattern = strings.Join(ConvertWildcards(whitelist), "|")
-	} else {
-		// If no whitelist, match everything (denoted by ".*")
-		whitelistPattern = ".*"
+	if whitelist == nil {
+		whitelist = []string{}
+	}
+	if exclude == nil {
+		exclude = []string{}
 	}
 
-	// Convert exclude patterns and join them into a single group
-	excludePattern := strings.Join(ConvertWildcards(exclude), "|")
+	// Build whitelist pattern
+	whitelistPattern := ".*" // Default: match anything
+	if len(whitelist) > 0 {
+		whitelistPattern = strings.Join(ConvertWildcards(whitelist), "|")
+	}
 
-	// Build the final pattern: match whitelist first, then exclude
-	pattern := fmt.Sprintf(`^(?:%s)(?:(?!%s).)*$`, whitelistPattern, excludePattern)
+	// Build final regex pattern
+	var pattern string
+	if len(exclude) > 0 {
+		excludePattern := strings.Join(ConvertWildcards(exclude), "|")
+		pattern = fmt.Sprintf(`^(?:%s)(?:(?!%s).)*$`, whitelistPattern, excludePattern)
+	} else {
+		pattern = fmt.Sprintf(`^(?:%s)$`, whitelistPattern)
+	}
 
-	// Compile the regex
+	// Compile and return the regex
 	return regexp.Compile(pattern)
 }
 
 // ConvertWildcards converts patterns with "*" into regex-compatible ".*"
+// Appends "$" to patterns without wildcards for exact matching.
+// Escapes special regex characters, including `.` and `_`.
 func ConvertWildcards(patterns []string) []string {
 	converted := make([]string, len(patterns))
-	for i, p := range patterns {
-		escaped := regexp.QuoteMeta(p)                         // Escape special regex characters
-		converted[i] = strings.ReplaceAll(escaped, `\*`, `.*`) // Replace "\*" with ".*" for wildcard support
+	for i, pattern := range patterns {
+		escaped := regexp.QuoteMeta(pattern) // Escape special characters
+		if strings.Contains(pattern, "*") {
+			// Replace "\*" with ".*" for wildcard support
+			converted[i] = strings.ReplaceAll(escaped, `\*`, `.*`)
+		} else {
+			// Append "$" for exact matches
+			converted[i] = escaped + "$"
+		}
 	}
 	return converted
 }
