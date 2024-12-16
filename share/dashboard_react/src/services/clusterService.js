@@ -392,8 +392,8 @@ function runRegressionTests(clusterName, testName, baseURL) {
 //#endregion Test run APIs
 
 //#region User management APIs
-function addUser(user, baseURL) {
-  return getApi(baseURL).post('/users', user)
+function addUser(clusterName, username, grants, roles, baseURL) {
+  return getApi(baseURL).post(`clusters/${clusterName}/users/add`, {username, grants, roles})
 }
 
 function peerRegister(username, password, clusterName, baseURL) {

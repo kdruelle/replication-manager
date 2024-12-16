@@ -128,7 +128,6 @@ func (repman *ReplicationManager) httpserver() {
 	})
 
 	router.HandleFunc("/api/login", repman.loginHandler)
-	router.HandleFunc("/api/login-git", repman.loginHandler)
 
 	router.Handle("/api/clusters", negroni.New(
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxClusters)),

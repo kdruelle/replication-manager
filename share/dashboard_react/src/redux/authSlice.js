@@ -4,20 +4,7 @@ import { clearLocalStorageByPrefix } from '../services/apiHelper'
 
 export const login = createAsyncThunk('auth/login', async ({ username, password }, thunkAPI) => {
   try {
-    const response = await authService.login(username, password)
-    console.log('response::', response)
-    return response
-  } catch (error) {
-    const errorMessage = error.message || 'Request failed'
-    const errorStatus = error.errorStatus || 500 // Default error status if not provided
-    // Handle errors (including custom errorStatus)
-    return thunkAPI.rejectWithValue({ errorMessage, errorStatus }) // Pass the entire Error object to the rejected action
-  }
-})
-
-export const gitLogin = createAsyncThunk('auth/gitLogin', async ({ username, password }, thunkAPI) => {
-  try {
-    const response = await authService.gitLogin(username, password)
+    const response = await authService.login(username, password, '')
     console.log('response::', response)
     return response
   } catch (error) {
@@ -30,7 +17,7 @@ export const gitLogin = createAsyncThunk('auth/gitLogin', async ({ username, pas
 
 export const peerLogin = createAsyncThunk('auth/peerLogin', async ({  password, baseURL }, thunkAPI) => {
   try {
-    const response = await authService.gitLogin(thunkAPI.getState().auth.user.username, password, baseURL)
+    const response = await authService.login(thunkAPI.getState().auth.user.username, password, baseURL)
     setBaseURL({baseURL})
     return response
   } catch (error) {
@@ -74,16 +61,14 @@ export const authSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    builder.addMatcher(isAnyOf(login.pending, gitLogin.pending, peerLogin.pending), (state, action) => {
+    builder.addMatcher(isAnyOf(login.pending, peerLogin.pending), (state, action) => {
       if (action.type === 'login') {
         state.loading = true
       } else if (action.type === 'peerLogin') {
         state.loadingPeerLogin = true
-      } else {
-        state.loadingGitLogin = true
       }
     })
-    builder.addMatcher(isAnyOf(login.fulfilled, gitLogin.fulfilled), (state, action) => {
+    builder.addMatcher(isAnyOf(login.fulfilled), (state, action) => {
       const { payload, meta } = action
       const { data } = payload
       const { arg } = meta
@@ -96,8 +81,6 @@ export const authSlice = createSlice({
       }
       if (action.type === 'login') {
         state.loading = false
-      } else {
-        state.loadingGitLogin = false
       }
     })
     builder.addMatcher(isAnyOf(peerLogin.fulfilled), (state, action) => {
@@ -113,17 +96,14 @@ export const authSlice = createSlice({
       
       state.loadingPeerLogin = false
     })
-    builder.addMatcher(isAnyOf(login.rejected, gitLogin.rejected,peerLogin.rejected), (state, action) => {
+    builder.addMatcher(isAnyOf(login.rejected,peerLogin.rejected), (state, action) => {
       if (action.type === 'login') {
         state.loading = false
       } else if (action.type === 'peerLogin') {
         state.loadingPeerLogin = false
         state.isPeerLogged = false 
-      } else {
-        state.loadingGitLogin = false
-      }
+      } 
       state.error = action?.payload?.errorMessage
-      
     })
   }
 })

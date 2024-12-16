@@ -233,7 +233,6 @@ func (repman *ReplicationManager) apiserver() {
 	})
 
 	router.HandleFunc("/api/login", repman.loginHandler)
-	router.HandleFunc("/api/login-git", repman.loginHandler)
 	//router.Handle("/api", v3.NewHandler("My API", "/swagger.json", "/api"))
 
 	router.Handle("/api/auth/callback", negroni.New(
@@ -458,7 +457,7 @@ func (repman *ReplicationManager) loginHandler(w http.ResponseWriter, r *http.Re
 	var tok string
 	var userInfo interface{}
 
-	if strings.Contains(r.URL.Path, "login-git") {
+	if repman.Conf.Cloud18 && strings.Contains(user.Username, "@") {
 		tok, _ = githelper.GetGitLabTokenBasicAuth(user.Username, user.Password, false)
 		if tok == "" {
 			http.Error(w, "Error logging in to gitlab: Token is empty", http.StatusUnauthorized)

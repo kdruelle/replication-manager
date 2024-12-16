@@ -1,7 +1,7 @@
 import React, { useEffect, useState, Suspense } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
-import { gitLogin, login } from '../../redux/authSlice'
+import { login } from '../../redux/authSlice'
 import styles from './styles.module.scss'
 import { Box, Container, FormControl, FormLabel, FormErrorMessage, Heading, Input, Stack, Text } from '@chakra-ui/react'
 import PageContainer from '../PageContainer'
@@ -54,19 +54,12 @@ function Login(props) {
       setPasswordError('Please enter a password')
       return
     }
-    if (e.target.id === 'btnGitLogin') {
-      logInGit()
-    } else {
-      logIn()
-    }
+
+    logIn()
   }
 
   const logIn = () => {
     dispatch(login({ username, password }))
-  }
-
-  const logInGit = () => {
-    dispatch(gitLogin({ username, password }))
   }
 
   return (
@@ -106,19 +99,10 @@ function Login(props) {
                   Sign in
                 </RMButton>
                 <RMButton
-                  id='btnGitLogin'
-                  type='submit'
-                  size='medium'
-                  onClick={onButtonClick}
-                  isLoading={loadingGitLogin}
-                  loadingText={'Signing in with Cloud18'}>
-                  Sign in with cloud18
-                </RMButton>
-                <RMButton
                   id='btnGitRegister'
                   type='button'
                   size='medium'
-                  onClick={() => window.open("https://gitlab.signal18.io/users/sign_up",'_blank')}
+                  onClick={() => window.open("https://gitlab.signal18.io/users/sign_up", '_blank')}
                   isLoading={loadingGitLogin}
                   loadingText={'Signing up to Cloud18'}>
                   Sign Up To cloud18
