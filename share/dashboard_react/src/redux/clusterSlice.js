@@ -982,6 +982,21 @@ export const addUser = createAsyncThunk(
   }
 )
 
+export const updateGrants = createAsyncThunk(
+  'cluster/updateGrants',
+  async ({ clusterName, username, grants, roles }, thunkAPI) => {
+    try {
+      const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+      const { data, status } = await clusterService.updateGrants(clusterName, username, grants, roles, baseURL)
+      showSuccessBanner(`User is added successful!`, status, thunkAPI)
+      return { data, status }
+    } catch (error) {
+      showErrorBanner(`Adding user failed!`, error, thunkAPI)
+      handleError(error, thunkAPI)
+    }
+  }
+)
+
 export const peerRegister = createAsyncThunk('auth/peerRegister', async ({  password, clusterName, baseURL }, thunkAPI) => {
   try {
     const { data, status } = await clusterService.peerRegister(thunkAPI.getState().auth.user.username, password, clusterName, baseURL)

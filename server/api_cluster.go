@@ -360,6 +360,11 @@ func (repman *ReplicationManager) apiClusterProtectedHandler(router *mux.Router)
 		negroni.HandlerFunc(repman.validateTokenMiddleware),
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxAddClusterUser)),
 	))
+
+	router.Handle("/api/clusters/{clusterName}/users/update", negroni.New(
+		negroni.HandlerFunc(repman.validateTokenMiddleware),
+		negroni.Wrap(http.HandlerFunc(repman.handlerMuxUpdateClusterUser)),
+	))
 }
 
 func (repman *ReplicationManager) handlerMuxServers(w http.ResponseWriter, r *http.Request) {

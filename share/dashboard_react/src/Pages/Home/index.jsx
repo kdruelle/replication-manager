@@ -32,6 +32,7 @@ import Settings from '../Settings'
 import Configs from '../Configs'
 import Graphs from '../Graphs'
 import Agents from '../Agents'
+import Users from '../Users'
 import Maintenance from '../Maintenance'
 import Top from '../Top'
 import Shards from '../Shards'
@@ -106,6 +107,9 @@ function Home() {
           }
           if (apiUser.grants['db-show-schema']) {
             authorizedTabs.push('Shards')
+          }
+          if (apiUser.grants['cluster-grant']) {
+            authorizedTabs.push('Users')
           }
           dashboardTabsRef.current = authorizedTabs
         }
@@ -248,7 +252,8 @@ function Home() {
                 ...(selectedCluster?.config?.proxysql && user?.grants['cluster-show-agents']
                   ? [<QueryRules selectedCluster={selectedCluster} />]
                   : []),
-                ...(user?.grants['db-show-schema'] ? [<Shards selectedCluster={selectedCluster} />] : [])
+                ...(user?.grants['db-show-schema'] ? [<Shards selectedCluster={selectedCluster} />] : []),
+                ...(user?.grants['cluster-grant'] ? [<Users selectedCluster={selectedCluster} user={user}/>] : [])
               ]
               : globalTabsRef.current.includes('Clusters Peer') // monitor?.config?.cloud18 is false, do not show "Peer Clusters" tab
                 ? [<PeerClusterList onLogin={setDashboardTab} />, <PeerClusterList mode='shared' />, <ClustersGlobalSettings />]

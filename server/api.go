@@ -713,7 +713,37 @@ func (repman *ReplicationManager) handlerMuxAddClusterUser(w http.ResponseWriter
 
 	mycluster := repman.getClusterByName(vars["clusterName"])
 	if mycluster != nil {
-		mycluster.AddUser(userform)
+		err := mycluster.AddUser(userform)
+		if err != nil {
+			http.Error(w, "Error adding new user: "+err.Error(), 500)
+			return
+		}
+	} else {
+		http.Error(w, "No valid cluster", 500)
+		return
+	}
+}
+
+func (repman *ReplicationManager) handlerMuxUpdateClusterUser(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	vars := mux.Vars(r)
+
+	var userform cluster.UserForm
+	//decode request into UserCredentials struct
+	err := json.NewDecoder(r.Body).Decode(&userform)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "Error in request")
+		return
+	}
+
+	mycluster := repman.getClusterByName(vars["clusterName"])
+	if mycluster != nil {
+		err := mycluster.UpdateUser(userform)
+		if err != nil {
+			http.Error(w, "Error updating user: "+err.Error(), 500)
+			return
+		}
 	} else {
 		http.Error(w, "No valid cluster", 500)
 		return

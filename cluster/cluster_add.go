@@ -168,7 +168,8 @@ func (cluster *Cluster) AddUser(userform UserForm) error {
 	grants := userform.Grants
 	pass, _ := cluster.GeneratePassword()
 	if _, ok := cluster.APIUsers[user]; ok {
-		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlErr, "User %s already exist ", user)
+		return fmt.Errorf("User %s already exist ", user)
+		// cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlErr, "User %s already exist ", user)
 	} else {
 		if cluster.Conf.GetDecryptedValue("api-credentials-external") == "" {
 			cluster.Conf.APIUsersExternal = user + ":" + pass + ":" + roles
@@ -181,7 +182,54 @@ func (cluster *Cluster) AddUser(userform UserForm) error {
 		cluster.Conf.Secrets["api-credentials-external"] = new_secret
 
 		// Assign ACL before reloading
-		cluster.Conf.APIUsersACLAllow = cluster.Conf.APIUsersACLAllow + "," + user + ":" + grants + ":" + roles + ":" + cluster.Name
+		cluster.Conf.APIUsersACLAllowExternal = cluster.Conf.APIUsersACLAllowExternal + "," + user + ":" + grants + ":" + roles + ":" + cluster.Name
+
+		cluster.LoadAPIUsers()
+		cluster.Save()
+	}
+
+	return nil
+}
+
+func (cluster *Cluster) UpdateUser(userform UserForm) error {
+	user := userform.Username
+	roles := userform.Roles
+	grants := userform.Grants
+	if _, ok := cluster.APIUsers[user]; !ok {
+		return fmt.Errorf("User %s is not exist in cluster. Unable to update roles and grants", user)
+		// cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlErr, "User %s is not exist in cluster. Unable to update roles and grants", user)
+	} else {
+		new_acls := make([]string, 0)
+		acls := strings.Split(cluster.Conf.APIUsersACLAllowExternal, ",")
+
+		for _, acl := range acls {
+			useracl, oldacls, oldroles, listcluster := misc.SplitAcls(acl)
+			if useracl == user {
+				if listcluster == "" || listcluster == cluster.Name {
+					acl = user + ":" + grants + ":" + roles + ":" + cluster.Name
+					new_acls = append(new_acls, acl)
+				} else if strings.Contains(listcluster, cluster.Name) {
+					clist := strings.Split(listcluster, " ")
+					old_list := make([]string, 0)
+					for _, cl := range clist {
+						if cl == cluster.Name {
+							acl = user + ":" + grants + ":" + roles + ":" + cluster.Name
+							new_acls = append(new_acls, acl)
+						} else {
+							old_list = append(old_list, cl)
+						}
+					}
+
+					acl = user + ":" + oldacls + ":" + oldroles + ":" + strings.Join(old_list, " ")
+					new_acls = append(new_acls, acl)
+				}
+			} else {
+				new_acls = append(new_acls, acl)
+			}
+		}
+
+		// Assign ACL before reloading
+		cluster.Conf.APIUsersACLAllowExternal = strings.Join(new_acls, ",")
 
 		cluster.LoadAPIUsers()
 		cluster.Save()
