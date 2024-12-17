@@ -8,7 +8,11 @@ const authConfig = {
   2: { // Peer calls
     resolveUrl: (apiUrl, baseUrl) => `/peer/${baseUrl}/api/${apiUrl}`,
     getToken: (baseUrl) => {
-      return localStorage.getItem(`user_token_${baseUrl}`);
+      if (baseUrl == ""){
+        return localStorage.getItem(`user_token`);
+      } else {
+        return localStorage.getItem(`user_token_${baseUrl}`);
+      }
     }
   },
   3: { // Mattermost API
@@ -20,7 +24,7 @@ const authConfig = {
 const getContentType = (type) => type === 'json' ? { 'Content-Type': 'application/json; charset="utf-8"' } : {};
 
 const buildHeaders = (authValue, contentType, baseUrl) => {
-  const encodedBaseUrl = toBase64(baseUrl);
+  const encodedBaseUrl = baseUrl.length > 0 ? toBase64(baseUrl) : "";
   const { getToken } = authConfig[authValue] || {};
   const token = getToken ? getToken(encodedBaseUrl) : null;
 
@@ -57,8 +61,12 @@ const handleResponse = async (response) => {
 };
 
 const performRequest = async (method, apiUrl, params, authValue, baseUrl = '') => {
+  let headerURL = baseUrl
+  if(apiUrl == "login"){
+    headerURL = ''
+  }
   const url = resolveUrl(apiUrl, authValue, baseUrl);
-  const headers = buildHeaders(authValue, 'json', baseUrl);
+  const headers = buildHeaders(authValue, 'json', headerURL);
 
   const options = {
     method,
@@ -66,13 +74,9 @@ const performRequest = async (method, apiUrl, params, authValue, baseUrl = '') =
     ...(params ? { body: JSON.stringify(params) } : {})
   };
 
-  if (apiUrl == 'login' || apiUrl == 'login-git') {
-    delete options.headers.Authorization
-  }
-
   try {
     const response = await fetch(url, options);
-    if (response.status === 401) {
+    if (response.status === 401 && baseUrl === '') {
       clearLocalStorageByPrefix('user_token')
       localStorage.removeItem('username')
       window.location.reload()

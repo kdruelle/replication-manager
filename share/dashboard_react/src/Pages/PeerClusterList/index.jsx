@@ -10,12 +10,16 @@ import styles from './styles.module.scss'
 import CheckOrCrossIcon from '../../components/Icons/CheckOrCrossIcon'
 import CustomIcon from '../../components/Icons/CustomIcon'
 import TagPill from '../../components/TagPill'
-import PeerMenu from './PeerMenu'
 import { HiTag } from 'react-icons/hi'
+import { clearBaseURL, peerLogin, setBaseURL } from '../../redux/authSlice'
+import { getClusterData, peerRegister } from '../../redux/clusterSlice'
+import PeerSubscribeModal from '../../components/Modals/PeerSubscribeModal'
 
 function PeerClusterList({ onLogin, mode }) {
   const dispatch = useDispatch()
   const [clusters, setClusters] = useState([])
+  const [item, setItem] = useState({})
+  const [isPeerSubscribeModalOpen, setIsPeerSubscribeModalOpen] = useState(false)
 
   const {
     globalClusters: { loading, clusterPeers, monitor },
@@ -52,6 +56,56 @@ function PeerClusterList({ onLogin, mode }) {
       }
     }
   }, [clusterPeers])
+
+  const openPeerSubscribeModal = () => {
+    setIsPeerSubscribeModalOpen(true)
+  }
+
+  const closePeerSubscribeModal = (keepBaseURL = false) => {
+    if (!keepBaseURL) {
+      dispatch(clearBaseURL({}))
+    }
+    setIsPeerSubscribeModalOpen(false)
+  }
+
+  const handleSubscribeModal = (clusterItem) => {
+    closePeerSubscribeModal(true)
+    dispatch(peerRegister({ clusterName: clusterItem['cluster-name'], baseURL: clusterItem['api-public-url'] }))
+  }
+
+  const handlePeerCluster = (clusterItem) => {
+    const token = localStorage.getItem(`user_token_${btoa(clusterItem['api-public-url'])}`)
+    let handler
+    if (token) {
+      dispatch(setBaseURL({ baseURL: clusterItem['api-public-url'] }))
+      handler = dispatch(getClusterData({ clusterName: clusterItem['cluster-name'] }))
+    } else {
+      handler = dispatch(peerLogin({ baseURL: clusterItem['api-public-url'] })).then((action) => {
+        console.log(action)
+        let res = action.payload
+        if (res.status == 200) {
+          return dispatch(getClusterData({ clusterName: clusterItem['cluster-name'] }))
+        } else {
+          showErrorBanner('Login failed!', res.data, thunkAPI)
+        }
+      })
+    }
+    handler.then((action) => {
+      let res = action.payload
+      if (res.status === 200) {
+        if (onLogin) {
+          onLogin(res.data)
+        }
+      } else if (mode == "shared") {
+        setItem(clusterItem)
+        openPeerSubscribeModal()
+      } else {
+        showErrorBanner('Insufficient privileges!', res.data, thunkAPI)
+      }
+    }, (err) => {
+      console.log(err)
+    })
+  }
 
   return !loading && clusters?.length === 0 ? (
     <NotFound text={mode === 'shared' ? 'No shared peer cluster found!' : 'No peer cluster found!'} />
@@ -106,7 +160,7 @@ function PeerClusterList({ onLogin, mode }) {
                         </Text>
                         &nbsp;
                         <Text as={"span"} fontWeight="bold">
-                        {amount.toFixed(2)} {currency}/Month
+                          {amount.toFixed(2)} {currency}/Month
                         </Text>
                       </Text>
                     </>
@@ -157,15 +211,14 @@ function PeerClusterList({ onLogin, mode }) {
                 width={'400px'}
                 header={
                   <HStack
-                    className={styles.btnHeading}>
+                    as="button"
+                    className={styles.btnHeading}
+                    onClick={() => { handlePeerCluster(clusterItem) }}>
                     <CustomIcon icon={AiOutlineCluster} />
                     <span className={styles.cardHeaderText}>{headerText}</span>
-
-                    <PeerMenu mode={mode} onLogin={onLogin} colorScheme='blue' clusterItem={clusterItem} className={styles.btnAddUser} labelClassName={styles.rowLabel} valueClassName={styles.rowValue} />
                   </HStack>
                 }
                 body={
-
                   <TableType2
                     dataArray={dataObject}
                     className={styles.table}
@@ -178,6 +231,7 @@ function PeerClusterList({ onLogin, mode }) {
           )
         })}
       </Flex>
+      {isPeerSubscribeModalOpen && <PeerSubscribeModal cluster={item} isOpen={isPeerSubscribeModalOpen} closeModal={closePeerSubscribeModal} onSaveModal={handleSubscribeModal} />}
     </>
   )
 }

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import MenuOptions from '../../../components/MenuOptions'
 import PeerDetailsModal from '../../../components/Modals/PeerDetailsModal'
-import PeerLoginModal from '../../../components/Modals/PeerLoginModal'
+import PeerSubscribeModal from '../../../components/Modals/PeerSubscribeModal'
 import { getClusterData, peerRegister } from '../../../redux/clusterSlice'
 import { peerLogin, setBaseURL } from '../../../redux/authSlice'
 import { useDispatch, useSelector } from 'react-redux'
@@ -19,19 +19,19 @@ function PeerMenu({
     const [options, setOptions] = useState([])
     const [title, setTitle] = useState("Login to Peer Cluster")
     const [isPeerDetailsModalOpen, setIsPeerDetailsModalOpen] = useState(false)
-    const [isPeerLoginModalOpen, setIsPeerLoginModalOpen] = useState(false)
+    const [isPeerSubscribeModalOpen, setIsPeerSubscribeModalOpen] = useState(false)
 
     const {
         auth: { user },
         globalClusters: { monitor }
     } = useSelector((state) => state)
 
-    const openPeerLoginModal = () => {
-        setIsPeerLoginModalOpen(true)
+    const openPeerSubscribeModal = () => {
+        setIsPeerSubscribeModalOpen(true)
     }
 
-    const closePeerLoginModal = () => {
-        setIsPeerLoginModalOpen(false)
+    const closePeerSubscribeModal = () => {
+        setIsPeerSubscribeModalOpen(false)
     }
 
     const handleEnterCluster = () => {
@@ -55,13 +55,13 @@ function PeerMenu({
             dispatch(setBaseURL({ baseURL: clusterItem['api-public-url'] }))
             handleEnterCluster(clusterItem)
         } else {
-            openPeerLoginModal()
+            openPeerSubscribeModal()
         }
     }
 
     const handlePeerRegister = () => {
         setTitle("Register to Peer Cluster")
-        openPeerLoginModal()
+        openPeerSubscribeModal()
     }
 
     const handleSaveModal = (password) => {
@@ -70,7 +70,7 @@ function PeerMenu({
         } else {
             dispatch(peerLogin({ password, baseURL: clusterItem['api-public-url'] }))
         }
-        closePeerLoginModal()
+        closePeerSubscribeModal()
     }
 
     useEffect(() => {
@@ -116,7 +116,7 @@ function PeerMenu({
                         closeModal={closePeerDetailsModal}
                     />
                 )}
-                {isPeerLoginModalOpen && <PeerLoginModal title={title} isOpen={isPeerLoginModalOpen} closeModal={closePeerLoginModal} onSaveModal={handleSaveModal} />}
+                {isPeerSubscribeModalOpen && <PeerSubscribeModal title={title} isOpen={isPeerSubscribeModalOpen} closeModal={closePeerSubscribeModal} onSaveModal={handleSaveModal} />}
             </>
         )
     }

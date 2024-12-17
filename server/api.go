@@ -390,6 +390,27 @@ func (repman *ReplicationManager) IsValidClusterACL(r *http.Request, cluster *cl
 	return false, ""
 }
 
+func (repman *ReplicationManager) DecryptJWTPassword(r *http.Request) (string, error) {
+
+	token, err := request.ParseFromRequest(r, request.AuthorizationHeaderExtractor, func(token *jwt.Token) (interface{}, error) {
+		vk, _ := jwt.ParseRSAPublicKeyFromPEM(verificationKey)
+		return vk, nil
+	})
+	if err == nil {
+		claims := token.Claims.(jwt.MapClaims)
+		userinfo := claims["CustomUserInfo"]
+		mycutinfo := userinfo.(map[string]interface{})
+		mepwd := mycutinfo["Password"].(string)
+		_, ok := mycutinfo["profile"]
+
+		if ok && strings.Contains(mycutinfo["profile"].(string), repman.Conf.OAuthProvider) /*&& strings.Contains(mycutinfo["email_verified"]*/ {
+			return repman.Conf.GetDecryptedPassword("api-credentials", mepwd), nil
+		}
+		return "", fmt.Errorf("No Gitlab Profile in JWT")
+	}
+	return "", err
+}
+
 func (repman *ReplicationManager) GetUserFromRequest(r *http.Request) string {
 
 	token, err := request.ParseFromRequest(r, request.AuthorizationHeaderExtractor, func(token *jwt.Token) (interface{}, error) {
@@ -1207,6 +1228,36 @@ func (repman *ReplicationManager) DynamicPeerHandler(w http.ResponseWriter, r *h
 
 	// Attach the specific route from the URL to the peer URL
 	parsedPeerURL.Path = parsedPeerURL.Path + "/" + route
+
+	var user userCredentials
+	if route == "api/login" {
+		pwd, err := repman.DecryptJWTPassword(r)
+		if err != nil {
+			w.WriteHeader(http.StatusForbidden)
+			fmt.Fprintf(w, "Error parsing JWT: "+err.Error())
+			return
+		}
+
+		//decode request into UserCredentials struct
+		err = json.NewDecoder(r.Body).Decode(&user)
+		if err != nil {
+			w.WriteHeader(http.StatusForbidden)
+			fmt.Fprintf(w, "Error in request")
+			return
+		}
+
+		user.Password = pwd
+
+		// Marshal the modified JSON back to a byte slice
+		loginBody, err := json.Marshal(user)
+		if err != nil {
+			http.Error(w, "Failed to marshal modified JSON", http.StatusInternalServerError)
+			return
+		}
+
+		r.Body = io.NopCloser(bytes.NewBuffer(loginBody))
+		r.ContentLength = int64(len(loginBody)) // Update content length
+	}
 
 	// Log the forwarding request
 	log.Printf("Forwarding request to: %s", parsedPeerURL.String())
