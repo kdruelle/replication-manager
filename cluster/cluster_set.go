@@ -1733,7 +1733,11 @@ func (cluster *Cluster) SetInjectVariables() {
 
 func (cluster *Cluster) SetSecretsToVault() {
 	if cluster.Conf.VaultRoleId != "" && cluster.Conf.VaultSecretId != "" {
-		cluster.Conf.VaultServerAddr = "http://vault.infra.svc.cloud18:8200"
+		//	cluster.Conf.VaultServerAddr = "http://vault.infra.svc.cloud18:8200"
+		if cluster.Conf.VaultServerAddr == "" {
+			cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModVault, config.LvlInfo, "No vault-server-addr  defined for writing secrets to Vault: %s")
+			return
+		}
 		client, err := cluster.GetVaultConnection()
 		if err != nil {
 			cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModVault, config.LvlErr, "Unable to initialize AppRole auth method: %v", err)
@@ -1751,7 +1755,7 @@ func (cluster *Cluster) SetSecretsToVault() {
 		if err != nil {
 			cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModVault, config.LvlErr, "Failed to write secrets to Vault: %v", err)
 		} else {
-			cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModVault, config.LvlInfo, "Success of writing secrets to Vault: %v", err)
+			cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModVault, config.LvlInfo, "Success of writing secrets to Vault: %s", secret_path)
 		}
 	}
 }
