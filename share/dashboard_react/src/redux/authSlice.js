@@ -18,7 +18,9 @@ export const login = createAsyncThunk('auth/login', async ({ username, password 
 export const peerLogin = createAsyncThunk('auth/peerLogin', async ({  password, baseURL }, thunkAPI) => {
   try {
     const response = await authService.login(thunkAPI.getState().auth.user.username, password, baseURL)
-    setBaseURL({baseURL})
+    if (response.status == 200){
+      setBaseURL({baseURL})
+    }
     return response
   } catch (error) {
     const errorMessage = error.message || 'Request failed'
@@ -56,9 +58,6 @@ export const authSlice = createSlice({
     setBaseURL: (state, action) => {
       state.baseURL = action.payload.baseURL
     },
-    clearBaseURL: (state) => {
-      state.baseURL = ''
-    },
   },
   extraReducers: (builder) => {
     builder.addMatcher(isAnyOf(login.pending, peerLogin.pending), (state, action) => {
@@ -90,10 +89,12 @@ export const authSlice = createSlice({
 
       state.baseURL = arg.baseURL
       const encodedBaseUrl = btoa(arg.baseURL)
-      
-      localStorage.setItem(`user_token_${encodedBaseUrl}`, typeof variable === 'object' ? JSON.parse(data)?.token : data?.token)
-      state.isPeerLogged = true 
-      
+      if (action.payload.status === 200) {
+        localStorage.setItem(`user_token_${encodedBaseUrl}`, typeof variable === 'object' ? JSON.parse(data)?.token : data?.token)
+        state.isPeerLogged = true 
+      } else {
+        localStorage.removeItem(`user_token_${encodedBaseUrl}`)
+      }
       state.loadingPeerLogin = false
     })
     builder.addMatcher(isAnyOf(login.rejected,peerLogin.rejected), (state, action) => {
@@ -109,7 +110,7 @@ export const authSlice = createSlice({
 })
 
 // this is for dispatch
-export const { logout, setUserData, setBaseURL, clearBaseURL } = authSlice.actions
+export const { logout, setUserData, setBaseURL } = authSlice.actions
 
 // this is for configureStore
 export default authSlice.reducer

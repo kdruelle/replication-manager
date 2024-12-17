@@ -411,6 +411,34 @@ func (repman *ReplicationManager) DecryptJWTPassword(r *http.Request) (string, e
 	return "", err
 }
 
+func (repman *ReplicationManager) GetJWTClaims(r *http.Request) (map[string]string, error) {
+	UserInfoMap := make(map[string]string)
+	token, err := request.ParseFromRequest(r, request.AuthorizationHeaderExtractor, func(token *jwt.Token) (interface{}, error) {
+		vk, _ := jwt.ParseRSAPublicKeyFromPEM(verificationKey)
+		return vk, nil
+	})
+	if err == nil {
+		claims := token.Claims.(jwt.MapClaims)
+		userinfo := claims["CustomUserInfo"]
+		mycutinfo := userinfo.(map[string]interface{})
+		UserInfoMap["Password"] = mycutinfo["Password"].(string)
+		UserInfoMap["Role"] = mycutinfo["Role"].(string)
+		_, ok := mycutinfo["profile"]
+		if ok {
+			profile := mycutinfo["profile"].(string)
+			if strings.Contains(profile, repman.Conf.OAuthProvider) {
+				UserInfoMap["User"] = mycutinfo["email"].(string)
+				UserInfoMap["profile"] = profile
+				return UserInfoMap, nil
+			}
+			return nil, fmt.Errorf("invalid oauth provider")
+		}
+		UserInfoMap["User"] = mycutinfo["Name"].(string)
+		return UserInfoMap, nil
+	}
+	return nil, err
+}
+
 func (repman *ReplicationManager) GetUserFromRequest(r *http.Request) string {
 
 	token, err := request.ParseFromRequest(r, request.AuthorizationHeaderExtractor, func(token *jwt.Token) (interface{}, error) {
@@ -1229,15 +1257,21 @@ func (repman *ReplicationManager) DynamicPeerHandler(w http.ResponseWriter, r *h
 	// Attach the specific route from the URL to the peer URL
 	parsedPeerURL.Path = parsedPeerURL.Path + "/" + route
 
+	uinfomap, err := repman.GetJWTClaims(r)
+	if err != nil {
+		w.WriteHeader(http.StatusForbidden)
+		fmt.Fprintf(w, "Error parsing JWT: "+err.Error())
+		return
+	}
+
+	if _, ok := uinfomap["profile"]; !ok {
+		w.WriteHeader(http.StatusForbidden)
+		fmt.Fprintf(w, "Current user is not logged in via Gitlab!")
+		return
+	}
+
 	var user userCredentials
 	if route == "api/login" {
-		pwd, err := repman.DecryptJWTPassword(r)
-		if err != nil {
-			w.WriteHeader(http.StatusForbidden)
-			fmt.Fprintf(w, "Error parsing JWT: "+err.Error())
-			return
-		}
-
 		//decode request into UserCredentials struct
 		err = json.NewDecoder(r.Body).Decode(&user)
 		if err != nil {
@@ -1246,7 +1280,7 @@ func (repman *ReplicationManager) DynamicPeerHandler(w http.ResponseWriter, r *h
 			return
 		}
 
-		user.Password = pwd
+		user.Password = repman.Conf.GetDecryptedPassword("peer-login", uinfomap["Password"])
 
 		// Marshal the modified JSON back to a byte slice
 		loginBody, err := json.Marshal(user)

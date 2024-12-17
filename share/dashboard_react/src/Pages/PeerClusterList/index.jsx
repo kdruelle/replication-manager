@@ -11,9 +11,10 @@ import CheckOrCrossIcon from '../../components/Icons/CheckOrCrossIcon'
 import CustomIcon from '../../components/Icons/CustomIcon'
 import TagPill from '../../components/TagPill'
 import { HiTag } from 'react-icons/hi'
-import { clearBaseURL, peerLogin, setBaseURL } from '../../redux/authSlice'
+import { peerLogin, setBaseURL } from '../../redux/authSlice'
 import { getClusterData, peerRegister } from '../../redux/clusterSlice'
 import PeerSubscribeModal from '../../components/Modals/PeerSubscribeModal'
+import { showErrorToast } from '../../redux/toastSlice'
 
 function PeerClusterList({ onLogin, mode }) {
   const dispatch = useDispatch()
@@ -32,9 +33,11 @@ function PeerClusterList({ onLogin, mode }) {
     dispatch(getClusterPeers({}))
   }, [])
 
+  // Regular expression to check if the string is an email
+  const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
   const checkPeerUser = (u, gituser) => {
-    // Regular expression to check if the string is an email
-    const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
 
     // Check if the string matches the email pattern or is "admin"
     if (emailPattern.test(u)) {
@@ -63,7 +66,7 @@ function PeerClusterList({ onLogin, mode }) {
 
   const closePeerSubscribeModal = (keepBaseURL = false) => {
     if (!keepBaseURL) {
-      dispatch(clearBaseURL({}))
+      dispatch(setBaseURL({ baseURL: '' }))
     }
     setIsPeerSubscribeModalOpen(false)
   }
@@ -77,35 +80,48 @@ function PeerClusterList({ onLogin, mode }) {
     const token = localStorage.getItem(`user_token_${btoa(clusterItem['api-public-url'])}`)
     let handler
     if (token) {
-      dispatch(setBaseURL({ baseURL: clusterItem['api-public-url'] }))
+      dispatch(setBaseURL({ baseURL: clusterItem['api-public-url'] }));
       handler = dispatch(getClusterData({ clusterName: clusterItem['cluster-name'] }))
     } else {
-      handler = dispatch(peerLogin({ baseURL: clusterItem['api-public-url'] })).then((action) => {
-        console.log(action)
-        let res = action.payload
-        if (res.status == 200) {
-          return dispatch(getClusterData({ clusterName: clusterItem['cluster-name'] }))
-        } else {
-          showErrorBanner('Login failed!', res.data, thunkAPI)
-        }
-      })
+      handler = dispatch(peerLogin({ baseURL: clusterItem['api-public-url'] }))
+        .then((action) => {
+          if (action?.payload?.status === 200) {
+            return dispatch(getClusterData({ clusterName: clusterItem['cluster-name'] }))
+          } else {
+            throw new Error(action?.payload?.data);
+          }
+        });
     }
-    handler.then((action) => {
-      let res = action.payload
-      if (res.status === 200) {
-        if (onLogin) {
-          onLogin(res.data)
-        }
-      } else if (mode == "shared") {
-        setItem(clusterItem)
-        openPeerSubscribeModal()
-      } else {
-        showErrorBanner('Insufficient privileges!', res.data, thunkAPI)
+
+    handler.then((resp) => {
+      if (resp?.payload?.status === 200) {
+        if (onLogin) return onLogin(resp.payload.data);
       }
-    }, (err) => {
-      console.log(err)
+
+      if (mode === "shared") {
+        setItem(clusterItem);
+        openPeerSubscribeModal();
+      } else {
+        dispatch(setBaseURL({ baseURL: '' }));
+        showErrorToast({
+          status: 'error',
+          title: 'Peer login failed',
+          description: resp?.payload?.data || "Peer login failed"
+        })
+      }
     })
-  }
+      .catch((error) => {
+        dispatch(
+          showErrorToast({
+            status: 'error',
+            title: 'Peer login failed',
+            description: error?.message || error
+          })
+        )
+        dispatch(setBaseURL({ baseURL: '' }));
+      });
+  };
+
 
   return !loading && clusters?.length === 0 ? (
     <NotFound text={mode === 'shared' ? 'No shared peer cluster found!' : 'No peer cluster found!'} />
