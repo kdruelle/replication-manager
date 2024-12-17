@@ -1257,19 +1257,6 @@ func (repman *ReplicationManager) DynamicPeerHandler(w http.ResponseWriter, r *h
 	// Attach the specific route from the URL to the peer URL
 	parsedPeerURL.Path = parsedPeerURL.Path + "/" + route
 
-	uinfomap, err := repman.GetJWTClaims(r)
-	if err != nil {
-		w.WriteHeader(http.StatusForbidden)
-		fmt.Fprintf(w, "Error parsing JWT: "+err.Error())
-		return
-	}
-
-	if _, ok := uinfomap["profile"]; !ok {
-		w.WriteHeader(http.StatusForbidden)
-		fmt.Fprintf(w, "Current user is not logged in via Gitlab!")
-		return
-	}
-
 	var user userCredentials
 	if route == "api/login" {
 		//decode request into UserCredentials struct
@@ -1277,6 +1264,19 @@ func (repman *ReplicationManager) DynamicPeerHandler(w http.ResponseWriter, r *h
 		if err != nil {
 			w.WriteHeader(http.StatusForbidden)
 			fmt.Fprintf(w, "Error in request")
+			return
+		}
+
+		uinfomap, err := repman.GetJWTClaims(r)
+		if err != nil {
+			w.WriteHeader(http.StatusForbidden)
+			fmt.Fprintf(w, "Error parsing JWT: "+err.Error())
+			return
+		}
+
+		if _, ok := uinfomap["profile"]; !ok {
+			w.WriteHeader(http.StatusForbidden)
+			fmt.Fprintf(w, "Current user is not logged in via Gitlab!")
 			return
 		}
 
