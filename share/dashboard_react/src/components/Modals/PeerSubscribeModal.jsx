@@ -14,14 +14,16 @@ import {
   Stack,
   Text
 } from '@chakra-ui/react'
-import React, { useState } from 'react'
-import Markdown from 'react-markdown' 
+import React, { useEffect, useState } from 'react'
+import Markdown from 'react-markdown'
 import RMButton from '../RMButton'
 import { useTheme } from '../../ThemeProvider'
 import parentStyles from './styles.module.scss'
+import remarkGFM from 'remark-gfm'
 
-function PeerSubscribeModal({ cluster, user, isOpen, closeModal, onSaveModal, terms }) {
+function PeerSubscribeModal({ cluster, user, isOpen, closeModal, onSaveModal, terms = `` }) {
   const { theme } = useTheme()
+  const [agreement, setAgreement] = useState(``)
   const [agree, setAgree] = useState(false)
   const [agreeError, setAgreeError] = useState('')
 
@@ -36,6 +38,19 @@ function PeerSubscribeModal({ cluster, user, isOpen, closeModal, onSaveModal, te
     onSaveModal(cluster)
   }
 
+  useEffect(() => {
+    let servicePlan = Object.entries(cluster)
+      .filter(([key]) => !([].includes(key))) // fields to remove
+      .map(([key, value]) => `| ${key} | ${value} |`)
+      .join("  \n");
+    let finalterm = terms
+      .replace(`<<user>>`, user?.username)
+      .replace(`<<cluster>>`, clustername)
+      .replace(`<<ervice_plan_infos>>`, "  \n".concat(servicePlan))
+      .replace(`<<date>>`, (new Date()).toLocaleDateString())
+    setAgreement(finalterm)
+  }, [user, cluster, terms])
+
   return (
     <Modal size={'xl'} isOpen={isOpen} onClose={closeModal}>
       <ModalOverlay />
@@ -47,7 +62,7 @@ function PeerSubscribeModal({ cluster, user, isOpen, closeModal, onSaveModal, te
             <Text>
               Cluster : {cluster?.["cluster-name"]}
             </Text>
-            <Markdown>{terms}</Markdown>
+            <Markdown  remarkPlugins={[remarkGFM]}>{agreement}</Markdown>
             <FormControl isInvalid={agreeError}>
               <Checkbox checked={agree} onCheckedChange={(e) => setAgree(!!e.checked)}>I agree with all terms and condition mentioned above</Checkbox>
               <FormErrorMessage>{agreeError}</FormErrorMessage>

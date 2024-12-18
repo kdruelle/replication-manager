@@ -251,7 +251,7 @@ function PeerClusterList({ onLogin, mode }) {
           )
         })}
       </Flex>
-      {isPeerSubscribeModalOpen && <PeerSubscribeModal terms={terms} cluster={item} isOpen={isPeerSubscribeModalOpen} closeModal={closePeerSubscribeModal} onSaveModal={handleSubscribeModal} />}
+      {isPeerSubscribeModalOpen && <PeerSubscribeModal terms={terms} cluster={item} user={user} isOpen={isPeerSubscribeModalOpen} closeModal={closePeerSubscribeModal} onSaveModal={handleSubscribeModal} />}
     </>
   )
 }
