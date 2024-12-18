@@ -44,7 +44,6 @@ import (
 	"github.com/signal18/replication-manager/config"
 	"github.com/signal18/replication-manager/regtest"
 	"github.com/signal18/replication-manager/share"
-	"github.com/signal18/replication-manager/utils/alert"
 	"github.com/signal18/replication-manager/utils/githelper"
 )
 
@@ -919,28 +918,7 @@ func (repman *ReplicationManager) handlerMuxPeerRegister(w http.ResponseWriter, 
 	userform.Roles = "pending"
 	mycluster.AddUser(userform)
 
-	msg := fmt.Sprintf(`
-Subject: New Peer User Registration Request for Cluster %s: %s
-
-Dear Admin,
-
-A new user has requested to register for the cluster service.
-
-Details:
-- User Email: %s
-- Cluster: %s
-- Registration Request Time: %s
-
-Please review the registration request and take the necessary actions.
-
-Best regards,
-Replication Manager
-`, mycluster.Name, userform.Username, userform.Username, mycluster.Name, time.Now().Format("2006-01-02 15:04:05"))
-
-	subj := "Replication-Manager started"
-	alert := alert.Alert{}
-	alert.Cluster = mycluster.Name
-	err = alert.EmailMessage(msg, subj, repman.Conf)
+	err = repman.SendCloud18ClusterSubscriptionMail(mycluster.Name, userform)
 	if err != nil {
 		http.Error(w, "Error sending email :"+err.Error(), 500)
 		return
@@ -948,6 +926,77 @@ Replication Manager
 
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Email sent to admin!"))
+}
+
+func (repman *ReplicationManager) SendCloud18ClusterSubscriptionMail(clustername string, userform cluster.UserForm) error {
+	err := repman.SendOwnerCloud18SubscriptionMail(clustername, userform)
+	if err != nil {
+		return fmt.Errorf("Cluster admin : %v", err)
+	}
+
+	err = repman.SendSponsorCloud18SubscriptionMail(clustername, userform)
+	if err != nil {
+		return fmt.Errorf("Cluster sponsor : %v", err)
+	}
+	return nil
+}
+
+func (repman *ReplicationManager) SendOwnerCloud18SubscriptionMail(clustername string, userform cluster.UserForm) error {
+	to := repman.Conf.Cloud18GitUser
+	subj := fmt.Sprintf("Subscription Request for Cluster %s: %s", clustername, userform.Username)
+	msg := fmt.Sprintf(`Dear Admin,
+
+A new user has requested to register for the cluster service.
+
+Details:
+- User Email: %s
+- Cluster: %s
+- Monitoring Node: %s
+- Registration Request Time: %s
+
+Please review the registration request and take the necessary actions.
+
+Best regards,
+Replication Manager
+`, userform.Username, clustername, repman.Conf.APIPublicURL, time.Now().Format("2006-01-02 15:04:05"))
+
+	return repman.Mailer.SendEmailMessage(msg, subj, repman.Conf.MailFrom, to, "", repman.Conf.MailSMTPTLSSkipVerify)
+}
+
+func (repman *ReplicationManager) SendSponsorCloud18SubscriptionMail(clustername string, userform cluster.UserForm) error {
+	to := userform.Username
+
+	subj := fmt.Sprintf("Subscription Request for Cluster %s: %s", clustername, userform.Username)
+	msg := fmt.Sprintf(`Dear Sponsor,
+
+Thank you for submitting your request. We have successfully received it and are currently preparing to process it.
+
+To proceed further, we kindly request you to make the payment to the bank account details provided below. Once the payment has been completed, please allow us time to verify it, and we will follow up with the next steps via email.
+
+Registration Details:
+- User Email: %s
+- Cluster: %s
+- Registration Request Time: %s
+
+Bank Account Details:
+Account Name: %s
+Bank Name: %s
+Account Number: %s
+IFSC/Swift Code: %s
+Reference: %s
+
+Kindly ensure the payment reference matches the request/invoice ID to help us track your payment efficiently.
+
+If you have any questions or need assistance, feel free to reply to this email.
+
+We appreciate your cooperation and look forward to assisting you further.
+
+Best regards,
+
+Signal18
+`, userform.Username, clustername, time.Now().Format("2006-01-02 15:04:05"), "", "", "", "", "")
+
+	return repman.Mailer.SendEmailMessage(msg, subj, repman.Conf.MailFrom, to, "", repman.Conf.MailSMTPTLSSkipVerify)
 }
 
 func (repman *ReplicationManager) validateTokenMiddleware(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {

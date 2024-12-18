@@ -37,8 +37,8 @@ import (
 	"github.com/signal18/replication-manager/utils/alert"
 	"github.com/signal18/replication-manager/utils/cron"
 	"github.com/signal18/replication-manager/utils/dbhelper"
-	"github.com/signal18/replication-manager/utils/githelper"
 	"github.com/signal18/replication-manager/utils/logrus/hooks/pushover"
+	"github.com/signal18/replication-manager/utils/mailer"
 	"github.com/signal18/replication-manager/utils/misc"
 	"github.com/signal18/replication-manager/utils/s18log"
 	"github.com/signal18/replication-manager/utils/state"
@@ -228,7 +228,7 @@ type Cluster struct {
 	InBinlogBackup            bool                        `json:"inBinlogBackup"`
 	InResticBackup            bool                        `json:"inResticBackup"`
 	InRollingRestart          bool                        `json:"inRollingRestart"`
-	GitRepo                   *githelper.GitRepository    `json:"-"`
+	Mailer                    *mailer.Mailer              `json:"-"`
 	LastDelayStatPrint        time.Time
 	sync.Mutex
 	crcTable               *crc64.Table

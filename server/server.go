@@ -9,6 +9,7 @@ package server
 import (
 	"bytes"
 	"crypto/md5"
+	"crypto/tls"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -58,6 +59,7 @@ import (
 	"github.com/signal18/replication-manager/repmanv3"
 	"github.com/signal18/replication-manager/utils/cron"
 	"github.com/signal18/replication-manager/utils/githelper"
+	"github.com/signal18/replication-manager/utils/mailer"
 	"github.com/signal18/replication-manager/utils/misc"
 	"github.com/signal18/replication-manager/utils/peerclient"
 	"github.com/signal18/replication-manager/utils/s18log"
@@ -140,7 +142,7 @@ type ReplicationManager struct {
 	globalScheduler                                  *cron.Cron                        `json:"-"`
 	CheckSumConfig                                   map[string]hash.Hash              `json:"-"`
 	peerClientMap                                    map[string]*peerclient.PeerClient `json:"-"`
-	GitRepo                                          *githelper.GitRepository          `json:"-"`
+	Mailer                                           *mailer.Mailer                    `json:"-"`
 	IsHttpListenerReady                              bool                              `json:"-"`
 	IsApiListenerReady                               bool                              `json:"-"`
 	Terms                                            []byte                            `json:"-"` //Will be fetched by /api/terms later to prevent excessive data
@@ -1768,6 +1770,8 @@ func (repman *ReplicationManager) Run() error {
 	repman.CheckSumConfig = make(map[string]hash.Hash)
 	repman.peerClientMap = make(map[string]*peerclient.PeerClient)
 
+	repman.InitMailer()
+
 	repman.clog.SetLevel(config.ToLogrusLevel(repman.Conf.LogGraphiteLevel))
 	if repman.CpuProfile != "" {
 		fcpupprof, err := os.Create(repman.CpuProfile)
@@ -2083,7 +2087,7 @@ func (repman *ReplicationManager) StartCluster(clusterName string) (*cluster.Clu
 
 	repman.currentCluster = new(cluster.Cluster)
 	repman.currentCluster.Logrus = repman.Logrus
-	repman.currentCluster.GitRepo = repman.GitRepo
+	repman.currentCluster.Mailer = repman.Mailer
 
 	myClusterConf := repman.Confs[clusterName]
 	if myClusterConf.MonitorAddress == "localhost" {
@@ -2819,4 +2823,17 @@ func (repman *ReplicationManager) Save() error {
 	repman.IsNeedGitPush = has_changed
 
 	return nil
+}
+
+func (repman *ReplicationManager) InitMailer() {
+	repman.Mailer = new(mailer.Mailer)
+
+	repman.Mailer.SetAddress(repman.Conf.MailSMTPAddr)
+	if repman.Conf.MailSMTPUser != "" {
+		repman.Mailer.SetSmtpAuth("", repman.Conf.MailSMTPUser, repman.Conf.Secrets["mail-smtp-password"].Value, strings.Split(repman.Conf.MailSMTPAddr, ":")[0])
+	}
+
+	if repman.Conf.MailSMTPTLSSkipVerify {
+		repman.Mailer.SetTlsConfig(&tls.Config{InsecureSkipVerify: true})
+	}
 }
