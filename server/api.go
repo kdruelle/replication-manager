@@ -915,7 +915,7 @@ func (repman *ReplicationManager) handlerMuxPeerRegister(w http.ResponseWriter, 
 		return
 	}
 
-	userform.Roles = "pending"
+	userform.Roles = "pending dbops sponsor"
 	mycluster.AddUser(userform)
 
 	err = repman.SendCloud18ClusterSubscriptionMail(mycluster.Name, userform)

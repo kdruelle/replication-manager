@@ -968,6 +968,7 @@ const (
 	RoleExtSysOps string = "extsysops"
 	RoleExtDBOps  string = "extdbops"
 	RoleSponsor   string = "sponsor"
+	RolePending   string = "pending"
 	RoleVisitor   string = "visitor"
 )
 
@@ -2123,6 +2124,7 @@ func (conf *Config) GetRoleType() map[string]string {
 		RoleExtSysOps: RoleExtSysOps,
 		RoleExtDBOps:  RoleExtDBOps,
 		RoleSponsor:   RoleSponsor,
+		RolePending:   RolePending,
 		RoleVisitor:   RoleVisitor,
 	}
 }
