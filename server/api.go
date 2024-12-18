@@ -774,6 +774,7 @@ func (repman *ReplicationManager) handlerMuxAddClusterUser(w http.ResponseWriter
 			http.Error(w, "Error adding new user: "+err.Error(), 500)
 			return
 		}
+
 	} else {
 		http.Error(w, "No valid cluster", 500)
 		return
@@ -1070,20 +1071,21 @@ func (repman *ReplicationManager) handlerMuxClusterAdd(w http.ResponseWriter, r 
 	// Create user and grant for new cluster
 	cl = repman.getClusterByName(vars["clusterName"])
 	if cl != nil {
-		if u, ok := cl.APIUsers[username]; !ok {
-			// Create user and grant for new cluster
-			userform := cluster.UserForm{
-				Username: username,
-				Roles:    strings.Join(([]string{config.RoleSponsor, config.RoleDBOps, config.RoleSysOps}), " "),
-				Grants:   "cluster db proxy prov",
-			}
+		if repman.Conf.Cloud18GitUser != "" {
+			repman.AddCloud18GitUser(cl)
+		}
 
+		// Create user and grant for new cluster
+		userform := cluster.UserForm{
+			Username: username,
+			Roles:    strings.Join(([]string{config.RoleDBOps, config.RoleSysOps}), " "),
+			Grants:   "cluster db proxy prov",
+		}
+
+		if _, ok := cl.APIUsers[username]; !ok {
 			cl.AddUser(userform)
 		} else {
-			// Update grant for new cluster
-			cl.SetNewUserGrants(&u, "cluster db proxy prov")
-			cl.SetNewUserRoles(&u, strings.Join(([]string{config.RoleSponsor, config.RoleDBOps, config.RoleSysOps}), " "))
-			cl.APIUsers[u.User] = u
+			cl.UpdateUser(userform)
 		}
 
 		// Adjust cluster based on selected orchestrator

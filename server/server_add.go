@@ -7,6 +7,9 @@
 package server
 
 import (
+	"strings"
+
+	"github.com/signal18/replication-manager/cluster"
 	"github.com/signal18/replication-manager/config"
 )
 
@@ -39,4 +42,21 @@ func (repman *ReplicationManager) AddCluster(clusterName string, clusterHead str
 	cluster.Save()
 	return nil
 
+}
+
+func (repman *ReplicationManager) AddCloud18GitUser(cl *cluster.Cluster) error {
+	username := repman.Conf.Cloud18GitUser
+
+	// Create user and grant for new cluster
+	userform := cluster.UserForm{
+		Username: username,
+		Roles:    strings.Join(([]string{config.RoleDBOps, config.RoleSysOps}), " "),
+		Grants:   "cluster db proxy prov global",
+	}
+
+	if _, ok := cl.APIUsers[username]; ok {
+		return cl.UpdateUser(userform)
+	} else {
+		return cl.AddUser(userform)
+	}
 }
