@@ -905,7 +905,7 @@ func (repman *ReplicationManager) handlerMuxPeerRegister(w http.ResponseWriter, 
 		return
 	}
 
-	if repman.Conf.Cloud18GitUser != "" {
+	if repman.Conf.Cloud18GitUser == "" || repman.Conf.Cloud18GitPassword == "" || !repman.Conf.Cloud18 {
 		http.Error(w, "Peer does not have cloud18 setup!", 500)
 		return
 	}
