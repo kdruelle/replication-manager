@@ -886,9 +886,22 @@ func (repman *ReplicationManager) handlerMuxPeerRegister(w http.ResponseWriter, 
 		return
 	}
 
-	tok, _ := githelper.GetGitLabTokenBasicAuth(userform.Username, userform.Password, false)
+	uinfomap, err := repman.GetJWTClaims(r)
+	if err != nil {
+		w.WriteHeader(http.StatusForbidden)
+		fmt.Fprintf(w, "Error parsing JWT: "+err.Error())
+		return
+	}
+
+	if _, ok := uinfomap["profile"]; !ok {
+		w.WriteHeader(http.StatusForbidden)
+		fmt.Fprintf(w, "Current user is not logged in via Gitlab!")
+		return
+	}
+
+	tok, _ := githelper.GetGitLabTokenBasicAuth(uinfomap["User"], repman.Conf.GetDecryptedPassword("peer-login", uinfomap["Password"]), false)
 	if tok == "" {
-		http.Error(w, "Error logging in to gitlab: Token is empty", http.StatusUnauthorized)
+		http.Error(w, "Error logging in to gitlab: Token credentials is not valid", http.StatusUnauthorized)
 		return
 	}
 

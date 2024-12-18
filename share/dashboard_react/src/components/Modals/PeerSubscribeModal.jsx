@@ -45,7 +45,7 @@ function PeerSubscribeModal({ cluster, user, isOpen, closeModal, onSaveModal, te
       .join("  \n");
     let finalterm = terms
       .replace(`<<user>>`, user?.username)
-      .replace(`<<cluster>>`, clustername)
+      .replace(`<<cluster>>`, cluster?.["cluster-name"])
       .replace(`<<ervice_plan_infos>>`, "  \n".concat(servicePlan))
       .replace(`<<date>>`, (new Date()).toLocaleDateString())
     setAgreement(finalterm)
@@ -64,7 +64,7 @@ function PeerSubscribeModal({ cluster, user, isOpen, closeModal, onSaveModal, te
             </Text>
             <Markdown  remarkPlugins={[remarkGFM]}>{agreement}</Markdown>
             <FormControl isInvalid={agreeError}>
-              <Checkbox checked={agree} onCheckedChange={(e) => setAgree(!!e.checked)}>I agree with all terms and condition mentioned above</Checkbox>
+              <Checkbox isChecked={agree} onChange={(e) => setAgree(!!e.target.checked)}>I agree with all terms and condition mentioned above</Checkbox>
               <FormErrorMessage>{agreeError}</FormErrorMessage>
             </FormControl>
           </Stack>
