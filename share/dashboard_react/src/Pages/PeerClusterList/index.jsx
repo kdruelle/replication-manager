@@ -80,10 +80,10 @@ function PeerClusterList({ onLogin, mode }) {
     dispatch(peerRegister({ clusterName: clusterItem['cluster-name'], baseURL: clusterItem['api-public-url'] }))
   }
 
-  const handlePeerCluster = (clusterItem) => {
+  const handlePeerCluster = (clusterItem, isRelogin = false) => {
     const token = localStorage.getItem(`user_token_${btoa(clusterItem['api-public-url'])}`)
     let handler
-    if (token) {
+    if (token && !isRelogin) {
       dispatch(setBaseURL({ baseURL: clusterItem['api-public-url'] }));
       handler = dispatch(getClusterData({ clusterName: clusterItem['cluster-name'] }))
     } else {
@@ -100,9 +100,14 @@ function PeerClusterList({ onLogin, mode }) {
     handler.then((resp) => {
       if (resp?.payload?.status === 200) {
         if (onLogin) return onLogin(resp.payload.data);
+      } 
+      
+      // Handle peer relogin if peer repman instance was restarted
+      if (!isRelogin && resp?.payload?.status === 401 && resp?.payload?.data.includes("crypto/rsa: verification error")){
+        return handlePeerCluster(clusterItem,true)
       }
 
-      if (mode === "shared") {
+      if (mode === "shared" && resp?.payload?.status === 403 && resp?.payload?.data.includes("No valid ACL")) {
         setItem(clusterItem);
         openPeerSubscribeModal();
       } else {
