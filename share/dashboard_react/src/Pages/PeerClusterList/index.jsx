@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { getClusterPeers } from '../../redux/globalClustersSlice'
+import { getClusterPeers, getTermsData } from '../../redux/globalClustersSlice'
 import { Box, Flex, HStack, Text, Wrap } from '@chakra-ui/react'
 import NotFound from '../../components/NotFound'
 import { AiOutlineCluster } from 'react-icons/ai'
@@ -23,7 +23,7 @@ function PeerClusterList({ onLogin, mode }) {
   const [isPeerSubscribeModalOpen, setIsPeerSubscribeModalOpen] = useState(false)
 
   const {
-    globalClusters: { loading, clusterPeers, monitor },
+    globalClusters: { loading, clusterPeers, monitor, terms },
     auth: {
       user
     },
@@ -32,6 +32,10 @@ function PeerClusterList({ onLogin, mode }) {
   useEffect(() => {
     dispatch(getClusterPeers({}))
   }, [])
+
+  useEffect(() => {
+      dispatch(getTermsData({}))
+  }, [monitor?.termsDT])
 
   // Regular expression to check if the string is an email
   const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -247,7 +251,7 @@ function PeerClusterList({ onLogin, mode }) {
           )
         })}
       </Flex>
-      {isPeerSubscribeModalOpen && <PeerSubscribeModal cluster={item} isOpen={isPeerSubscribeModalOpen} closeModal={closePeerSubscribeModal} onSaveModal={handleSubscribeModal} />}
+      {isPeerSubscribeModalOpen && <PeerSubscribeModal terms={terms} cluster={item} isOpen={isPeerSubscribeModalOpen} closeModal={closePeerSubscribeModal} onSaveModal={handleSubscribeModal} />}
     </>
   )
 }

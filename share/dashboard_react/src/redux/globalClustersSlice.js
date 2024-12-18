@@ -91,12 +91,22 @@ export const reloadClustersPlan = createAsyncThunk('globalClusters/reloadCluster
   }
 )
 
+export const getTermsData = createAsyncThunk('globalClusters/getTermsData', async ({}, thunkAPI) => {
+  try {
+    const { data, status } = await globalClustersService.getTermsData()
+    return { data, status }
+  } catch (error) {
+    handleError(error, thunkAPI)
+  }
+})
+
 const initialState = {
   loading: false,
   error: null,
   clusters: null,
   clusterPeers: null,
-  monitor: null
+  monitor: null,
+  terms: null
 }
 
 export const globalClustersSlice = createSlice({
@@ -125,6 +135,13 @@ export const globalClustersSlice = createSlice({
         state.monitor = action.payload.data
       })
       .addCase(getMonitoredData.rejected, (state, action) => {
+        state.error = action.error
+      })
+      .addCase(getTermsData.pending, (state) => {})
+      .addCase(getTermsData.fulfilled, (state, action) => {
+        state.terms = action.payload.data
+      })
+      .addCase(getTermsData.rejected, (state, action) => {
         state.error = action.error
       })
       .addCase(getClusterPeers.pending, (state) => {})

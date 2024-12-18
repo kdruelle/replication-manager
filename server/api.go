@@ -267,6 +267,9 @@ func (repman *ReplicationManager) apiserver() {
 	router.Handle("/api/monitor", negroni.New(
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxReplicationManager)),
 	))
+	router.Handle("/api/terms", negroni.New(
+		negroni.Wrap(http.HandlerFunc(repman.handlerMuxTerms)),
+	))
 	//PROTECTED ENDPOINTS FOR SETTINGS
 	router.Handle("/api/monitor", negroni.New(
 		negroni.HandlerFunc(repman.validateTokenMiddleware),
@@ -725,6 +728,11 @@ func (repman *ReplicationManager) handlerMuxReplicationManager(w http.ResponseWr
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(res)
+}
+
+func (repman *ReplicationManager) handlerMuxTerms(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Write(repman.Terms)
 }
 
 func (repman *ReplicationManager) handlerMuxAddUser(w http.ResponseWriter, r *http.Request) {

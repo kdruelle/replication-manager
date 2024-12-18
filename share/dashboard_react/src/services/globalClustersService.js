@@ -4,6 +4,7 @@ export const globalClustersService = {
   getClusters,
   getClusterPeers,
   getMonitoredData,
+  getTermsData,
   switchGlobalSetting,
   setGlobalSetting,
   addCluster,
@@ -20,6 +21,10 @@ function getClusters(baseURL) {
 
 function getMonitoredData(baseURL) {
   return getApi(baseURL).get('monitor')
+}
+
+function getTermsData(baseURL) {
+  return getApi(baseURL).get('terms')
 }
 
 function switchGlobalSetting(setting) {

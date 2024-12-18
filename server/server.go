@@ -143,6 +143,8 @@ type ReplicationManager struct {
 	GitRepo                                          *githelper.GitRepository          `json:"-"`
 	IsHttpListenerReady                              bool                              `json:"-"`
 	IsApiListenerReady                               bool                              `json:"-"`
+	Terms                                            []byte                            `json:"-"` //Will be fetched by /api/terms later to prevent excessive data
+	TermsDT                                          time.Time                         `json:"termsDT"`
 	fileHook                                         log.Hook
 	repmanv3.UnimplementedClusterPublicServiceServer `json:"-"`
 	repmanv3.UnimplementedClusterServiceServer       `json:"-"`
@@ -1834,10 +1836,13 @@ func (repman *ReplicationManager) Run() error {
 	loglen := repman.termlength - 9 - (len(strings.Split(repman.Conf.Hosts, ",")) * 3)
 	repman.tlog = s18log.NewTermLog(loglen)
 	repman.Logs = s18log.NewHttpLog(80)
+	repman.Terms = make([]byte, 0)
+	repman.TermsDT = time.Now()
 	repman.InitServicePlans()
 	repman.ServiceOrchestrators = repman.Conf.GetOrchestratorsProv()
 	repman.InitGrants()
 	repman.InitRoles()
+	repman.ReloadTerms()
 	repman.ServiceRepos, err = repman.Conf.GetDockerRepos(repman.Conf.ShareDir+"/repo/repos.json", repman.Conf.Test)
 	if err != nil {
 		repman.Logrus.WithError(err).Errorf("Initialization docker repo failed: %s %s", repman.Conf.ShareDir+"/repo/repos.json", err)
@@ -2391,6 +2396,42 @@ func (repman *ReplicationManager) InitRoles() error {
 	}
 	repman.ServiceRoles = roles
 	sort.Sort(RoleSorter(repman.ServiceRoles))
+	return nil
+}
+
+func (repman *ReplicationManager) ReloadTerms() error {
+	var updated bool
+	path := repman.Conf.WorkingDir + "/.pull/terms.md"
+
+	finfo, err := os.Stat(path)
+	if err != nil {
+		return err
+	}
+
+	terms, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+
+	new_h := md5.New()
+	_, err = new_h.Write(terms)
+	if err != nil {
+		return err
+	}
+
+	h, ok := repman.CheckSumConfig["terms"]
+	if !ok {
+		updated = true
+	}
+	if ok && !bytes.Equal(h.Sum(nil), new_h.Sum(nil)) {
+		updated = true
+	}
+
+	if updated {
+		repman.CheckSumConfig["terms"] = new_h
+		repman.Terms = terms
+		repman.TermsDT = finfo.ModTime()
+	}
 	return nil
 }
 
