@@ -114,18 +114,18 @@ func (cluster *Cluster) SaveUserRoles(user string) string {
 	return strings.Join(aEnabledRoles, " ")
 }
 
-// func (cluster *Cluster) SaveAcls() {
-// 	credentials := strings.Split(cluster.Conf.GetDecryptedValue("api-credentials")+","+cluster.Conf.GetDecryptedValue("api-credentials-external"), ",")
-// 	var aUserAcls []string
-// 	for _, credential := range credentials {
-// 		user, _ := misc.SplitPair(credential)
-// 		enabledAcls := cluster.SaveUserAcls(user)
-// 		enabledRoles := cluster.SaveUserRoles(user)
-// 		aUserAcls = append(aUserAcls, user+":"+enabledAcls+":"+enabledRoles)
-// 	}
-// 	cluster.Conf.APIUsersACLAllow = strings.Join(aUserAcls, ",")
-// 	cluster.Conf.APIUsersACLDiscard = ""
-// }
+func (cluster *Cluster) SaveAcls() {
+	credentials := strings.Split(cluster.Conf.GetDecryptedValue("api-credentials")+","+cluster.Conf.GetDecryptedValue("api-credentials-external"), ",")
+	var aUserAcls []string
+	for _, credential := range credentials {
+		user, _ := misc.SplitPair(credential)
+		enabledAcls := cluster.SaveUserAcls(user)
+		enabledRoles := cluster.SaveUserRoles(user)
+		aUserAcls = append(aUserAcls, user+":"+enabledAcls+":"+enabledRoles)
+	}
+	cluster.Conf.APIUsersACLAllow = strings.Join(aUserAcls, ",")
+	cluster.Conf.APIUsersACLDiscard = ""
+}
 
 // func (cluster *Cluster) SetGrant(user string, grant string, enable bool) {
 // 	if _, ok := cluster.APIUsers[user].Grants[grant]; ok {
@@ -193,52 +193,48 @@ func (cluster *Cluster) GetClusterUserDiscardACLs(acls string) map[string]ListUs
 
 func (cluster *Cluster) LoadAPIUsers() error {
 	meUsers := make(map[string]APIUser)
-	lists := []string{"api-credentials", "api-credentials-external"}
-	var aclList string
+	credentials := strings.Split(cluster.Conf.Secrets["api-credentials"].Value+","+cluster.Conf.Secrets["api-credentials-external"].Value, ",")
+	listACLs := cluster.GetClusterUserAllowACLs(cluster.Conf.APIUsersACLAllow)
+	listDiscard := cluster.GetClusterUserDiscardACLs(cluster.Conf.APIUsersACLDiscard)
+	listACLsExt := cluster.GetClusterUserAllowACLs(cluster.Conf.APIUsersACLAllowExternal)
 
-	for _, list := range lists {
-		credentials := strings.Split(cluster.Conf.Secrets[list].Value, ",")
-
-		if list == "api-credentials" {
-			aclList = cluster.Conf.APIUsersACLAllow
-		} else if list == "api-credentials-external" {
-			aclList = cluster.Conf.APIUsersACLAllowExternal
+	for _, credential := range credentials {
+		// Prevent empty credentials
+		if credential == "" {
+			continue
 		}
 
-		listACLs := cluster.GetClusterUserAllowACLs(aclList)
-		listDiscard := cluster.GetClusterUserDiscardACLs(cluster.Conf.APIUsersACLDiscard)
-
-		for _, credential := range credentials {
-			// Prevent empty credentials
-			if credential == "" {
-				continue
-			}
-
-			// Assign User Credentials
-			var newapiuser APIUser
-			newapiuser.User, newapiuser.Password = misc.SplitPair(credential)
-			newapiuser.Password = cluster.Conf.GetDecryptedPassword(list, newapiuser.Password)
-			newapiuser.Grants = make(map[string]bool)
-			newapiuser.Roles = make(map[string]bool)
-			if list == "api-credentials-external" {
-				newapiuser.IsExternal = true
-			}
-
-			// Assign Roles and ACLs
-			if userACL, ok := listACLs[newapiuser.User]; ok {
-				cluster.SetNewUserGrants(&newapiuser, userACL.ACLs)
-				cluster.SetNewUserRoles(&newapiuser, userACL.Roles)
-			}
-
-			if discardACL, ok := listDiscard[newapiuser.User]; ok {
-				acls := strings.Split(discardACL.ACLs, " ")
-				for _, acl := range acls {
-					newapiuser.Grants[acl] = false
-				}
-			}
-
-			meUsers[newapiuser.User] = newapiuser
+		// Assign User Credentials
+		var newapiuser APIUser
+		newapiuser.User, newapiuser.Password = misc.SplitPair(credential)
+		if _, ok := meUsers[newapiuser.User]; ok {
+			continue
 		}
+
+		newapiuser.Password = cluster.Conf.GetDecryptedPassword("api-credentials", newapiuser.Password)
+		newapiuser.Grants = make(map[string]bool)
+		newapiuser.Roles = make(map[string]bool)
+
+		// Assign Roles and ACLs
+		if userACL, ok := listACLs[newapiuser.User]; ok {
+			cluster.SetNewUserGrants(&newapiuser, userACL.ACLs)
+			cluster.SetNewUserRoles(&newapiuser, userACL.Roles)
+		}
+
+		if discardACL, ok := listDiscard[newapiuser.User]; ok {
+			acls := strings.Split(discardACL.ACLs, " ")
+			for _, acl := range acls {
+				newapiuser.Grants[acl] = false
+			}
+		}
+
+		// Assign Roles and ACLs
+		if userACL, ok := listACLsExt[newapiuser.User]; ok {
+			cluster.SetNewUserGrants(&newapiuser, userACL.ACLs)
+			cluster.SetNewUserRoles(&newapiuser, userACL.Roles)
+		}
+
+		meUsers[newapiuser.User] = newapiuser
 	}
 
 	cluster.APIUsers = meUsers
