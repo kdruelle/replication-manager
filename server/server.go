@@ -2065,6 +2065,7 @@ func (repman *ReplicationManager) Run() error {
 
 			if repman.Conf.Cloud18 && repman.Conf.GitUrlPull != "" {
 				repman.PullCloud18Configs()
+				repman.ReloadTerms()
 			}
 		}
 
