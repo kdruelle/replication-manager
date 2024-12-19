@@ -95,13 +95,7 @@ func (cluster *Cluster) GetAPIUser(strUser string, strPassword string) (APIUser,
 }
 
 func (cluster *Cluster) SaveUserAcls(user string) string {
-	var aEnabledAcls []string
-	for grant, value := range cluster.APIUsers[user].Grants {
-		if value {
-			aEnabledAcls = append(aEnabledAcls, grant)
-		}
-	}
-	return strings.Join(aEnabledAcls, " ")
+	return strings.Join(cluster.Conf.GetCompactGrants(cluster.APIUsers[user].Grants), " ")
 }
 
 func (cluster *Cluster) SaveUserRoles(user string) string {
@@ -123,7 +117,7 @@ func (cluster *Cluster) SaveAcls() {
 		enabledRoles := cluster.SaveUserRoles(user)
 		aUserAcls = append(aUserAcls, user+":"+enabledAcls+":"+enabledRoles)
 	}
-	cluster.Conf.APIUsersACLAllow = strings.Join(aUserAcls, ",")
+	cluster.Conf.APIUsersACLAllowExternal = strings.Join(aUserAcls, ",")
 	cluster.Conf.APIUsersACLDiscard = ""
 }
 

@@ -2120,6 +2120,191 @@ func (conf *Config) GetGrantType() map[string]string {
 	}
 }
 
+func (conf *Config) GetGrantDB() []string {
+	return []string{
+		GrantDBStart,
+		GrantDBStop,
+		GrantDBKill,
+		GrantDBOptimize,
+		GrantDBAnalyse,
+		GrantDBReplication,
+		GrantDBBackup,
+		GrantDBRestore,
+		GrantDBReadOnly,
+		GrantDBLogs,
+		GrantDBCapture,
+		GrantDBMaintenance,
+		GrantDBConfigCreate,
+		GrantDBConfigRessource,
+		GrantDBConfigFlag,
+		GrantDBConfigGet,
+		GrantDBShowVariables,
+		GrantDBShowStatus,
+		GrantDBShowSchema,
+		GrantDBShowProcess,
+		GrantDBShowLogs,
+		GrantDBDebug,
+	}
+}
+
+func (conf *Config) HasAllDBGrants(grants map[string]bool) bool {
+	for _, grant := range conf.GetGrantDB() {
+		if !grants[grant] {
+			return false
+		}
+	}
+	return true
+}
+
+func (conf *Config) GetGrantCluster() []string {
+	return []string{
+		GrantClusterCreate,
+		GrantClusterDrop,
+		GrantClusterCreateMonitor,
+		GrantClusterDropMonitor,
+		GrantClusterFailover,
+		GrantClusterSwitchover,
+		GrantClusterRolling,
+		GrantClusterSettings,
+		GrantClusterGrant,
+		GrantClusterReplication,
+		GrantClusterChecksum,
+		GrantClusterSharding,
+		GrantClusterCertificatesRotate,
+		GrantClusterCertificatesReload,
+		GrantClusterBench,
+		GrantClusterTest,
+		GrantClusterTraffic,
+		GrantClusterProcess,
+		GrantClusterDebug,
+		GrantClusterShowBackups,
+		GrantClusterShowAgents,
+		GrantClusterShowGraphs,
+		GrantClusterConfigGraphs,
+		GrantClusterShowRoutes,
+		GrantClusterShowCertificates,
+		GrantClusterResetSLA,
+		GrantClusterRotatePasswords,
+	}
+}
+
+func (conf *Config) HasAllClusterGrants(grants map[string]bool) bool {
+	for _, grant := range conf.GetGrantCluster() {
+		if !grants[grant] {
+			return false
+		}
+	}
+	return true
+}
+
+func (conf *Config) GetGrantProxy() []string {
+	return []string{
+		GrantProxyConfigCreate,
+		GrantProxyConfigGet,
+		GrantProxyConfigRessource,
+		GrantProxyConfigFlag,
+		GrantProxyStart,
+		GrantProxyStop,
+	}
+}
+
+func (conf *Config) HasAllProxyGrants(grants map[string]bool) bool {
+	for _, grant := range conf.GetGrantProxy() {
+		if !grants[grant] {
+			return false
+		}
+	}
+	return true
+}
+
+func (conf *Config) GetGrantProvision() []string {
+	return []string{
+		GrantProvSettings,
+		GrantProvCluster,
+		GrantProvClusterProvision,
+		GrantProvClusterUnprovision,
+		GrantProvDBUnprovision,
+		GrantProvDBProvision,
+		GrantProvProxyProvision,
+		GrantProvProxyUnprovision,
+	}
+}
+
+func (conf *Config) HasAllProvisionGrants(grants map[string]bool) bool {
+	for _, grant := range conf.GetGrantProvision() {
+		if !grants[grant] {
+			return false
+		}
+	}
+	return true
+}
+
+func (conf *Config) GetGrantGlobal() []string {
+	return []string{
+		GrantGlobalGrant,
+		GrantGlobalSettings,
+	}
+}
+
+func (conf *Config) HasAllGlobalGrants(grants map[string]bool) bool {
+	for _, grant := range conf.GetGrantGlobal() {
+		if !grants[grant] {
+			return false
+		}
+	}
+	return true
+}
+
+func (conf *Config) GetCompactGrants(grants map[string]bool) []string {
+	var compactGrants []string
+	if conf.HasAllDBGrants(grants) {
+		compactGrants = append(compactGrants, "db")
+	} else {
+		for _, grant := range conf.GetGrantDB() {
+			if grants[grant] {
+				compactGrants = append(compactGrants, grant)
+			}
+		}
+	}
+	if conf.HasAllClusterGrants(grants) {
+		compactGrants = append(compactGrants, "cluster")
+	} else {
+		for _, grant := range conf.GetGrantCluster() {
+			if grants[grant] {
+				compactGrants = append(compactGrants, grant)
+			}
+		}
+	}
+	if conf.HasAllProxyGrants(grants) {
+		compactGrants = append(compactGrants, "proxy")
+	} else {
+		for _, grant := range conf.GetGrantProxy() {
+			if grants[grant] {
+				compactGrants = append(compactGrants, grant)
+			}
+		}
+	}
+	if conf.HasAllProvisionGrants(grants) {
+		compactGrants = append(compactGrants, "prov")
+	} else {
+		for _, grant := range conf.GetGrantProvision() {
+			if grants[grant] {
+				compactGrants = append(compactGrants, grant)
+			}
+		}
+	}
+	if conf.HasAllGlobalGrants(grants) {
+		compactGrants = append(compactGrants, "global")
+	} else {
+		for _, grant := range conf.GetGrantGlobal() {
+			if grants[grant] {
+				compactGrants = append(compactGrants, grant)
+			}
+		}
+	}
+	return compactGrants
+}
+
 func (conf *Config) GetRoleType() map[string]string {
 	return map[string]string{
 		RoleSysOps:    RoleSysOps,

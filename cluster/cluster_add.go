@@ -185,6 +185,7 @@ func (cluster *Cluster) AddUser(userform UserForm) error {
 		cluster.Conf.APIUsersACLAllowExternal = cluster.Conf.APIUsersACLAllowExternal + "," + user + ":" + grants + ":" + roles + ":" + cluster.Name
 
 		cluster.LoadAPIUsers()
+		cluster.SaveAcls()
 		cluster.Save()
 	}
 
