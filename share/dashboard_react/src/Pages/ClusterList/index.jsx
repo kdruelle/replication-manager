@@ -4,7 +4,7 @@ import { getClusters } from '../../redux/globalClustersSlice'
 import { setCluster } from '../../redux/clusterSlice'
 import { Box, Flex, HStack, Text, Wrap } from '@chakra-ui/react'
 import NotFound from '../../components/NotFound'
-import { AiOutlineCluster } from 'react-icons/ai'
+import { AiOutlineCluster, AiOutlineCreditCard } from 'react-icons/ai'
 import { HiExclamation } from 'react-icons/hi'
 import Card from '../../components/Card'
 import TableType2 from '../../components/TableType2'
@@ -56,6 +56,8 @@ function ClusterList({ onClick }) {
     <Flex className={styles.clusterList}>
       {clusters?.map((clusterItem, index) => {
         const headerText = clusterItem.name
+        const pendingList = Object.entries(clusterItem?.apiUsers).filter(([_,u]) => u.roles.pending) || []
+        const sponsorList = Object.entries(clusterItem?.apiUsers).filter(([_,u]) => u.roles.sponsor) || []
         const dataObject = [
           {
             key: 'Is Monitoring',
@@ -122,6 +124,7 @@ function ClusterList({ onClick }) {
           },
           { key: 'SLA', value: clusterItem.uptime }
         ]
+        
         return (
           <Box key={clusterItem.name} className={styles.cardWrapper}>
             <Card
@@ -137,7 +140,7 @@ function ClusterList({ onClick }) {
                       onClick(clusterItem)
                     }
                   }}>
-                  <CustomIcon icon={AiOutlineCluster} />
+                  <CustomIcon icon={ sponsorList.length > 0 ? (AiOutlineCreditCard): (AiOutlineCluster)} fill={ sponsorList.length > 0 ? pendingList.length > 0 ? "orange" : "green" : "gray" }  />
                   <span className={styles.cardHeaderText}>{headerText}</span>
                   {monitor?.config?.monitoringSaveConfig && monitor?.config?.cloud18GitUser?.length > 0 && (
                     <RMIconButton
