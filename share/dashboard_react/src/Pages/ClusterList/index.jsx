@@ -4,8 +4,8 @@ import { getClusters } from '../../redux/globalClustersSlice'
 import { setCluster } from '../../redux/clusterSlice'
 import { Box, Flex, HStack, Text, Wrap } from '@chakra-ui/react'
 import NotFound from '../../components/NotFound'
-import { AiOutlineCluster, AiOutlineCreditCard } from 'react-icons/ai'
-import { HiExclamation } from 'react-icons/hi'
+import { AiOutlineCluster } from 'react-icons/ai'
+import { HiCreditCard, HiExclamation } from 'react-icons/hi'
 import Card from '../../components/Card'
 import TableType2 from '../../components/TableType2'
 import styles from './styles.module.scss'
@@ -140,7 +140,7 @@ function ClusterList({ onClick }) {
                       onClick(clusterItem)
                     }
                   }}>
-                  <CustomIcon icon={ sponsorList.length > 0 ? (AiOutlineCreditCard): (AiOutlineCluster)} fill={ sponsorList.length > 0 ? pendingList.length > 0 ? "orange" : "green" : "gray" }  />
+                  <CustomIcon icon={ sponsorList.length > 0 ? (HiCreditCard): (AiOutlineCluster)} fill={ sponsorList.length > 0 ? pendingList.length > 0 ? "orange" : "green" : "gray" }  />
                   <span className={styles.cardHeaderText}>{headerText}</span>
                   {monitor?.config?.monitoringSaveConfig && monitor?.config?.cloud18GitUser?.length > 0 && (
                     <RMIconButton
