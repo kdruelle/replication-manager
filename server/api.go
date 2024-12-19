@@ -877,7 +877,7 @@ func (repman *ReplicationManager) handlerMuxPeerClusters(w http.ResponseWriter, 
 	peer := make([]config.PeerCluster, 0)
 	booked := strings.Split(repman.PeerBooked[peerUser], ",")
 	for _, cl := range repman.PeerClusters {
-		if strings.Contains(cl.ApiCredentialsAclAllowExternal+","+cl.ApiCredentialsAclAllow, peerUser) || slices.Contains(booked, cl.Cloud18Domain+"/"+cl.Cloud18SubDomain+"/"+cl.ClusterName) || cl.Cloud18Peer {
+		if strings.Contains(cl.ApiCredentialsAclAllowExternal+","+cl.ApiCredentialsAclAllow, peerUser) || slices.Contains(booked, cl.Cloud18Domain+"/"+cl.Cloud18SubDomain+"/"+cl.ClusterName) {
 			peer = append(peer, cl)
 		}
 	}
@@ -915,7 +915,7 @@ func (repman *ReplicationManager) handlerMuxPeerClustersForSale(w http.ResponseW
 		if slices.Contains(booked, cl.Cloud18Domain+"/"+cl.Cloud18SubDomain+"/"+cl.ClusterName) {
 			continue
 		}
-		if !strings.Contains(cl.ApiCredentialsAclAllowExternal, "sponsor") && !strings.Contains(cl.ApiCredentialsAclAllowExternal, uinfo["User"]) && !cl.Cloud18Peer {
+		if !strings.Contains(cl.ApiCredentialsAclAllowExternal, "sponsor") && !strings.Contains(cl.ApiCredentialsAclAllowExternal, "pending") && !strings.Contains(cl.ApiCredentialsAclAllowExternal, uinfo["User"]) && !cl.Cloud18Peer {
 			shared = append(shared, cl)
 		}
 	}
