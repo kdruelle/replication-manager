@@ -1,17 +1,24 @@
 .modalLightContent {
   background-color: var(--white-color) !important;
 }
+
 .modalDarkContent {
   background-color: var(--primary-color) !important;
+
+  [class*='chakra-checkbox__control'] {
+    border-color: var(--white-color) !important;
+  }
 }
 
 .aclContainer {
   gap: 0 !important;
+
   input[type='search'] {
     border-radius: 0;
     border-top-left-radius: $border-radius-sm;
     border-top-right-radius: $border-radius-sm;
   }
+
   .aclList {
     width: 100%;
     max-height: rem(300);
@@ -20,8 +27,10 @@
     padding: rem(8);
     border-bottom-left-radius: $border-radius-sm;
     border-bottom-right-radius: $border-radius-sm;
+
     .aclListItem {
       padding: rem(4);
+
       &:nth-of-type(odd) {
         background-color: var(--secondary-gray-color);
       }
@@ -31,11 +40,13 @@
 
 .roleContainer {
   gap: 0 !important;
+
   input[type='search'] {
     border-radius: 0;
     border-top-left-radius: $border-radius-sm;
     border-top-right-radius: $border-radius-sm;
   }
+
   .roleList {
     width: 100%;
     max-height: rem(300);
@@ -44,8 +55,10 @@
     padding: rem(8);
     border-bottom-left-radius: $border-radius-sm;
     border-bottom-right-radius: $border-radius-sm;
+
     .roleListItem {
       padding: rem(4);
+
       &:nth-of-type(odd) {
         background-color: var(--secondary-gray-color);
       }
@@ -67,6 +80,7 @@
       flex-direction: column;
       align-items: flex-start;
     }
+
     .scriptTextContainer {
       width: 100%;
       margin-top: rem(8);
@@ -78,16 +92,19 @@
       text-align: start;
     }
   }
+
   .valueWithInfo {
     flex-direction: column;
     align-items: flex-start;
     gap: rem(4);
+
     .info {
       font-weight: 500;
       text-align: start;
       font-style: italic;
     }
   }
+
   .maxConnectMarkLabel {
     width: rem(52);
     min-width: rem(52);
@@ -99,5 +116,5 @@
 }
 
 .fullWidth {
-    width: 100% !important;
+  width: 100% !important;
 }
