@@ -32,6 +32,15 @@ export const getClusterPeers = createAsyncThunk('globalClusters/getClusterPeers'
   }
 })
 
+export const getClusterForSale = createAsyncThunk('globalClusters/getClusterForSale', async ({}, thunkAPI) => {
+  try {
+    const { data, status } = await globalClustersService.getClusterForSale()
+    return { data, status }
+  } catch (error) {
+    handleError(error, thunkAPI)
+  }
+})
+
 export const getMonitoredData = createAsyncThunk('globalClusters/getMonitoredData', async ({}, thunkAPI) => {
   try {
     const { data, status } = await globalClustersService.getMonitoredData()
@@ -105,6 +114,7 @@ const initialState = {
   error: null,
   clusters: null,
   clusterPeers: null,
+  clusterForSale: null,
   monitor: null,
   terms: null
 }
@@ -149,6 +159,13 @@ export const globalClustersSlice = createSlice({
         state.clusterPeers = action.payload.data
       })
       .addCase(getClusterPeers.rejected, (state, action) => {
+        state.error = action.error
+      })
+      .addCase(getClusterForSale.pending, (state) => {})
+      .addCase(getClusterForSale.fulfilled, (state, action) => {
+        state.clusterForSale = action.payload.data
+      })
+      .addCase(getClusterForSale.rejected, (state, action) => {
         state.error = action.error
       })
   }

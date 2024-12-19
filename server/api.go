@@ -23,6 +23,7 @@ import (
 	"net/url"
 	"os"
 	"runtime/debug"
+	"slices"
 	"sort"
 	"strings"
 	"time"
@@ -244,6 +245,9 @@ func (repman *ReplicationManager) apiserver() {
 
 	router.Handle("/api/clusters", negroni.New(
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxClusters)),
+	))
+	router.Handle("/api/clusters/for-sale", negroni.New(
+		negroni.Wrap(http.HandlerFunc(repman.handlerMuxPeerClustersForSale)),
 	))
 	router.Handle("/api/clusters/peers", negroni.New(
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxPeerClusters)),
@@ -859,7 +863,64 @@ func (repman *ReplicationManager) handlerMuxPeerClusters(w http.ResponseWriter, 
 		return
 	}
 
-	cl, err := json.MarshalIndent(repman.PeerClusters, "", "\t")
+	uinfo, err := repman.GetJWTClaims(r)
+	if err != nil {
+		http.Error(w, "Failed to get token claims: "+err.Error(), 500)
+		return
+	}
+
+	peerUser := uinfo["User"]
+	if peerUser == "admin" {
+		peerUser = repman.Conf.Cloud18GitUser
+	}
+
+	peer := make([]config.PeerCluster, 0)
+	booked := strings.Split(repman.PeerBooked[peerUser], ",")
+	for _, cl := range repman.PeerClusters {
+		if strings.Contains(cl.ApiCredentialsAclAllowExternal, peerUser) || slices.Contains(booked, cl.Cloud18Domain+"/"+cl.Cloud18SubDomain+"/"+cl.ClusterName) {
+			peer = append(peer, cl)
+		}
+	}
+
+	cl, err := json.MarshalIndent(peer, "", "\t")
+	if err != nil {
+		http.Error(w, "Error Marshal", 500)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(cl)
+}
+
+func (repman *ReplicationManager) handlerMuxPeerClustersForSale(w http.ResponseWriter, r *http.Request) {
+	ok, err := repman.isValidRequest(r)
+	if !ok {
+		http.Error(w, "Unauthenticated resource: "+err.Error(), 401)
+		return
+	}
+
+	uinfo, err := repman.GetJWTClaims(r)
+	if err != nil {
+		http.Error(w, "Failed to get token claims: "+err.Error(), 500)
+		return
+	}
+
+	peerUser := uinfo["User"]
+	if peerUser == "admin" {
+		peerUser = repman.Conf.Cloud18GitUser
+	}
+
+	shared := make([]config.PeerCluster, 0)
+	booked := strings.Split(repman.PeerBooked[peerUser], ",")
+	for _, cl := range repman.PeerClusters {
+		if slices.Contains(booked, cl.Cloud18Domain+"/"+cl.Cloud18SubDomain+"/"+cl.ClusterName) {
+			continue
+		}
+		if !strings.Contains(cl.ApiCredentialsAclAllowExternal, "sponsor") && !strings.Contains(cl.ApiCredentialsAclAllowExternal, uinfo["User"]) {
+			shared = append(shared, cl)
+		}
+	}
+
+	cl, err := json.MarshalIndent(shared, "", "\t")
 	if err != nil {
 		http.Error(w, "Error Marshal", 500)
 		return

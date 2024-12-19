@@ -751,7 +751,7 @@ type PeerCluster struct {
 	ClusterName                            string   `json:"cluster-name"`
 	PeerUsers                              []string `json:"peer-users"`
 	ApiPublicUrl                           string   `json:"api-public-url"`
-	ApiCredentialsAclAllow                 string   `json:"api-credentials-acl-allow"`
+	ApiCredentialsAclAllowExternal         string   `json:"api-credentials-acl-allow-external"`
 	ProvDbMemory                           int      `json:"prov-db-memory,string"`
 	ProvDbCpuCores                         int      `json:"prov-db-cpu-cores,string"`
 	ProvDbDiskIops                         int64    `json:"prov-db-disk-iops,string"`
@@ -1627,11 +1627,13 @@ func (conf *Config) PushConfigToGit(url string, tok string, user string, dir str
 				})
 				if err != nil {
 					log.Errorf("Git error : cannot Clone %s repository : %s", url, err)
+					return err
 				}
 			} else {
 				if conf.IsEligibleForPrinting(ConstLogModGit, LvlDbg) {
 					log.Errorf("Git error : cannot Clone %s repository : %s", url, err)
 				}
+				return err
 			}
 		}
 

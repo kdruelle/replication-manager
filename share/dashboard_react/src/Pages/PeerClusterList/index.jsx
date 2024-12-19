@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { getClusterPeers, getTermsData } from '../../redux/globalClustersSlice'
+import { getClusterPeers, getClusterForSale, getTermsData } from '../../redux/globalClustersSlice'
 import { Box, Flex, HStack, Text, Wrap } from '@chakra-ui/react'
 import NotFound from '../../components/NotFound'
 import { AiOutlineCluster } from 'react-icons/ai'
@@ -23,7 +23,7 @@ function PeerClusterList({ onLogin, mode }) {
   const [isPeerSubscribeModalOpen, setIsPeerSubscribeModalOpen] = useState(false)
 
   const {
-    globalClusters: { loading, clusterPeers, monitor, terms },
+    globalClusters: { loading, clusterPeers, clusterForSale, monitor, terms },
     auth: {
       user
     },
@@ -31,38 +31,21 @@ function PeerClusterList({ onLogin, mode }) {
 
   useEffect(() => {
     dispatch(getClusterPeers({}))
+    dispatch(getClusterForSale({}))
   }, [])
 
   useEffect(() => {
-      dispatch(getTermsData({}))
+    dispatch(getTermsData({}))
   }, [monitor?.termsDT])
 
-  // Regular expression to check if the string is an email
-  const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-
-  const checkPeerUser = (u, gituser) => {
-
-
-    // Check if the string matches the email pattern or is "admin"
-    if (emailPattern.test(u)) {
-      return u;
-    } else if (u.toLowerCase() === "admin") {
-      return gituser || "";
-    }
-    return "";
-  }
-
   useEffect(() => {
-    if (clusterPeers?.length > 0) {
-      if (mode === 'shared') {
-        const shared = clusterPeers.filter((cluster) => cluster["cloud18-shared"] === "true" && cluster["cloud18-peer"] === "false")
-        setClusters(shared)
-      } else {
-        const peers = user?.username ? clusterPeers.filter((cluster) => cluster["cloud18-peer"] === "true").filter((cluster) => cluster['api-credentials-acl-allow']?.includes(checkPeerUser(user?.username, monitor?.config?.cloud18GitUser))) : []
-        setClusters(peers)
-      }
+    if (clusterPeers?.length > 0 && mode !== 'shared') {
+      setClusters(clusterPeers)
     }
-  }, [clusterPeers])
+    if (clusterForSale?.length > 0 && mode === 'shared') {
+      setClusters(clusterForSale)
+    }
+  }, [clusterPeers,clusterForSale])
 
   const openPeerSubscribeModal = () => {
     setIsPeerSubscribeModalOpen(true)
@@ -92,6 +75,14 @@ function PeerClusterList({ onLogin, mode }) {
           if (action?.payload?.status === 200) {
             return dispatch(getClusterData({ clusterName: clusterItem['cluster-name'] }))
           } else {
+            dispatch(
+              showErrorToast({
+                status: 'error',
+                title: 'Peer login failed',
+                description: action?.payload?.data || error
+              })
+            )
+            dispatch(setBaseURL({ baseURL: '' }));
             throw new Error(action?.payload?.data);
           }
         });
@@ -100,11 +91,11 @@ function PeerClusterList({ onLogin, mode }) {
     handler.then((resp) => {
       if (resp?.payload?.status === 200) {
         if (onLogin) return onLogin(resp.payload.data);
-      } 
-      
+      }
+
       // Handle peer relogin if peer repman instance was restarted
-      if (!isRelogin && resp?.payload?.status === 401 && resp?.payload?.data.includes("crypto/rsa: verification error")){
-        return handlePeerCluster(clusterItem,true)
+      if (!isRelogin && resp?.payload?.status === 401 && resp?.payload?.data.includes("crypto/rsa: verification error")) {
+        return handlePeerCluster(clusterItem, true)
       }
 
       if (mode === "shared" && resp?.payload?.status === 403 && resp?.payload?.data.includes("No valid ACL")) {
@@ -119,16 +110,6 @@ function PeerClusterList({ onLogin, mode }) {
         })
       }
     })
-      .catch((error) => {
-        dispatch(
-          showErrorToast({
-            status: 'error',
-            title: 'Peer login failed',
-            description: error?.message || error
-          })
-        )
-        dispatch(setBaseURL({ baseURL: '' }));
-      });
   };
 
 

@@ -83,10 +83,6 @@ func (repman *ReplicationManager) apiClusterProtectedHandler(router *mux.Router)
 		negroni.HandlerFunc(repman.validateTokenMiddleware),
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxClusterShardClusters)),
 	))
-	router.Handle("/api/clusters/{clusterName}/shared", negroni.New(
-		negroni.HandlerFunc(repman.validateTokenMiddleware),
-		negroni.Wrap(http.HandlerFunc(repman.handlerMuxClusterShared)),
-	))
 	router.Handle("/api/clusters/{clusterName}/send-vault-token", negroni.New(
 		negroni.HandlerFunc(repman.validateTokenMiddleware),
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxClusterSendVaultToken)),
@@ -2673,29 +2669,6 @@ func (repman *ReplicationManager) handlerMuxClusterSettings(w http.ResponseWrite
 		return
 	}
 	return
-
-}
-
-func (repman *ReplicationManager) handlerMuxClusterShared(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	vars := mux.Vars(r)
-	mycluster := repman.getClusterByName(vars["clusterName"])
-	if mycluster != nil {
-		if valid, _ := repman.IsValidClusterACL(r, mycluster); !valid {
-			http.Error(w, "No valid ACL", 403)
-			return
-		}
-		e := json.NewEncoder(w)
-		e.SetIndent("", "\t")
-		err := e.Encode(mycluster.Conf.Cloud18Shared)
-		if err != nil {
-			http.Error(w, "Encoding error", 500)
-			return
-		}
-	} else {
-		http.Error(w, "No cluster", 500)
-		return
-	}
 
 }
 

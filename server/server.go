@@ -81,6 +81,7 @@ type ReplicationManager struct {
 	CpuProfile       string                            `json:"cpuprofile"`
 	Clusters         map[string]*cluster.Cluster       `json:"-"`
 	PeerClusters     []config.PeerCluster              `json:"-"`
+	PeerBooked       map[string]string                 `json:"-"`
 	Agents           []opensvc.Host                    `json:"agents"`
 	UUID             string                            `json:"uuid"`
 	Hostname         string                            `json:"hostname"`
@@ -1768,7 +1769,7 @@ func (repman *ReplicationManager) Run() error {
 	repman.cApiLog = clog.New()
 	repman.clog = clog.New()
 	repman.CheckSumConfig = make(map[string]hash.Hash)
-	repman.peerClientMap = make(map[string]*peerclient.PeerClient)
+	repman.PeerBooked = make(map[string]string)
 
 	repman.InitMailer()
 

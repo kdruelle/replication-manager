@@ -3,16 +3,13 @@ import { getApi } from './apiHelper'
 export const globalClustersService = {
   getClusters,
   getClusterPeers,
+  getClusterForSale,
   getMonitoredData,
   getTermsData,
   switchGlobalSetting,
   setGlobalSetting,
   addCluster,
   reloadClustersPlan
-}
-
-function getClusterPeers(baseURL) {
-  return getApi(baseURL).get('clusters/peers')
 }
 
 function getClusters(baseURL) {
@@ -25,6 +22,14 @@ function getMonitoredData(baseURL) {
 
 function getTermsData(baseURL) {
   return getApi(baseURL).get('terms')
+}
+
+function getClusterPeers() {
+  return getApi().get('clusters/peers')
+}
+
+function getClusterForSale() {
+  return getApi().get('clusters/for-sale')
 }
 
 function switchGlobalSetting(setting) {
