@@ -217,6 +217,9 @@ func (repman *ReplicationManager) httpserver() {
 		router.Handle("/api/monitor", negroni.New(
 			negroni.Wrap(http.HandlerFunc(repman.handlerMuxReplicationManager)),
 		))
+		router.Handle("/api/terms", negroni.New(
+			negroni.Wrap(http.HandlerFunc(repman.handlerMuxTerms)),
+		))
 		repman.apiClusterProtectedHandler(router)
 		repman.apiDatabaseProtectedHandler(router)
 		repman.apiProxyProtectedHandler(router)
