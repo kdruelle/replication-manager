@@ -915,7 +915,7 @@ func (repman *ReplicationManager) handlerMuxPeerClustersForSale(w http.ResponseW
 		if slices.Contains(booked, cl.Cloud18Domain+"/"+cl.Cloud18SubDomain+"/"+cl.ClusterName) {
 			continue
 		}
-		if !strings.Contains(cl.ApiCredentialsAclAllowExternal, "sponsor") && !strings.Contains(cl.ApiCredentialsAclAllowExternal, uinfo["User"]) {
+		if !strings.Contains(cl.ApiCredentialsAclAllowExternal, "sponsor") && !strings.Contains(cl.ApiCredentialsAclAllowExternal, uinfo["User"]) && !cl.Cloud18Peer {
 			shared = append(shared, cl)
 		}
 	}

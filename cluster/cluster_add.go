@@ -217,38 +217,20 @@ func (cluster *Cluster) UpdateUser(userform UserForm) error {
 		acls := strings.Split(list, ",")
 
 		for _, acl := range acls {
-			useracl, oldacls, oldroles, listcluster := misc.SplitAcls(acl)
+			useracl, _, _, listcluster := misc.SplitAcls(acl)
 			if useracl == user {
-				if listcluster == "" {
-					old_list := make([]string, 0)
-					for _, cl := range cluster.clusterList {
-						if cl.Name == cluster.Name {
-							acl = user + ":" + grants + ":" + roles + ":" + cluster.Name
-							new_acls = append(new_acls, acl)
-						} else {
-							old_list = append(old_list, cl.Name)
-						}
-					}
-
-					acl = user + ":" + oldacls + ":" + oldroles + ":" + strings.Join(old_list, " ")
-					new_acls = append(new_acls, acl)
-				} else if listcluster == cluster.Name {
+				if listcluster == "" || listcluster == cluster.Name {
 					acl = user + ":" + grants + ":" + roles + ":" + cluster.Name
 					new_acls = append(new_acls, acl)
 				} else if strings.Contains(listcluster, cluster.Name) {
 					clist := strings.Split(listcluster, " ")
-					old_list := make([]string, 0)
 					for _, cname := range clist {
 						if cname == cluster.Name {
 							acl = user + ":" + grants + ":" + roles + ":" + cluster.Name
 							new_acls = append(new_acls, acl)
-						} else {
-							old_list = append(old_list, cname)
+							continue
 						}
 					}
-
-					acl = user + ":" + oldacls + ":" + oldroles + ":" + strings.Join(old_list, " ")
-					new_acls = append(new_acls, acl)
 				}
 			} else {
 				new_acls = append(new_acls, acl)
