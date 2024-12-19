@@ -877,7 +877,7 @@ func (repman *ReplicationManager) handlerMuxPeerClusters(w http.ResponseWriter, 
 	peer := make([]config.PeerCluster, 0)
 	booked := strings.Split(repman.PeerBooked[peerUser], ",")
 	for _, cl := range repman.PeerClusters {
-		if strings.Contains(cl.ApiCredentialsAclAllowExternal+","+cl.ApiCredentialsAclAllow, peerUser) || slices.Contains(booked, cl.Cloud18Domain+"/"+cl.Cloud18SubDomain+"/"+cl.ClusterName) {
+		if strings.Contains(cl.ApiCredentialsAclAllowExternal+","+cl.ApiCredentialsAclAllow, peerUser) || slices.Contains(booked, cl.Cloud18Domain+"/"+cl.Cloud18SubDomain+"/"+cl.ClusterName) || cl.Cloud18Peer {
 			peer = append(peer, cl)
 		}
 	}
@@ -1005,7 +1005,7 @@ func (repman *ReplicationManager) SendCloud18ClusterSubscriptionMail(clustername
 }
 
 func (repman *ReplicationManager) SendOwnerCloud18SubscriptionMail(clustername string, userform cluster.UserForm) error {
-	to := repman.Conf.Cloud18GitUser
+	to := repman.Conf.MailTo
 	subj := fmt.Sprintf("Subscription Request for Cluster %s: %s", clustername, userform.Username)
 	msg := fmt.Sprintf(`Dear Admin,
 

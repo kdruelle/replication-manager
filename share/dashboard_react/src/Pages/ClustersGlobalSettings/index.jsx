@@ -7,7 +7,7 @@ import ConfirmModal from '../../components/Modals/ConfirmModal'
 import AccordionComponent from '../../components/AccordionComponent'
 import CloudSettings from './CloudSettings'
 import { useSelector } from 'react-redux'
-import ServerLogSettings from './ServerLogSettings'
+import GlobalSettings from './GlobalSettings'
 
 function ClustersGlobalSettings({}) {
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false)
@@ -37,10 +37,10 @@ function ClustersGlobalSettings({}) {
         body={<CloudSettings config={monitor?.config} openConfirmModal={openConfirmModal} />}
       />
       <AccordionComponent
-        heading={'Logs'}
+        heading={'Global Settings'}
         headerClassName={styles.accordionHeader}
         panelClassName={styles.accordionPanel}
-        body={<ServerLogSettings config={monitor?.config} openConfirmModal={openConfirmModal} />}
+        body={<GlobalSettings config={monitor?.config} openConfirmModal={openConfirmModal} />}
       />
 
       {isConfirmModalOpen && (

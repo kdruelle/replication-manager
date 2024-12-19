@@ -288,12 +288,12 @@ type Config struct {
 	SessionLifeTime                           int                    `scope:"server" mapstructure:"http-session-lifetime" toml:"http-session-lifetime" json:"httpSessionLifetime"`
 	HttpRefreshInterval                       int                    `scope:"server" mapstructure:"http-refresh-interval" toml:"http-refresh-interval" json:"httpRefreshInterval"`
 	Daemon                                    bool                   `mapstructure:"daemon" toml:"-" json:"-"`
-	MailFrom                                  string                 `mapstructure:"mail-from" toml:"mail-from" json:"mailFrom"`
-	MailTo                                    string                 `mapstructure:"mail-to" toml:"mail-to" json:"mailTo"`
-	MailSMTPAddr                              string                 `mapstructure:"mail-smtp-addr" toml:"mail-smtp-addr" json:"mailSmtpAddr"`
-	MailSMTPUser                              string                 `mapstructure:"mail-smtp-user" toml:"mail-smtp-user" json:"mailSmtpUser"`
-	MailSMTPPassword                          string                 `mapstructure:"mail-smtp-password" toml:"mail-smtp-password" json:"mailSmtpPassword"`
-	MailSMTPTLSSkipVerify                     bool                   `mapstructure:"mail-smtp-tls-skip-verify" toml:"mail-smtp-tls-skip-verify" json:"mailSmtpTlsSkipVerify"`
+	MailFrom                                  string                 `scope:"server" mapstructure:"mail-from" toml:"mail-from" json:"mailFrom"`
+	MailTo                                    string                 `scope:"server" mapstructure:"mail-to" toml:"mail-to" json:"mailTo"`
+	MailSMTPAddr                              string                 `scope:"server" mapstructure:"mail-smtp-addr" toml:"mail-smtp-addr" json:"mailSmtpAddr"`
+	MailSMTPUser                              string                 `scope:"server" mapstructure:"mail-smtp-user" toml:"mail-smtp-user" json:"mailSmtpUser"`
+	MailSMTPPassword                          string                 `scope:"server" mapstructure:"mail-smtp-password" toml:"mail-smtp-password" json:"mailSmtpPassword"`
+	MailSMTPTLSSkipVerify                     bool                   `scope:"server" mapstructure:"mail-smtp-tls-skip-verify" toml:"mail-smtp-tls-skip-verify" json:"mailSmtpTlsSkipVerify"`
 	SlackURL                                  string                 `mapstructure:"alert-slack-url" toml:"alert-slack-url" json:"alertSlackUrl"`
 	SlackChannel                              string                 `mapstructure:"alert-slack-channel" toml:"alert-slack-channel" json:"alertSlackChannel"`
 	SlackUser                                 string                 `mapstructure:"alert-slack-user" toml:"alert-slack-user" json:"alertSlackUser"`
@@ -2830,4 +2830,28 @@ func (conf *Config) CreateGitlabProjects() {
 
 	githelper.GitLabCreateProject(conf.Secrets["git-acces-token"].Value, name, repopath, conf.Cloud18Domain, uid, conf.IsEligibleForPrinting(ConstLogModGit, LvlDbg))
 	githelper.GitLabCreatePullProject(conf.Secrets["git-acces-token"].Value, name, repopath, conf.Cloud18Domain, uid, conf.IsEligibleForPrinting(ConstLogModGit, LvlDbg))
+}
+
+func (conf *Config) SetMailSmtpAddr(value string) {
+	conf.MailSMTPAddr = value
+}
+
+func (conf *Config) SetMailSmtpPassword(value string) {
+	conf.MailSMTPPassword = value
+}
+
+func (conf *Config) SetMailSmtpUser(value string) {
+	conf.MailSMTPUser = value
+}
+
+func (conf *Config) SetMailFrom(value string) {
+	conf.MailFrom = value
+}
+
+func (conf *Config) SetMailTo(value string) {
+	conf.MailTo = value
+}
+
+func (conf *Config) SwitchMailSmtpTlsSkipVerify() {
+	conf.MailSMTPTLSSkipVerify = !conf.MailSMTPTLSSkipVerify
 }

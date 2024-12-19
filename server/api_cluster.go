@@ -1383,7 +1383,7 @@ func (repman *ReplicationManager) switchClusterSettings(mycluster *cluster.Clust
 	case "backup-keep-until-valid":
 		mycluster.SwitchBackupKeepUntilValid()
 	case "mail-smtp-tls-skip-verify":
-		mycluster.SwitchMailSmtpTlsSkipVerify()
+		mycluster.Conf.SwitchMailSmtpTlsSkipVerify()
 	case "cloud18":
 		mycluster.Conf.SwitchCloud18()
 	case "cloud18-shared":
@@ -1744,11 +1744,23 @@ func (repman *ReplicationManager) setClusterSetting(mycluster *cluster.Cluster, 
 	case "monitoring-alert-trigger":
 		mycluster.SetMonitoringAlertTriggerl(value)
 	case "mail-smtp-addr":
-		mycluster.SetMailSmtpAddr(value)
+		mycluster.Conf.SetMailSmtpAddr(value)
 	case "mail-smtp-password":
-		mycluster.SetMailSmtpPassword(value)
+		val, err := base64.StdEncoding.DecodeString(value)
+		if err != nil {
+			return errors.New("Unable to decode")
+		}
+		mycluster.Conf.MailSMTPPassword = string(val)
+		var new_secret config.Secret
+		new_secret.Value = mycluster.Conf.MailSMTPPassword
+		new_secret.OldValue = mycluster.Conf.GetDecryptedValue("mail-smtp-password")
+		mycluster.Conf.Secrets["mail-smtp-password"] = new_secret
 	case "mail-smtp-user":
-		mycluster.SetMailSmtpUser(value)
+		mycluster.Conf.SetMailSmtpUser(value)
+	case "mail-to":
+		mycluster.Conf.SetMailTo(value)
+	case "mail-from":
+		mycluster.Conf.SetMailFrom(value)
 	case "scheduler-alert-disable-time":
 		val, _ := strconv.Atoi(value)
 		mycluster.SetSchedulerAlertDisableTime(val)
@@ -1992,6 +2004,27 @@ func (repman *ReplicationManager) setRepmanSetting(name string, value string) er
 	case "log-git-level":
 		val, _ := strconv.Atoi(value)
 		repman.Conf.SetLogGitLevel(val)
+	case "mail-smtp-addr":
+		repman.Conf.SetMailSmtpAddr(value)
+		repman.ReloadMailerConfig()
+	case "mail-smtp-password":
+		val, err := base64.StdEncoding.DecodeString(value)
+		if err != nil {
+			return errors.New("Unable to decode")
+		}
+		repman.Conf.MailSMTPPassword = string(val)
+		var new_secret config.Secret
+		new_secret.Value = repman.Conf.MailSMTPPassword
+		new_secret.OldValue = repman.Conf.GetDecryptedValue("mail-smtp-password")
+		repman.Conf.Secrets["mail-smtp-password"] = new_secret
+		repman.ReloadMailerConfig()
+	case "mail-smtp-user":
+		repman.Conf.SetMailSmtpUser(value)
+		repman.ReloadMailerConfig()
+	case "mail-to":
+		repman.Conf.SetMailTo(value)
+	case "mail-from":
+		repman.Conf.SetMailFrom(value)
 	default:
 		return errors.New("Setting not found")
 	}
@@ -2044,6 +2077,9 @@ func (repman *ReplicationManager) switchRepmanSetting(name string) error {
 		repman.Conf.SysbenchV1 = !repman.Conf.SysbenchV1
 	case "scheduler-db-servers-receiver-use-ssl":
 		repman.Conf.SchedulerReceiverUseSSL = !repman.Conf.SchedulerReceiverUseSSL
+	case "mail-smtp-tls-skip-verify":
+		repman.Conf.SwitchMailSmtpTlsSkipVerify()
+		repman.ReloadMailerConfig()
 	default:
 		return errors.New("Setting not found")
 	}

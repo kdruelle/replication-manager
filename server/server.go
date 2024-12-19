@@ -2839,3 +2839,14 @@ func (repman *ReplicationManager) InitMailer() {
 		repman.Mailer.SetTlsConfig(&tls.Config{InsecureSkipVerify: true})
 	}
 }
+
+func (repman *ReplicationManager) ReloadMailerConfig() {
+	repman.Mailer.SetAddress(repman.Conf.MailSMTPAddr)
+	if repman.Conf.MailSMTPUser != "" {
+		repman.Mailer.SetSmtpAuth("", repman.Conf.MailSMTPUser, repman.Conf.Secrets["mail-smtp-password"].Value, strings.Split(repman.Conf.MailSMTPAddr, ":")[0])
+	}
+
+	if repman.Conf.MailSMTPTLSSkipVerify {
+		repman.Mailer.SetTlsConfig(&tls.Config{InsecureSkipVerify: true})
+	}
+}
