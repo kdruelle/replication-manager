@@ -129,6 +129,10 @@ func (repman *ReplicationManager) httpserver() {
 
 	router.HandleFunc("/api/login", repman.loginHandler)
 
+	router.Handle("/api/terms", negroni.New(
+		negroni.Wrap(http.HandlerFunc(repman.handlerMuxTerms)),
+	))
+
 	router.Handle("/api/clusters", negroni.New(
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxClusters)),
 	))
@@ -216,9 +220,6 @@ func (repman *ReplicationManager) httpserver() {
 	if !repman.Conf.APIHttpsBind {
 		router.Handle("/api/monitor", negroni.New(
 			negroni.Wrap(http.HandlerFunc(repman.handlerMuxReplicationManager)),
-		))
-		router.Handle("/api/terms", negroni.New(
-			negroni.Wrap(http.HandlerFunc(repman.handlerMuxTerms)),
 		))
 		repman.apiClusterProtectedHandler(router)
 		repman.apiDatabaseProtectedHandler(router)

@@ -234,6 +234,10 @@ func (repman *ReplicationManager) apiserver() {
 	router.HandleFunc("/api/login", repman.loginHandler)
 	//router.Handle("/api", v3.NewHandler("My API", "/swagger.json", "/api"))
 
+	router.Handle("/api/terms", negroni.New(
+		negroni.Wrap(http.HandlerFunc(repman.handlerMuxTerms)),
+	))
+
 	router.Handle("/api/auth/callback", negroni.New(
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxAuthCallback)),
 	))
@@ -265,9 +269,6 @@ func (repman *ReplicationManager) apiserver() {
 	//UNPROTECTED ENDPOINTS FOR SETTINGS
 	router.Handle("/api/monitor", negroni.New(
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxReplicationManager)),
-	))
-	router.Handle("/api/terms", negroni.New(
-		negroni.Wrap(http.HandlerFunc(repman.handlerMuxTerms)),
 	))
 	//PROTECTED ENDPOINTS FOR SETTINGS
 	router.Handle("/api/monitor", negroni.New(
