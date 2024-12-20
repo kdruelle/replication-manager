@@ -700,6 +700,10 @@ type Config struct {
 	Cloud18InfraDataCenters                   string                 `mapstructure:"cloud18-infra-data-centers"  toml:"cloud18-infra-data-centers" json:"cloud18InfraDataCenters"`
 	Cloud18InfraPublicBandwidth               float64                `mapstructure:"cloud18-infra-public-bandwidth"  toml:"cloud18-infra-public-bandwidth" json:"cloud18InfraPublicBandwidth"`
 	Cloud18InfraGeoLocalizations              string                 `mapstructure:"cloud18-infra-geo-localizations"  toml:"cloud18-infra-geo-localizations" json:"cloud18InfraGeoLocalizations"`
+	Cloud18DbOps                              string                 `mapstructure:"cloud18-dbops"  toml:"cloud18-dbops" json:"cloud18DbOps"`
+	Cloud18ExternalDbOps                      string                 `mapstructure:"cloud18-external-dbops"  toml:"cloud18-external-dbops" json:"cloud18ExternalDbOps"`
+	Cloud18ExternalSysOps                     string                 `mapstructure:"cloud18-external-sysops" toml:"cloud18-external-sysops" json:"cloud18ExternalSysOps"`
+	Cloud18InfraCertifications                string                 `mapstructure:"cloud18-infra-certifications"  toml:"cloud18-infra-certifications" json:"cloud18InfraCertifications"`
 	Cloud18OpenDbops                          bool                   `mapstructure:"cloud18-open-dbops"  toml:"cloud18-open-dbops" json:"cloud18OpenDbops"`
 	Cloud18SubscribedDbops                    bool                   `mapstructure:"cloud18-subscribed-dbops"  toml:"cloud18-subscribed-dbops" json:"cloud18SubscribedDbops"`
 	Cloud18OpenSysops                         bool                   `mapstructure:"cloud18-open-sysops"  toml:"cloud18-open-sysops" json:"cloud18OpenSysops"`
@@ -785,6 +789,9 @@ type PeerCluster struct {
 	Cloud18SlaRepairTime                   float64  `json:"cloud18-sla-repair-time,string"`
 	Cloud18SlaProvisionTime                float64  `json:"cloud18-sla-provision-time,string"`
 	Cloud18PromotionPct                    float64  `json:"cloud18-promotion-pct,string"`
+	Cloud18ExtDbOps                        string   `json:"cloud18-external-dbops"`
+	Cloud18ExtSysOps                       string   `json"cloud18-external-sysops"`
+	Cloud18InfraCertifications             string   `json:"cloud18-infra-certifications"`
 }
 
 // Compliance created in OpenSVC collector and exported as JSON
@@ -900,6 +907,9 @@ type ServicePlan struct {
 	ProvisionTime float64 `json:"provtime,string"`
 	PromotionPct  float64 `json:"promo,string"`
 	BP            float64 `json:"bp,string"`
+	Certs         string  `json:"certs"`
+	ExtDbOps      string  `json:"extdbops"`
+	ExtSysOps     string  `json:"extsysops"`
 }
 
 type DockerTag struct {

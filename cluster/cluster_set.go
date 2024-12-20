@@ -462,6 +462,18 @@ func (cluster *Cluster) SetCloud18InfraCPUModel(value string) {
 	cluster.Conf.Cloud18InfraCPUModel = value
 }
 
+func (cluster *Cluster) SetCloud18ExternalSysOps(value string) {
+	cluster.Conf.Cloud18ExternalSysOps = value
+}
+
+func (cluster *Cluster) SetCloud18ExternalDbOps(value string) {
+	cluster.Conf.Cloud18ExternalDbOps = value
+}
+
+func (cluster *Cluster) SetCloud18InfraCertifications(value string) {
+	cluster.Conf.Cloud18InfraCertifications = value
+}
+
 func (cluster *Cluster) SetCloud18InfraCPUFreq(value string) {
 	cluster.Conf.Cloud18InfraCPUFreq = value
 }
@@ -1299,6 +1311,9 @@ func (cluster *Cluster) SetServicePlanInfos(theplan string) error {
 			cluster.SetCloud18CostCurrency(plan.Devise)
 			cluster.SetCloud18InfraCPUFreq(plan.CPUFreq)
 			cluster.SetCloud18InfraCPUModel(plan.CPU)
+			cluster.SetCloud18InfraCertifications(plan.Certs)
+			cluster.SetCloud18ExternalDbOps(plan.ExtDbOps)
+			cluster.SetCloud18ExternalSysOps(plan.ExtSysOps)
 			cluster.SetCloud18InfraDescription(plan.Infra)
 			cluster.SetCloud18InfraDataCenters(plan.DC)
 			cluster.SetCloud18InfraPublicBandwidth(plan.BP)

@@ -866,6 +866,10 @@ func (repman *ReplicationManager) AddFlags(flags *pflag.FlagSet, conf *config.Co
 	flags.StringVar(&conf.Cloud18DatabaseReadWriteSrvRecord, "cloud18-database-read-write-srv-record", "", "Database read write  SRV record host:port")
 	flags.StringVar(&conf.Cloud18DbaUserCredentials, "cloud18-dba-user-credentials", "", "Database credential")
 	flags.StringVar(&conf.Cloud18CostCurrency, "cloud18-cost-currency", "", "Cost currency")
+	flags.StringVar(&conf.Cloud18DbOps, "cloud18-dbops", "", "Email for infrastucure dba")
+	flags.StringVar(&conf.Cloud18ExternalDbOps, "cloud18-external-dbops", "", "Email for external partner dba")
+	flags.StringVar(&conf.Cloud18ExternalSysOps, "cloud18-external-dbops", "", "Email for external partner sysadmin")
+	flags.StringVar(&conf.Cloud18InfraCertifications, "cloud18-infra-certifications", "", "The type of auditing certificats made on the infrastructure")
 	if WithProvisioning == "ON" {
 		flags.StringVar(&conf.ProvDatadirVersion, "prov-db-datadir-version", "10.2", "Empty datadir to deploy for localtest")
 		flags.StringVar(&conf.ProvDiskSystemSize, "prov-db-disk-system-size", "2", "Disk in g for micro service VM")
