@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"net/url"
 	"regexp"
 	"slices"
 	"strconv"
@@ -246,4 +247,38 @@ func ConvertWildcards(patterns []string) []string {
 		}
 	}
 	return converted
+}
+
+// isValidDomainOrIP checks if the input is a valid domain or IP address and not "localhost"
+func IsValidPublicDomainOrIP(input string) bool {
+	if input == "localhost" {
+		return false
+	}
+
+	// Check if it's a valid IP address
+	ip := net.ParseIP(input)
+	if ip == nil {
+		return false
+	}
+
+	// Check if it's a localhost IP
+	if ip.IsLoopback() {
+		return false
+	}
+
+	// Check if it's a valid domain name
+	domainRegex := `^([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$`
+	matched, _ := regexp.MatchString(domainRegex, input)
+	return matched
+}
+
+// isValidURL checks if the input is a valid URL with a valid domain or IP address
+func IsValidPublicURL(input string) bool {
+	parsedURL, err := url.Parse(input)
+	if err != nil {
+		return false
+	}
+
+	host := parsedURL.Hostname()
+	return IsValidPublicDomainOrIP(host)
 }

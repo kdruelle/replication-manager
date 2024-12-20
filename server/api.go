@@ -46,6 +46,7 @@ import (
 	"github.com/signal18/replication-manager/regtest"
 	"github.com/signal18/replication-manager/share"
 	"github.com/signal18/replication-manager/utils/githelper"
+	"github.com/signal18/replication-manager/utils/misc"
 )
 
 //RSA KEYS AND INITIALISATION
@@ -877,7 +878,7 @@ func (repman *ReplicationManager) handlerMuxPeerClusters(w http.ResponseWriter, 
 	peer := make([]config.PeerCluster, 0)
 	booked := strings.Split(repman.PeerBooked[peerUser], ",")
 	for _, cl := range repman.PeerClusters {
-		if strings.Contains(cl.ApiCredentialsAclAllowExternal+","+cl.ApiCredentialsAclAllow, peerUser) || slices.Contains(booked, cl.Cloud18Domain+"/"+cl.Cloud18SubDomain+"/"+cl.ClusterName) {
+		if misc.IsValidPublicURL(cl.ApiPublicUrl) && (strings.Contains(cl.ApiCredentialsAclAllowExternal+","+cl.ApiCredentialsAclAllow, peerUser) || slices.Contains(booked, cl.Cloud18Domain+"/"+cl.Cloud18SubDomain+"/"+cl.ClusterName)) {
 			peer = append(peer, cl)
 		}
 	}
