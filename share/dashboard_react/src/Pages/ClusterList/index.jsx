@@ -140,7 +140,7 @@ function ClusterList({ onClick }) {
                       onClick(clusterItem)
                     }
                   }}>
-                  <CustomIcon icon={ isSponsor || isPending ? (HiCreditCard): (AiOutlineCluster)} fill={ isSponsor ? isPending ? "orange" : "green" : "gray" }  />
+                  <CustomIcon icon={ isSponsor || isPending ? (HiCreditCard): (AiOutlineCluster)} fill={ isSponsor ? "green" : isPending ? "orange" : "gray" }  />
                   <span className={styles.cardHeaderText}>{headerText}</span>
                   {monitor?.config?.monitoringSaveConfig && monitor?.config?.cloud18GitUser?.length > 0 && (
                     <RMIconButton

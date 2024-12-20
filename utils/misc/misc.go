@@ -267,7 +267,7 @@ func IsValidPublicDomainOrIP(input string) bool {
 	}
 
 	// Check if it's a valid domain name
-	domainRegex := `^([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$`
+	domainRegex := `^([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(:[0-9]{1,5})?$`
 	matched, _ := regexp.MatchString(domainRegex, input)
 	return matched
 }
