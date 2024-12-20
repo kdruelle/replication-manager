@@ -127,6 +127,9 @@ function PeerClusterList({ onLogin, mode }) {
           const amount = (cost * (100 - clusterItem['cloud18-promotion-pct'])) / 100
           const currency = clusterItem['cloud18-cost-currency']
 
+          const isPending = clusterItem?.['api-credentials-acl-allow']?.includes('pending')
+        const isSponsor = clusterItem?.['api-credentials-acl-allow']?.includes('sponsor')
+
           const dataObject = [
             {
               key: 'Tags', value: (
@@ -220,7 +223,7 @@ function PeerClusterList({ onLogin, mode }) {
                     as="button"
                     className={styles.btnHeading}
                     onClick={() => { handlePeerCluster(clusterItem) }}>
-                    <CustomIcon icon={AiOutlineCluster} />
+                    <CustomIcon icon={ isSponsor || isPending ? (HiCreditCard): (AiOutlineCluster)} fill={ isSponsor ? isPending ? "orange" : "green" : "gray" }  />
                     <span className={styles.cardHeaderText}>{headerText}</span>
                   </HStack>
                 }

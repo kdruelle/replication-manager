@@ -56,8 +56,8 @@ function ClusterList({ onClick }) {
     <Flex className={styles.clusterList}>
       {clusters?.map((clusterItem, index) => {
         const headerText = clusterItem.name
-        const pendingList = Object.entries(clusterItem?.apiUsers).filter(([_,u]) => u.roles.pending) || []
-        const sponsorList = Object.entries(clusterItem?.apiUsers).filter(([_,u]) => u.roles.sponsor) || []
+        const isPending = Object.entries(clusterItem?.apiUsers).filter(([_,u]) => u.roles.pending).length > 0
+        const isSponsor = Object.entries(clusterItem?.apiUsers).filter(([_,u]) => u.roles.sponsor).length > 0
         const dataObject = [
           {
             key: 'Is Monitoring',
@@ -140,7 +140,7 @@ function ClusterList({ onClick }) {
                       onClick(clusterItem)
                     }
                   }}>
-                  <CustomIcon icon={ sponsorList.length > 0 ? (HiCreditCard): (AiOutlineCluster)} fill={ sponsorList.length > 0 ? pendingList.length > 0 ? "orange" : "green" : "gray" }  />
+                  <CustomIcon icon={ isSponsor || isPending ? (HiCreditCard): (AiOutlineCluster)} fill={ isSponsor ? isPending ? "orange" : "green" : "gray" }  />
                   <span className={styles.cardHeaderText}>{headerText}</span>
                   {monitor?.config?.monitoringSaveConfig && monitor?.config?.cloud18GitUser?.length > 0 && (
                     <RMIconButton
