@@ -2048,18 +2048,6 @@ func (cluster *Cluster) SetMonitoringAlertTriggerl(value string) {
 	cluster.Conf.MonitoringAlertTrigger = value
 }
 
-func (cluster *Cluster) SetMailSmtpAddr(value string) {
-	cluster.Conf.MailSMTPAddr = value
-}
-
-func (cluster *Cluster) SetMailSmtpPassword(value string) {
-	cluster.Conf.MailSMTPPassword = value
-}
-
-func (cluster *Cluster) SetMailSmtpUser(value string) {
-	cluster.Conf.MailSMTPUser = value
-}
-
 func (cluster *Cluster) SetSchedulerAlertDisableTime(value int) {
 	cluster.Conf.SchedulerAlertDisableTime = value
 }

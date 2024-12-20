@@ -115,7 +115,7 @@ func (cluster *Cluster) SaveAcls() {
 		user, _ := misc.SplitPair(credential)
 		enabledAcls := cluster.SaveUserAcls(user)
 		enabledRoles := cluster.SaveUserRoles(user)
-		aUserAcls = append(aUserAcls, user+":"+enabledAcls+":"+enabledRoles)
+		aUserAcls = append(aUserAcls, user+":"+enabledAcls+":"+enabledRoles+":"+cluster.Name)
 	}
 	cluster.Conf.APIUsersACLAllowExternal = strings.Join(aUserAcls, ",")
 	cluster.Conf.APIUsersACLDiscard = ""

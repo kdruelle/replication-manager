@@ -419,6 +419,7 @@ func (cluster *Cluster) InitFromConf() {
 	}
 	cluster.SetClusterCredentialsFromConfig()
 	cluster.LoadAPIUsers()
+	cluster.SaveAcls()
 	cluster.GetPersitentState()
 
 	cluster.LogPushover = log.New()

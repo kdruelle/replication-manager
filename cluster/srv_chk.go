@@ -433,7 +433,6 @@ func (server *ServerMonitor) CheckMonitoringCredentialsRotation() {
 					if u.User == cluster.GetShardUser() {
 						dbhelper.SetUserPassword(server.Conn, server.DBVersion, u.Host, u.User, cluster.GetShardPass())
 					}
-
 				}
 			}
 		} else {

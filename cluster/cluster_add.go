@@ -246,6 +246,7 @@ func (cluster *Cluster) UpdateUser(userform UserForm) error {
 		}
 
 		cluster.LoadAPIUsers()
+		cluster.SaveAcls()
 		cluster.Save()
 	}
 
