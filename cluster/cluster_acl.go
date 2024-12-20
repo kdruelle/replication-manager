@@ -94,8 +94,9 @@ func (cluster *Cluster) GetAPIUser(strUser string, strPassword string) (APIUser,
 	return APIUser{}, fmt.Errorf("user not found")
 }
 
-func (cluster *Cluster) SaveUserAcls(user string) string {
-	return strings.Join(cluster.Conf.GetCompactGrants(cluster.APIUsers[user].Grants), " ")
+func (cluster *Cluster) SaveUserAcls(user string) (string, string) {
+	granted, discarded := cluster.Conf.GetCompactGrants(cluster.APIUsers[user].Grants)
+	return strings.Join(granted, " "), strings.Join(discarded, " ")
 }
 
 func (cluster *Cluster) SaveUserRoles(user string) string {
@@ -111,14 +112,16 @@ func (cluster *Cluster) SaveUserRoles(user string) string {
 func (cluster *Cluster) SaveAcls() {
 	credentials := strings.Split(cluster.Conf.GetDecryptedValue("api-credentials")+","+cluster.Conf.GetDecryptedValue("api-credentials-external"), ",")
 	aUserAcls := make([]string, 0)
+	aUserDiscardAcls := make([]string, 0)
 	for _, credential := range credentials {
 		user, _ := misc.SplitPair(credential)
-		enabledAcls := cluster.SaveUserAcls(user)
+		enabledAcls, discardedAcls := cluster.SaveUserAcls(user)
 		enabledRoles := cluster.SaveUserRoles(user)
 		aUserAcls = append(aUserAcls, user+":"+enabledAcls+":"+enabledRoles+":"+cluster.Name)
+		aUserDiscardAcls = append(aUserDiscardAcls, user+":"+discardedAcls)
 	}
 	cluster.Conf.APIUsersACLAllowExternal = strings.Join(aUserAcls, ",")
-	cluster.Conf.APIUsersACLDiscard = ""
+	cluster.Conf.APIUsersACLDiscard = strings.Join(aUserDiscardAcls, ",")
 }
 
 // func (cluster *Cluster) SetGrant(user string, grant string, enable bool) {

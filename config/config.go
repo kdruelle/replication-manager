@@ -2255,54 +2255,110 @@ func (conf *Config) HasAllGlobalGrants(grants map[string]bool) bool {
 	return true
 }
 
-func (conf *Config) GetCompactGrants(grants map[string]bool) []string {
+func (conf *Config) GetCompactGrants(grants map[string]bool) ([]string, []string) {
 	var compactGrants []string
+	var compactDiscardGrants []string
+	var counter int
+
+	tmp := make([]string, 0)
 	if conf.HasAllDBGrants(grants) {
 		compactGrants = append(compactGrants, "db")
 	} else {
 		for _, grant := range conf.GetGrantDB() {
 			if grants[grant] {
 				compactGrants = append(compactGrants, grant)
+				counter++
+			} else {
+				tmp = append(tmp, grant)
 			}
 		}
+		if counter == 0 {
+			compactDiscardGrants = append(compactDiscardGrants, "db")
+		} else {
+			compactDiscardGrants = append(compactDiscardGrants, tmp...)
+		}
 	}
+
+	tmp = make([]string, 0)
+	counter = 0
 	if conf.HasAllClusterGrants(grants) {
 		compactGrants = append(compactGrants, "cluster")
 	} else {
 		for _, grant := range conf.GetGrantCluster() {
 			if grants[grant] {
 				compactGrants = append(compactGrants, grant)
+				counter++
+			} else {
+				tmp = append(tmp, grant)
 			}
 		}
+		if counter == 0 {
+			compactDiscardGrants = append(compactDiscardGrants, "cluster")
+		} else {
+			compactDiscardGrants = append(compactDiscardGrants, tmp...)
+		}
 	}
+
+	tmp = make([]string, 0)
+	counter = 0
 	if conf.HasAllProxyGrants(grants) {
 		compactGrants = append(compactGrants, "proxy")
 	} else {
 		for _, grant := range conf.GetGrantProxy() {
 			if grants[grant] {
 				compactGrants = append(compactGrants, grant)
+				counter++
+			} else {
+				tmp = append(tmp, grant)
 			}
 		}
+		if counter == 0 {
+			compactDiscardGrants = append(compactDiscardGrants, "proxy")
+		} else {
+			compactDiscardGrants = append(compactDiscardGrants, tmp...)
+		}
 	}
+
+	tmp = make([]string, 0)
+	counter = 0
 	if conf.HasAllProvisionGrants(grants) {
 		compactGrants = append(compactGrants, "prov")
 	} else {
 		for _, grant := range conf.GetGrantProvision() {
 			if grants[grant] {
 				compactGrants = append(compactGrants, grant)
+				counter++
+			} else {
+				tmp = append(tmp, grant)
 			}
 		}
+		if counter == 0 {
+			compactDiscardGrants = append(compactDiscardGrants, "prov")
+		} else {
+			compactDiscardGrants = append(compactDiscardGrants, tmp...)
+		}
 	}
+
+	tmp = make([]string, 0)
+	counter = 0
 	if conf.HasAllGlobalGrants(grants) {
 		compactGrants = append(compactGrants, "global")
 	} else {
 		for _, grant := range conf.GetGrantGlobal() {
 			if grants[grant] {
 				compactGrants = append(compactGrants, grant)
+				counter++
+			} else {
+				tmp = append(tmp, grant)
 			}
 		}
+		if counter == 0 {
+			compactDiscardGrants = append(compactDiscardGrants, "global")
+		} else {
+			compactDiscardGrants = append(compactDiscardGrants, tmp...)
+		}
 	}
-	return compactGrants
+	return compactGrants, compactDiscardGrants
 }
 
 func (conf *Config) GetRoleType() map[string]string {
