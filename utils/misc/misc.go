@@ -256,18 +256,24 @@ func IsValidPublicDomainOrIP(input string) bool {
 	}
 
 	// Check if it's a valid IP address
-	ip := net.ParseIP(input)
-	if ip == nil {
-		return false
-	}
+	ipv4Regex := `^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$`
+	ipv6Regex := `^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$`
+	ipv4, _ := regexp.MatchString(ipv4Regex, input)
+	ipv6, _ := regexp.MatchString(ipv6Regex, input)
 
-	// Check if it's a localhost IP
-	if ip.IsLoopback() {
-		return false
-	}
+	if ipv4 || ipv6 {
+		// Check if it's a valid IP address
+		ip := net.ParseIP(input)
+		if ip == nil {
+			return false
+		}
 
-	// Check if it's a valid domain name
-	domainRegex := `^([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(:[0-9]{1,5})?$`
+		// Check if it's a localhost IP
+		if ip.IsLoopback() {
+			return false
+		}
+	}
+	domainRegex := `^[a-z]([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(:[0-9]{1,5})?$`
 	matched, _ := regexp.MatchString(domainRegex, input)
 	return matched
 }
