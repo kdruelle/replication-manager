@@ -110,7 +110,7 @@ func (cluster *Cluster) SaveUserRoles(user string) string {
 
 func (cluster *Cluster) SaveAcls() {
 	credentials := strings.Split(cluster.Conf.GetDecryptedValue("api-credentials")+","+cluster.Conf.GetDecryptedValue("api-credentials-external"), ",")
-	var aUserAcls []string
+	aUserAcls := make([]string, 0)
 	for _, credential := range credentials {
 		user, _ := misc.SplitPair(credential)
 		enabledAcls := cluster.SaveUserAcls(user)

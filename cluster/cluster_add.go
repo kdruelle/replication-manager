@@ -172,9 +172,9 @@ func (cluster *Cluster) AddUser(userform UserForm) error {
 		// cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlErr, "User %s already exist ", user)
 	} else {
 		if cluster.Conf.GetDecryptedValue("api-credentials-external") == "" {
-			cluster.Conf.APIUsersExternal = user + ":" + pass + ":" + roles
+			cluster.Conf.APIUsersExternal = user + ":" + pass
 		} else {
-			cluster.Conf.APIUsersExternal = cluster.Conf.GetDecryptedValue("api-credentials-external") + "," + user + ":" + pass + ":" + roles
+			cluster.Conf.APIUsersExternal = cluster.Conf.GetDecryptedValue("api-credentials-external") + "," + user + ":" + pass
 		}
 		var new_secret config.Secret
 		new_secret.Value = cluster.Conf.APIUsersExternal
