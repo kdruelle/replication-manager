@@ -192,6 +192,7 @@ function PeerClusterList({ onLogin, mode }) {
             { key: 'Time To Response', value: clusterItem['cloud18-sla-response-time'] + "Hours" },
             { key: 'Time To Repair', value: clusterItem['cloud18-sla-repair-time'] + "Hours" },
             { key: 'Time To Provision', value: clusterItem['cloud18-sla-provision-time'] + "Hours" },
+            { key: 'Certifications', value: clusterItem['cloud18-infra-certifications']  },
             { key: 'Infrastructure', value: clusterItem['prov-orchestrator'] + " " + clusterItem['cloud18-platform-description'] },
             /*  {
                 key: 'Share',
