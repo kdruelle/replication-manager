@@ -103,7 +103,15 @@ func (repman *ReplicationManager) apiClusterProtectedHandler(router *mux.Router)
 		negroni.HandlerFunc(repman.validateTokenMiddleware),
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxSetGlobalSettings)),
 	))
+	router.Handle("/api/clusters/settings/actions/clear/{settingName}", negroni.New(
+		negroni.HandlerFunc(repman.validateTokenMiddleware),
+		negroni.Wrap(http.HandlerFunc(repman.handlerMuxSetGlobalSettings)),
+	))
 	router.Handle("/api/clusters/{clusterName}/settings/actions/set/{settingName}/{settingValue}", negroni.New(
+		negroni.HandlerFunc(repman.validateTokenMiddleware),
+		negroni.Wrap(http.HandlerFunc(repman.handlerMuxSetSettings)),
+	))
+	router.Handle("/api/clusters/{clusterName}/settings/actions/clear/{settingName}", negroni.New(
 		negroni.HandlerFunc(repman.validateTokenMiddleware),
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxSetSettings)),
 	))
@@ -1384,8 +1392,6 @@ func (repman *ReplicationManager) switchClusterSettings(mycluster *cluster.Clust
 		mycluster.SwitchBackupKeepUntilValid()
 	case "mail-smtp-tls-skip-verify":
 		mycluster.Conf.SwitchMailSmtpTlsSkipVerify()
-	case "cloud18":
-		mycluster.Conf.SwitchCloud18()
 	case "cloud18-shared":
 		mycluster.Conf.SwitchCloud18Shared()
 	case "cloud18-open-dbops":
@@ -1406,6 +1412,10 @@ func (repman *ReplicationManager) handlerMuxSetSettings(w http.ResponseWriter, r
 	vars := mux.Vars(r)
 	cName := vars["clusterName"]
 	setting := vars["settingName"]
+	value := ""
+	if settingValue, ok := vars["settingValue"]; ok {
+		value = settingValue
+	}
 
 	// Should be handled with global settings
 	serverScope := config.IsScope(setting, "server")
@@ -1418,7 +1428,7 @@ func (repman *ReplicationManager) handlerMuxSetSettings(w http.ResponseWriter, r
 	if mycluster != nil {
 		valid, _ := repman.IsValidClusterACL(r, mycluster)
 		if valid {
-			err := repman.setClusterSetting(mycluster, setting, vars["settingValue"])
+			err := repman.setClusterSetting(mycluster, setting, value)
 			if err != nil {
 				http.Error(w, "Setting Not Found", 501)
 				return
@@ -1442,6 +1452,10 @@ func (repman *ReplicationManager) handlerMuxSetGlobalSettings(w http.ResponseWri
 		http.Error(w, "Setting Not Found", 501)
 		return
 	}
+	value := ""
+	if settingValue, ok := vars["settingValue"]; ok {
+		value = settingValue
+	}
 
 	var mycluster *cluster.Cluster
 	// path := r.URL.Path
@@ -1463,7 +1477,7 @@ func (repman *ReplicationManager) handlerMuxSetGlobalSettings(w http.ResponseWri
 			// || (user != "" && mycluster.IsURLPassACL(user, path, false)) {
 			//Set server scope
 			mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, "INFO", "Option '%s' is a shared values between clusters", setting)
-			err := repman.setServerSetting(user, r.URL.Path, setting, vars["settingValue"])
+			err := repman.setServerSetting(user, r.URL.Path, setting, value)
 			if err != nil {
 				http.Error(w, err.Error(), 501)
 				return
@@ -1764,6 +1778,8 @@ func (repman *ReplicationManager) setClusterSetting(mycluster *cluster.Cluster, 
 	case "scheduler-alert-disable-time":
 		val, _ := strconv.Atoi(value)
 		mycluster.SetSchedulerAlertDisableTime(val)
+	case "cloud18":
+		mycluster.Conf.Cloud18 = (value == "true")
 	case "cloud18-domain":
 		mycluster.Conf.Cloud18Domain = value
 	case "cloud18-sub-domain":
@@ -1884,6 +1900,16 @@ func (repman *ReplicationManager) setRepmanSetting(name string, value string) er
 	case "api-token-timeout":
 		val, _ := strconv.Atoi(value)
 		repman.Conf.SetApiTokenTimeout(val)
+	case "cloud18":
+		if value == "true" {
+			if err := repman.InitGitConfig(&repman.Conf); err != nil {
+				if strings.Contains(err.Error(), "invalid_grant") {
+					return fmt.Errorf("invalid_grant")
+				}
+				return err
+			}
+		}
+		repman.Conf.Cloud18 = (value == "true")
 	case "cloud18-domain":
 		if repman.Conf.Cloud18 {
 			return errors.New("Unable to change setting when cloud18 is ON")
@@ -2043,16 +2069,6 @@ func (repman *ReplicationManager) switchRepmanSetting(name string) error {
 	}
 
 	switch name {
-	case "cloud18":
-		if !repman.Conf.Cloud18 {
-			if err := repman.InitGitConfig(&repman.Conf); err != nil {
-				if strings.Contains(err.Error(), "invalid_grant") {
-					return fmt.Errorf("invalid_grant")
-				}
-				return err
-			}
-		}
-		repman.Conf.SwitchCloud18()
 	case "cloud18-shared":
 		repman.Conf.SwitchCloud18Shared()
 	case "api-https-bind":

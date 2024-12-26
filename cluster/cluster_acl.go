@@ -557,6 +557,9 @@ func (cluster *Cluster) IsURLPassACL(strUser string, URL string, errorPrint bool
 	if strings.Contains(URL, "/api/clusters/settings/actions/set") {
 		return cluster.APIUsers[strUser].Grants[config.GrantGlobalSettings]
 	}
+	if strings.Contains(URL, "/api/clusters/settings/actions/clear") {
+		return cluster.APIUsers[strUser].Grants[config.GrantGlobalSettings]
+	}
 	if strings.Contains(URL, "/api/clusters/settings/actions/reload-clusters-plans") {
 		return cluster.APIUsers[strUser].Grants[config.GrantGlobalSettings]
 	}
@@ -723,6 +726,9 @@ func (cluster *Cluster) IsURLPassACL(strUser string, URL string, errorPrint bool
 			return true
 		}
 		if strings.Contains(URL, "/api/clusters/"+cluster.Name+"/settings/actions/set") {
+			return true
+		}
+		if strings.Contains(URL, "/api/clusters/"+cluster.Name+"/settings/actions/clear") {
 			return true
 		}
 		if strings.Contains(URL, "/api/clusters/"+cluster.Name+"/settings/actions/discover") {

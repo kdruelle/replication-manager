@@ -8,6 +8,7 @@ export const globalClustersService = {
   getTermsData,
   switchGlobalSetting,
   setGlobalSetting,
+  clearGlobalSetting,
   addCluster,
   reloadClustersPlan
 }
@@ -38,6 +39,10 @@ function switchGlobalSetting(setting) {
 
 function setGlobalSetting(setting, value) {
   return getApi().get(`clusters/settings/actions/set/${setting}/${value}`)
+}
+
+function clearGlobalSetting(setting) {
+  return getApi().get(`clusters/settings/actions/clear/${setting}`)
 }
 
 function addCluster(clusterName, formdata) {

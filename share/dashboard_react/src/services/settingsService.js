@@ -4,6 +4,7 @@ export const settingsService = {
   switchSettings,
   changeTopology,
   setSetting,
+  clearSetting,
   updateGraphiteWhiteList,
   updateGraphiteBlackList
 }
@@ -24,6 +25,10 @@ function setSetting(clusterName, setting, value, baseURL) {
   } else {
     return getApi(baseURL).get(`clusters/${clusterName}/settings/actions/set/${setting}/${encodeURIComponent(value)}`)
   }
+}
+
+function clearSetting(clusterName, setting, baseURL) {
+    return getApi(baseURL).get(`clusters/${clusterName}/settings/actions/clear/${setting}`)
 }
 
 function updateGraphiteWhiteList(clusterName, whiteListValue, baseURL) {

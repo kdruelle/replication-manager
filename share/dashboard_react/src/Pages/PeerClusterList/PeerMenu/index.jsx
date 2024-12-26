@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react'
 import MenuOptions from '../../../components/MenuOptions'
-import PeerDetailsModal from '../../../components/Modals/PeerDetailsModal'
 import PeerSubscribeModal from '../../../components/Modals/PeerSubscribeModal'
 import { getClusterData, peerRegister } from '../../../redux/clusterSlice'
 import { peerLogin, setBaseURL } from '../../../redux/authSlice'
@@ -11,14 +10,11 @@ function PeerMenu({
     onLogin,
     clusterItem,
     className,
-    labelClassName,
-    valueClassName,
     colorScheme,
 }) {
     const dispatch = useDispatch()
     const [options, setOptions] = useState([])
     const [title, setTitle] = useState("Login to Peer Cluster")
-    const [isPeerDetailsModalOpen, setIsPeerDetailsModalOpen] = useState(false)
     const [isPeerSubscribeModalOpen, setIsPeerSubscribeModalOpen] = useState(false)
 
     const {
@@ -39,13 +35,6 @@ function PeerMenu({
         if (onLogin) {
             onLogin(clusterItem)
         }
-    }
-
-    const openPeerDetailsModal = () => {
-        setIsPeerDetailsModalOpen(true)
-    }
-    const closePeerDetailsModal = () => {
-        setIsPeerDetailsModalOpen(false)
     }
 
     const handlePeerLogin = () => {
@@ -107,15 +96,6 @@ function PeerMenu({
                     placement='left-end'
                     options={options}
                 />
-                {isPeerDetailsModalOpen && (
-                    <PeerDetailsModal
-                        peerDetails={clusterItem}
-                        labelClassName={labelClassName}
-                        valueClassName={valueClassName}
-                        isOpen={isPeerDetailsModalOpen}
-                        closeModal={closePeerDetailsModal}
-                    />
-                )}
                 {isPeerSubscribeModalOpen && <PeerSubscribeModal title={title} isOpen={isPeerSubscribeModalOpen} closeModal={closePeerSubscribeModal} onSaveModal={handleSaveModal} />}
             </>
         )

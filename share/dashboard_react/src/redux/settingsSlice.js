@@ -6,11 +6,12 @@ export const switchSetting = createAsyncThunk('settings/switchSetting', async ({
   try {
     const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
     const { data, status } = await settingsService.switchSettings(clusterName, setting, baseURL)
-    // if (setting === 'monitoring-scheduler') {
-    //   await clusterService.getClusterData(clusterName)
-    // }
-    showSuccessBanner(`Switching ${setting} successful!`, status, thunkAPI)
-    return { data, status }
+    if (status === 200) {
+      showSuccessBanner(`Switching ${setting} successful!`, status, thunkAPI)
+      return { data, status }
+    } else {
+      throw new Error(data)
+    }
   } catch (error) {
     showErrorBanner(`Switching ${setting} failed!`, error, thunkAPI)
     handleError(error, thunkAPI)
@@ -36,9 +37,13 @@ export const setSetting = createAsyncThunk('settings/setSetting', async ({ clust
   try {
     // showLoaderBanner(`${setting} `, thunkAPI)
     const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
-    const { data, status } = await settingsService.setSetting(clusterName, setting, value, baseURL)
-    showSuccessBanner(`${setting} changed successfully!`, status, thunkAPI)
-    return { data, status }
+    const { data, status } = value !== "" ? await settingsService.setSetting(clusterName, setting, value, baseURL) : await settingsService.clearSetting(clusterName, setting, baseURL)
+    if (status === 200) {
+      showSuccessBanner(`${setting} changed successfully!`, status, thunkAPI)
+      return { data, status }
+    } else {
+      throw new Error(data)
+    }
   } catch (error) {
     showErrorBanner(`Changing ${setting} failed!`, error.toString(), thunkAPI)
     handleError(error, thunkAPI)
