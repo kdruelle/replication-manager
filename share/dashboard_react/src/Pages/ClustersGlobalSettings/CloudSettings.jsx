@@ -1,4 +1,4 @@
-import { Flex, Link } from '@chakra-ui/react'
+import { Box, Flex, HStack, Link } from '@chakra-ui/react'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import styles from './styles.module.scss'
 import RMSwitch from '../../components/RMSwitch'
@@ -7,20 +7,44 @@ import TableType2 from '../../components/TableType2'
 import { switchGlobalSetting, setGlobalSetting, reloadClustersPlan } from '../../redux/globalClustersSlice'
 import TextForm from '../../components/TextForm'
 import RMIconButton from '../../components/RMIconButton'
-import { HiRefresh } from 'react-icons/hi'
+import { HiQuestionMarkCircle, HiRefresh } from 'react-icons/hi'
 import ConfirmModal from '../../components/Modals/ConfirmModal'
 import TagPill from '../../components/TagPill'
 import RMButton from '../../components/RMButton'
+import Markdown from 'react-markdown'
+import CommonModal from '../../components/Modals/CommonModal'
+import remarkGfm from 'remark-gfm'
 
 function CloudSettings({ config }) {
   const dispatch = useDispatch()
   const [action, setAction] = useState({
     title: '',
     type: '',
+    body: <></>
   })
   const {title,type} = action
+  const [isCommonModalOpen, setIsCommonModalOpen] = useState(false)
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false)
   const errInvalidGrant = (err) => { if (err?.message?.includes("invalid_grant")) err.message = <>{err.message}. <Link href="https://gitlab.signal18.io/users/sign_up" target='_blank'><u>Click here to Sign Up</u></Link></>; return err }
 
+  const benefits = `Registered Replication Manager to Cloud18 benefit many advantages  
+* Get access to our community via https://meet.signal18.io  
+* Backup encrypted configs in our cloud repository for possible recover on start  
+* Get access to RDBA OPS and SYS OPS support plans via https://meet.signal18.io  
+* Expose your API on the net and give local clusters access to other Cloud18 users via ACL  
+* Get extra alerting on MariaDB blocker issues that may affect your version  
+* Sale or Subscribe to database clusters on the Cloud18 market-place  
+
+Start create an account in https://gitlab.signal18.io
+  `
+
+  const openCommonModal = () => {
+    setIsCommonModalOpen(true)
+  }
+
+  const closeCommonModal = () => {
+    setIsCommonModalOpen(false)
+  }
 
   const openConfirmModal = () => {
     setIsConfirmModalOpen(true)
@@ -41,8 +65,6 @@ function CloudSettings({ config }) {
   }, [type])
 
   const disableConnect = useMemo(() => (config?.cloud18GitUser === "" || config?.cloud18Domain === "" || config?.cloud18SubDomain === "" || config?.cloud18SubDomainZone === ""),[config?.cloud18GitUser, config?.cloud18Domain, config?.cloud18SubDomain, config?.cloud18SubDomainZone])
-
-  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false)
 
   useEffect(() => {
     // Re-render when the config prop changes
@@ -129,7 +151,7 @@ function CloudSettings({ config }) {
     },
     {
       key: 'Cloud18 Connect',
-      value: (<> { config?.cloud18 ? <RMButton onClick={() => { setAction({title:'Confirm disconnect from cloud18?', type: 'cloud18-disconnect'}); openConfirmModal()}}>Disconnect</RMButton> : <RMButton isDisabled={disableConnect}  onClick={() => { setAction({title:'Confirm connect to cloud18?', type: 'cloud18-connect'}); openConfirmModal()}}>Connect</RMButton>}</>)
+      value: (<HStack> { config?.cloud18 ? <RMButton onClick={() => { setAction({title:'Confirm disconnect from cloud18?', type: 'cloud18-disconnect'}); openConfirmModal()}}>Disconnect</RMButton> : <RMButton isDisabled={disableConnect}  onClick={() => { setAction({title:'Confirm connect to cloud18?', type: 'cloud18-connect'}); openConfirmModal()}}>Connect</RMButton>} <RMIconButton icon={HiQuestionMarkCircle} onClick={() => { setAction({title:'Cloud 18 Benefits', type: '', body: <Box><Markdown remarkPlugins={[remarkGfm]}>{benefits}</Markdown></Box>}); openCommonModal()}} /></HStack>)
     },
     {
       key: 'Reload All Clusters Plans',
@@ -152,6 +174,17 @@ function CloudSettings({ config }) {
           onConfirmClick={() => {
             actionHandler()
             closeConfirmModal()
+          }}
+        />
+      )}
+      {isCommonModalOpen && (
+        <CommonModal
+          isOpen={isCommonModalOpen}
+          size='lg'
+          title={title}
+          body={action.body}
+          closeModal={() => {
+            closeCommonModal()
           }}
         />
       )}
