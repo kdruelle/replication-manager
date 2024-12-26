@@ -52,36 +52,45 @@ export const getMonitoredData = createAsyncThunk('globalClusters/getMonitoredDat
 
 export const switchGlobalSetting = createAsyncThunk(
   'globalClusters/switchGlobalSetting',
-  async ({ setting, errMessage, setRefresh }, thunkAPI) => {
+  async ({ setting, errMsgFunc }, thunkAPI) => {
     try {
       const { data, status } = await globalClustersService.switchGlobalSetting(setting)
-      showSuccessBanner('Cloud18 setting switch is successful!', status, thunkAPI)
-      return { data, status }
+      if (status === 200) {
+        showSuccessBanner('Global setting switch is successful!', status, thunkAPI)
+        return { data, status }
+      } else {
+        throw new Error(data)
+      }
     } catch (error) {
       console.log('error::', error)
-      if (errMessage) {
-        showErrorBanner('Cloud18 setting switch is failed!', errMessage(error), thunkAPI)
+      if (errMsgFunc) {
+        showErrorBanner('Global setting switch is failed!', errMsgFunc(error), thunkAPI)
       } else {
-        showErrorBanner('Cloud18 setting switch is failed!', error, thunkAPI)
+        showErrorBanner('Global setting switch is failed!', error, thunkAPI)
       }
       handleError(error, thunkAPI)
-      if (setRefresh) {
-        setRefresh(Math.random().toString(36).slice(2, 7))
-      }
     }
   }
 )
 
 export const setGlobalSetting = createAsyncThunk(
   'globalClusters/setGlobalSetting',
-  async ({ setting, value }, thunkAPI) => {
+  async ({ setting, value, errMsgFunc }, thunkAPI) => {
     try {
-      const { data, status } = await globalClustersService.setGlobalSetting(setting, value)
-      showSuccessBanner('Cloud18 change setting is successful!', status, thunkAPI)
-      return { data, status }
+      const { data, status } = value !== "" ? await globalClustersService.setGlobalSetting(setting, value) : await globalClustersService.clearGlobalSetting(setting)
+      if (status === 200) {
+        showSuccessBanner('Global setting is successfully changed!', status, thunkAPI)
+        return { data, status }
+      } else {
+        throw new Error(data)
+      }
     } catch (error) {
       console.log('error::', error)
-      showErrorBanner('Cloud18 change setting is failed!', error, thunkAPI)
+      if (errMsgFunc) {
+        showErrorBanner('Global setting change is failed!', errMsgFunc(error), thunkAPI)
+      } else {
+        showErrorBanner('Global setting change is failed!', error, thunkAPI)
+      }
       handleError(error, thunkAPI)
     }
   }
