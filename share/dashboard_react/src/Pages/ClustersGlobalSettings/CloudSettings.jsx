@@ -151,7 +151,7 @@ Start create an account in https://gitlab.signal18.io
     },
     {
       key: 'Cloud18 Connect',
-      value: (<HStack> { config?.cloud18 ? <RMButton onClick={() => { setAction({title:'Confirm disconnect from cloud18?', type: 'cloud18-disconnect'}); openConfirmModal()}}>Disconnect</RMButton> : <RMButton isDisabled={disableConnect}  onClick={() => { setAction({title:'Confirm connect to cloud18?', type: 'cloud18-connect'}); openConfirmModal()}}>Connect</RMButton>} <RMIconButton icon={HiQuestionMarkCircle} onClick={() => { setAction({title:'Cloud 18 Benefits', type: '', body: <Box><Markdown remarkPlugins={[remarkGfm]}>{benefits}</Markdown></Box>}); openCommonModal()}} /></HStack>)
+      value: (<HStack> { config?.cloud18 ? <RMButton onClick={() => { setAction({title:'Confirm disconnect from cloud18?', type: 'cloud18-disconnect'}); openConfirmModal()}}>Disconnect</RMButton> : <RMButton isDisabled={disableConnect}  onClick={() => { setAction({title:'Confirm connect to cloud18?', type: 'cloud18-connect'}); openConfirmModal()}}>Connect</RMButton>} <RMIconButton icon={HiQuestionMarkCircle} onClick={() => { setAction({title:'Cloud 18 Benefits', type: '', body: <Box><Markdown className={styles.markdownContent} remarkPlugins={[remarkGfm]}>{benefits}</Markdown></Box>}); openCommonModal()}} /></HStack>)
     },
     {
       key: 'Reload All Clusters Plans',
@@ -183,6 +183,7 @@ Start create an account in https://gitlab.signal18.io
           size='lg'
           title={title}
           body={action.body}
+          className={styles.markdownContent}
           closeModal={() => {
             closeCommonModal()
           }}
