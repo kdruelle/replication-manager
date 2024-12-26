@@ -879,8 +879,8 @@ func (repman *ReplicationManager) handlerMuxPeerClusters(w http.ResponseWriter, 
 	booked := strings.Split(repman.PeerBooked[peerUser], ",")
 	for _, cl := range repman.PeerClusters {
 		if misc.IsValidPublicURL(cl.ApiPublicUrl) {
-			fmt.Println("Peer cluster is valid")
-			fmt.Println(cl.ApiCredentialsAclAllowExternal + "," + cl.ApiCredentialsAclAllow)
+			// fmt.Println("Peer cluster is valid")
+			// fmt.Println(cl.ApiCredentialsAclAllowExternal + "," + cl.ApiCredentialsAclAllow)
 			if strings.Contains(cl.ApiCredentialsAclAllowExternal+","+cl.ApiCredentialsAclAllow, peerUser) || slices.Contains(booked, cl.Cloud18Domain+"/"+cl.Cloud18SubDomain+"/"+cl.ClusterName) {
 				peer = append(peer, cl)
 			}
