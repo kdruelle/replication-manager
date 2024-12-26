@@ -1,5 +1,5 @@
 import { Flex, Link } from '@chakra-ui/react'
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import styles from './styles.module.scss'
 import RMSwitch from '../../components/RMSwitch'
 import { useDispatch } from 'react-redux'
@@ -9,10 +9,16 @@ import TextForm from '../../components/TextForm'
 import RMIconButton from '../../components/RMIconButton'
 import { HiRefresh } from 'react-icons/hi'
 import ConfirmModal from '../../components/Modals/ConfirmModal'
+import TagPill from '../../components/TagPill'
+import RMButton from '../../components/RMButton'
 
 function CloudSettings({ config }) {
   const dispatch = useDispatch()
-  const [title, setTitle] = useState("")
+  const [action, setAction] = useState({
+    title: '',
+    type: '',
+  })
+  const {title,type} = action
   const errInvalidGrant = (err) => { if (err?.message?.includes("invalid_grant")) err.message = <>{err.message}. <Link href="https://gitlab.signal18.io/users/sign_up" target='_blank'><u>Click here to Sign Up</u></Link></>; return err }
 
 
@@ -24,21 +30,29 @@ function CloudSettings({ config }) {
     setIsConfirmModalOpen(false)
   }
 
+  const actionHandler = useCallback(() => {
+    if (type === 'cloud18-connect') {
+      dispatch(setGlobalSetting({ setting: 'cloud18', value: "true", errMsgFunc: errInvalidGrant }))
+    } else if (type === 'cloud18-disconnect') {
+      dispatch(setGlobalSetting({ setting: 'cloud18', value: "false", errMsgFunc: errInvalidGrant }))
+    } else if (type === 'reload-clusters-plan') {
+      dispatch(reloadClustersPlan({}))
+    }
+  }, [type])
+
+  const disableConnect = useMemo(() => (config?.cloud18GitUser === "" || config?.cloud18Domain === "" || config?.cloud18SubDomain === "" || config?.cloud18SubDomainZone === ""),[config?.cloud18GitUser, config?.cloud18Domain, config?.cloud18SubDomain, config?.cloud18SubDomainZone])
+
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false)
 
   useEffect(() => {
     // Re-render when the config prop changes
-  }, [config, title]);
+  }, [config]);
 
   const dataObject = [
     {
-      key: 'Cloud18',
+      key: 'Cloud18 Status',
       value: (
-        <RMSwitch
-          confirmTitle={'Confirm switch global settings for cloud18?'}
-          onChange={(_v, setRefresh) => dispatch(switchGlobalSetting({ setting: 'cloud18', errMessage: errInvalidGrant, setRefresh }))}
-          isChecked={config?.cloud18}
-        />
+        <TagPill colorScheme={config?.cloud18 ? 'green' : 'gray'} text={config?.cloud18 ? 'ONLINE' : 'OFFLINE'} />
       )
     },
     {
@@ -78,7 +92,7 @@ function CloudSettings({ config }) {
       )
     },
     {
-      key: 'Subdomain',
+      key: 'Subdomain', 
       value: (
         <TextForm
           value={config?.cloud18SubDomain}
@@ -114,9 +128,13 @@ function CloudSettings({ config }) {
       )
     },
     {
+      key: 'Cloud18 Connect',
+      value: (<> { config?.cloud18 ? <RMButton onClick={() => { setAction({title:'Confirm disconnect from cloud18?', type: 'cloud18-disconnect'}); openConfirmModal()}}>Disconnect</RMButton> : <RMButton isDisabled={disableConnect}  onClick={() => { setAction({title:'Confirm connect to cloud18?', type: 'cloud18-connect'}); openConfirmModal()}}>Connect</RMButton>}</>)
+    },
+    {
       key: 'Reload All Clusters Plans',
       value: (
-        <RMIconButton icon={HiRefresh} onClick={() => { setTitle('Confirm reload all clusters plans?'); openConfirmModal() }}/>
+        <RMIconButton icon={HiRefresh} onClick={() => { setAction({title:'Confirm reload all clusters plans?', type: 'reload-clusters-plan'}); openConfirmModal() }} />
       )
     },
   ]
@@ -132,7 +150,7 @@ function CloudSettings({ config }) {
           }}
           title={title}
           onConfirmClick={() => {
-            dispatch(reloadClustersPlan({}))
+            actionHandler()
             closeConfirmModal()
           }}
         />
