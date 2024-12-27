@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 
 const GrantCheckList = ({ grantOptions, onChange, parentStyles }) => {
     const [allGroups, setAllGroups] = useState(false);
-    const [selectedGroups, setSelectedGroups] = useState([]);
     const [grants, setGrants] = useState([]);
     const [searchTerm, setSearchTerm] = useState(""); // State to manage the search query
 
@@ -22,7 +21,9 @@ const GrantCheckList = ({ grantOptions, onChange, parentStyles }) => {
             groupMap.get(prefix).push(grant);
         });
 
-        return Array.from(groupMap, ([group, grants]) => ({ group, grants }));
+        let gg = Array.from(groupMap, ([group, grants]) => ({ group, grants, selected: grants.every(grant => grant.selected) }));
+        setAllGroups(gg.every(group => group.selected));
+        return gg;
     };
 
     useEffect(() => {
@@ -49,56 +50,44 @@ const GrantCheckList = ({ grantOptions, onChange, parentStyles }) => {
 
     useEffect(() => {
         const selected = [
-            ...selectedGroups, // Add selected group names
-            ...filteredGrants.flatMap(group =>
-                group.grants.filter(grant => grant.selected && !selectedGroups.includes(group.group)).map(grant => grant.grant)
+            ...filteredGrants.filter(group => group.selected).map(group => group.group),
+            ...filteredGrants.filter(group => !group.selected).flatMap(group =>
+                group.grants.filter(grant => grant.selected).map(grant => grant.grant)
             ),
         ];
         handleUpdate(selected); // Replace with actual save logic
-    }, [filteredGrants, selectedGroups]);
+    }, [filteredGrants]);
 
     // Handle group checkbox changes
     const handleAllChange = (isChecked) => {
-        let updatedGroups = [];
-
         // Update individual grants based on the group selection
         const updatedGrants = grants.map(group => {
-            if (isChecked) {
-                updatedGroups.push(group.group)
-            }
             return {
                 ...group,
-                grants: group.grants.map(grant => ({ ...grant, selected: isChecked }))
+                grants: group.grants.map(grant => ({ ...grant, selected: isChecked })),
+                selected: isChecked
             };
         });
-        setSelectedGroups(updatedGroups);
         setGrants(updatedGrants);
         setAllGroups(isChecked)
     };
 
     // Handle group checkbox changes
     const handleGroupChange = (groupName, isChecked) => {
-        let updatedGroups = [...selectedGroups];
-        if (isChecked) {
-            if (!updatedGroups.includes(groupName)) updatedGroups.push(groupName);
-        } else {
-            updatedGroups = updatedGroups.filter(group => group !== groupName);
-        }
-
-        setSelectedGroups(updatedGroups);
-
         // Update individual grants based on the group selection
         const updatedGrants = grants.map(group => {
             if (group.group === groupName) {
                 return {
                     ...group,
-                    grants: group.grants.map(grant => ({ ...grant, selected: isChecked }))
+                    grants: group.grants.map(grant => ({ ...grant, selected: isChecked })),
+                    selected: isChecked
                 };
             }
             return group;
         });
 
         setGrants(updatedGrants);
+        setAllGroups(updatedGrants.every(group => group.selected))
     };
 
     // Handle individual grant checkbox changes
@@ -108,30 +97,14 @@ const GrantCheckList = ({ grantOptions, onChange, parentStyles }) => {
                 const updatedGrant = group.grants.map(grant =>
                     grant.grant === grantName ? { ...grant, selected: isChecked } : grant
                 );
-                return { ...group, grants: updatedGrant };
-            }
-            return group;
-        });
-        setGrants(updatedGrants);
-
-        // Check if all grants in the group are selected to update the group checkbox
-        const updatedGroups = filteredGrants.map(group => {
-            if (group.group === groupName) {
-                const allSelected = group.grants.every(grant => grant.selected);
-                if (allSelected) {
-                    // If all are selected, mark the group as selected
-                    if (!selectedGroups.includes(groupName)) {
-                        return { ...group, selected: true };  // Ensure state update
-                    }
-                } else {
-                    // If not all are selected, uncheck the group
-                    return { ...group, selected: false };  // Ensure state update
-                }
+                const allSelected = updatedGrant.every(grant => grant.selected);
+                return { ...group, grants: updatedGrant, selected: allSelected };
             }
             return group;
         });
 
-        setSelectedGroups(updatedGroups.map(group => group.group)); // Correctly update the selected groups
+        setGrants(updatedGrants); // Correctly update the selected groups
+        setAllGroups(updatedGrants.every(group => group.selected))
     };
 
     return (
@@ -158,7 +131,7 @@ const GrantCheckList = ({ grantOptions, onChange, parentStyles }) => {
                 {filteredGrants.map((group) => (
                     <ListItem key={group.group} className={parentStyles.aclCategoryItem}>
                         <Checkbox
-                            isChecked={selectedGroups.includes(group.group)}
+                            isChecked={group.selected}
                             isIndeterminate={group.grants.some(grant => grant.selected) && !group.grants.every(grant => grant.selected)}
                             onChange={(e) => handleGroupChange(group.group, e.target.checked)}
                         >

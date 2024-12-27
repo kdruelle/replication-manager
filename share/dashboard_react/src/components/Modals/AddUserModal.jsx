@@ -28,7 +28,8 @@ import GrantCheckList from '../GrantCheckList'
 
 function AddUserModal({ clusterName, isOpen, closeModal }) {
   const dispatch = useDispatch()
-  const [user, setUser] = useState(null)  
+  const [user, setUser] = useState(null) 
+  const [isConfirm, setIsConfirm] = useState(false)
 
   const {
     globalClusters: { monitor },
@@ -50,7 +51,7 @@ function AddUserModal({ clusterName, isOpen, closeModal }) {
   const { theme } = useTheme()
   const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
   const { serviceAcl = [], serviceRoles = [] } = monitor
-
+  
   useEffect(() => {
     if (monitor === null) {
       dispatch(getMonitoredData({}))
@@ -119,16 +120,9 @@ function AddUserModal({ clusterName, isOpen, closeModal }) {
     }
   }
 
-  // const handleSelectAllRoles = (e) => {
-  //   const isChecked = e.target.checked
-  //   const updatedRoles = allRoles.map((x) => ({ ...x, selected: isChecked }))
-  //   setRoles(updatedRoles)
-  //   setAllRoles(updatedRoles)
-  // }
-
-  const handleAddUser = () => {
+  const handleSubmit = (e) => {
+    e.preventDefault()
     setUserNameError('')
-    // setPasswordError('')
     setGrantsError('')
     setRolesError('')
     if (!userName) {
@@ -140,7 +134,15 @@ function AddUserModal({ clusterName, isOpen, closeModal }) {
       setUserNameError('User must be email address')
       return
     }
+    setIsConfirm(true)
+  }
 
+  const handleCloseConfirm = () => {
+    setIsConfirm(false)
+  }
+
+
+  const handleAddUser = () => {
     const selectedRoles = roles.filter((x) => x.selected).map((x) => x.role)
     const selectedGrants = acls
 
@@ -148,7 +150,7 @@ function AddUserModal({ clusterName, isOpen, closeModal }) {
     closeModal()
   }
 
-  return (
+  return !isConfirm ? (
     <Modal isOpen={isOpen} onClose={closeModal}>
       <ModalOverlay />
       <ModalContent className={theme === 'light' ? parentStyles.modalLightContent : parentStyles.modalDarkContent}>
@@ -167,22 +169,10 @@ function AddUserModal({ clusterName, isOpen, closeModal }) {
               />
               <FormErrorMessage>{userNameError}</FormErrorMessage>
             </FormControl>
-            {/* <FormControl isInvalid={passwordError}>
-              <FormLabel htmlFor='password'>Password</FormLabel>
-              <Input id='password' type='password' value={password} onChange={(e) => setPassword(e.target.value)} />
-              <Message type='error' message={passwordError} />
-            </FormControl> */}
             <Message message={rolesError} />
             <VStack className={parentStyles.roleContainer}>
               <Input id='searchRole' type='search' onChange={handleSearchRoles} placeholder='Search ROLE' />
               <List className={parentStyles.roleList}>
-                {/* <ListItem className={parentStyles.roleListItem}>
-                  <Checkbox
-                    onChange={handleSelectAllRoles}
-                    isChecked={roles.length > 0 && roles.every((x) => x.selected)}>
-                    Select All Roles
-                  </Checkbox>
-                </ListItem> */}
                 {roles.length > 0 &&
                   roles.map((role) => (
                     <ListItem className={parentStyles.roleListItem}>
@@ -204,8 +194,58 @@ function AddUserModal({ clusterName, isOpen, closeModal }) {
           <RMButton colorScheme='blue' size='medium' variant='outline' onClick={closeModal}>
             Cancel
           </RMButton>
-          <RMButton onClick={handleAddUser} size='medium'>
+          <RMButton onClick={handleSubmit} size='medium'>
             Add User
+          </RMButton>
+        </ModalFooter>
+      </ModalContent>
+    </Modal>
+  ) : (
+    <Modal isOpen={isOpen} onClose={handleCloseConfirm}>
+      <ModalOverlay />
+      <ModalContent className={theme === 'light' ? parentStyles.modalLightContent : parentStyles.modalDarkContent}>
+        <ModalHeader>{'Update user privileges'}</ModalHeader>
+        <ModalCloseButton />
+        <ModalBody>
+          <Stack spacing='2'>
+          <Text>
+              Are you sure you want to submit the following details?
+            </Text>
+            <Text mt={4}>
+              <strong>Cluster Name:</strong> {clusterName}
+            </Text>
+            <Text>
+              <strong>Username:</strong> {userName || "N/A"}
+            </Text>
+            <Text>
+              <strong>Grants:</strong>
+            </Text>
+            <div
+              style={{
+                maxHeight: "150px", // Set maximum height for the scrollable area
+                overflowY: "auto", // Add vertical scroll
+                border: "1px solid #E2E8F0", // Optional: Add a border to distinguish the section
+                padding: "8px", // Optional: Add padding for better readability
+                borderRadius: "8px",
+              }}
+            >
+              { acls.length > 0 ? acls.map((grant, index) => (
+                <Text key={index} fontSize="sm" mb={1}>
+                  {grant}
+                </Text>
+              )) : <Text key={"nogrant"} fontSize="sm" mb={1}>N/A</Text> }
+            </div>
+            <Text>
+              <strong>Roles:</strong> {roles.filter((x) => x.selected).map((x) => x.role).join(" ") || "N/A"}
+            </Text>
+          </Stack>
+        </ModalBody>
+        <ModalFooter gap={3} margin='auto'>
+          <RMButton colorScheme='blue' size='medium' variant='outline' onClick={handleCloseConfirm}>
+            Cancel
+          </RMButton>
+          <RMButton onClick={handleAddUser} size='medium'>
+            Confirm
           </RMButton>
         </ModalFooter>
       </ModalContent>

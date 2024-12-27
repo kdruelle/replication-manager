@@ -14,6 +14,7 @@ import {
   ModalHeader,
   ModalOverlay,
   Stack,
+  Text,
   VStack
 } from '@chakra-ui/react'
 import React, { useState, useEffect } from 'react'
@@ -26,11 +27,14 @@ import Message from '../Message'
 import { updateGrants } from '../../redux/clusterSlice'
 import GrantCheckList from '../GrantCheckList'
 
-function UserGrantModal({ clusterName, user, isOpen, closeModal }) {
+function UserGrantModal({ clusterName, selectedUser, isOpen, closeModal }) {
   const dispatch = useDispatch()
+  const [user, setUser] = useState(null)
+  const [isConfirm, setIsConfirm] = useState(false)
 
   const {
-    globalClusters: { monitor }
+    globalClusters: { monitor },
+    cluster: { clusterData }
   } = useSelector((state) => state)
 
   const [acls, setAcls] = useState([])
@@ -41,7 +45,7 @@ function UserGrantModal({ clusterName, user, isOpen, closeModal }) {
   const [allRoles, setAllRoles] = useState([])
   const [firstLoad, setFirstLoad] = useState(true)
   const { theme } = useTheme()
-  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  const { serviceAcl = [], serviceRoles = [] } = monitor
 
   useEffect(() => {
     if (monitor === null) {
@@ -50,20 +54,43 @@ function UserGrantModal({ clusterName, user, isOpen, closeModal }) {
   }, [monitor])
 
   useEffect(() => {
-    setFirstLoad(true)
-  }, [user])
+    if (clusterData) {
+      if (clusterData.apiUsers) {
+        const loggedUser = localStorage.getItem('username')
+        if (loggedUser && clusterData?.apiUsers[loggedUser]) {
+          const apiUser = clusterData.apiUsers[loggedUser]
+          setUser(apiUser)
+        }
+      }
+    }
+  }, [clusterData])
 
-   useEffect(() => {
-    if (monitor?.serviceAcl?.length > 0 && firstLoad) {
-      const modifiedWithSelectedProp = monitor?.serviceAcl.map((item) => Object.assign({}, item, { selected: user?.grants?.[item.grant] ?? false }))
-      const modifiedRolesWithSelectedProp = monitor?.serviceRoles.map((item) => Object.assign({}, item, { selected: user?.roles?.[item.role] ?? false }))
+  useEffect(() => {
+    setFirstLoad(true)
+  }, [selectedUser])
+
+  const listRoles = (user) => {
+    if (user.roles['sysops']) {
+      return ['dbops', 'extdbops', 'extsysops']
+    } else if (user.roles['dbops']) {
+      return ['extdbops']
+    } else if (user.roles['sponsor']) {
+      return ['extdbops', 'extsysops']
+    }
+    return []
+  }
+
+  useEffect(() => {
+    if (serviceAcl?.length > 0 && user != null && firstLoad) {
+      const modifiedWithSelectedProp = serviceAcl.filter((item) => user.grants[item.grant] || selectedUser?.grants?.[item.grant]).map((item) => Object.assign({}, item, { selected: selectedUser?.grants?.[item.grant] ?? false }))
+      const modifiedRolesWithSelectedProp = serviceRoles.filter((item) => selectedUser?.roles?.[item.role] || listRoles(user).includes(item.role)).map((item) => Object.assign({}, item, { selected: selectedUser?.roles?.[item.role] ?? false }))
       setAcls(modifiedWithSelectedProp)
       setAllAcls(modifiedWithSelectedProp)
       setRoles(modifiedRolesWithSelectedProp)
       setAllRoles(modifiedRolesWithSelectedProp)
       setFirstLoad(false)
     }
-  }, [monitor?.serviceAcl, monitor?.serviceRoles, user])
+  }, [serviceAcl, serviceRoles, user, selectedUser])
 
   const handleCheckRoles = (e, role) => {
     const isChecked = e.target.checked;
@@ -92,27 +119,27 @@ function UserGrantModal({ clusterName, user, isOpen, closeModal }) {
     }
   }
 
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    setIsConfirm(true)
+  }
+
+  const handleCloseConfirm = () => {
+    setIsConfirm(false)
+  }
+
   const handleUserGrants = () => {
     setGrantsError('')
     setRolesError('')
-  
+
     const selectedRoles = roles.filter((x) => x.selected).map((x) => x.role)
-    if (selectedRoles.length === 0) {
-      setRolesError('Please select at least one role')
-      return
-    }
-
     const selectedGrants = acls
-    if (selectedGrants.length === 0) {
-      setGrantsError('Please select at least one grant')
-      return
-    }
 
-    dispatch(updateGrants({ clusterName, username: user?.user, grants: selectedGrants.join(' '), roles: selectedRoles.join(' ') }))
+    dispatch(updateGrants({ clusterName, username: selectedUser?.user, grants: selectedGrants.join(' '), roles: selectedRoles.join(' ') }))
     closeModal()
   }
 
-  return (
+  return !isConfirm ? (
     <Modal isOpen={isOpen} onClose={closeModal}>
       <ModalOverlay />
       <ModalContent className={theme === 'light' ? parentStyles.modalLightContent : parentStyles.modalDarkContent}>
@@ -140,13 +167,62 @@ function UserGrantModal({ clusterName, user, isOpen, closeModal }) {
             <GrantCheckList grantOptions={allAcls} onChange={setAcls} parentStyles={parentStyles} />
           </Stack>
         </ModalBody>
-
         <ModalFooter gap={3} margin='auto'>
           <RMButton colorScheme='blue' size='medium' variant='outline' onClick={closeModal}>
             Cancel
           </RMButton>
-          <RMButton onClick={handleUserGrants} size='medium'>
+          <RMButton onClick={handleSubmit} size='medium'>
             Update Privileges
+          </RMButton>
+        </ModalFooter>
+      </ModalContent>
+    </Modal>
+  ) : (
+    <Modal isOpen={isOpen} onClose={handleCloseConfirm}>
+      <ModalOverlay />
+      <ModalContent className={theme === 'light' ? parentStyles.modalLightContent : parentStyles.modalDarkContent}>
+        <ModalHeader>{'Update user privileges'}</ModalHeader>
+        <ModalCloseButton />
+        <ModalBody>
+          <Stack spacing='2'>
+            <Text>
+              Are you sure you want to submit the following details?
+            </Text>
+            <Text mt={4}>
+              <strong>Cluster Name:</strong> {clusterName}
+            </Text>
+            <Text>
+              <strong>Username:</strong> {selectedUser?.user || "N/A"}
+            </Text>
+            <Text>
+              <strong>Grants:</strong>
+            </Text>
+            <div
+              style={{
+                maxHeight: "150px", // Set maximum height for the scrollable area
+                overflowY: "auto", // Add vertical scroll
+                border: "1px solid #E2E8F0", // Optional: Add a border to distinguish the section
+                padding: "8px", // Optional: Add padding for better readability
+                borderRadius: "8px",
+              }}
+            >
+              { acls.length > 0 ? acls.map((grant, index) => (
+                <Text key={index} fontSize="sm" mb={1}>
+                  {grant}
+                </Text>
+              )) : <Text key={"nogrant"} fontSize="sm" mb={1}>N/A</Text> }
+            </div>
+            <Text>
+              <strong>Roles:</strong> {roles.filter((x) => x.selected).map((x) => x.role).join(" ") || "N/A"}
+            </Text>
+          </Stack>
+        </ModalBody>
+        <ModalFooter gap={3} margin='auto'>
+          <RMButton colorScheme='blue' size='medium' variant='outline' onClick={handleCloseConfirm}>
+            Cancel
+          </RMButton>
+          <RMButton onClick={handleUserGrants} size='medium'>
+            Confirm
           </RMButton>
         </ModalFooter>
       </ModalContent>

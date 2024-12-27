@@ -14,9 +14,21 @@ function Users({ selectedCluster, user }) {
   const [isUserGrantModalOpen, setIsUserGrantModalOpen] = useState(null)
   const columnHelper = createColumnHelper()
 
+  const showUser = (user, item) => {
+    if (user.user === item.user) {
+      return true
+    } else if (user.roles['sysops']) {
+      return true
+    } else if (user.roles['dbops']) {
+      return item.roles['extdbops']
+    } else if (user.roles['sponsor']) {
+      return item.roles['extdbops'] || item.roles['extsysops']
+    }
+  }
+
   useEffect(() => {
     if (selectedCluster?.apiUsers) {
-      const result = Object.entries(selectedCluster?.apiUsers).map(([key, value]) => ({
+      const result = Object.entries(selectedCluster?.apiUsers).filter(([_,value]) => showUser(user, value)).map(([key, value]) => ({
         user: key,
         ...value
       }));
@@ -77,7 +89,7 @@ function Users({ selectedCluster, user }) {
       panelSX={{ overflowX: 'auto', p: 0 }}
       body={<DataTable data={data} columns={columns} className={styles.table} />}
     />
-    {isUserGrantModalOpen && <UserGrantModal clusterName={selectedCluster.name} user={selectedUser} isOpen={isUserGrantModalOpen} closeModal={closeUserGrantModal} />}
+    {isUserGrantModalOpen && <UserGrantModal clusterName={selectedCluster.name} selectedUser={selectedUser} isOpen={isUserGrantModalOpen} closeModal={closeUserGrantModal} />}
     </>
   )
 }
