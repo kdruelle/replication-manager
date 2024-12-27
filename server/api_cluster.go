@@ -375,7 +375,7 @@ func (repman *ReplicationManager) apiClusterProtectedHandler(router *mux.Router)
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxAcceptSubscription)),
 	))
 
-	router.Handle("/api/clusters/{clusterName}/sales/reject-subscription", negroni.New(
+	router.Handle("/api/clusters/{clusterName}/sales/refuse-subscription", negroni.New(
 		negroni.HandlerFunc(repman.validateTokenMiddleware),
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxRejectSubscription)),
 	))

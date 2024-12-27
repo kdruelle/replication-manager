@@ -805,6 +805,27 @@ func (cluster *Cluster) IsURLPassACL(strUser string, URL string, errorPrint bool
 		}
 	}
 
+	if cluster.APIUsers[strUser].Grants[config.GrantSalesValidate] {
+		if strings.Contains(URL, "/api/clusters/"+cluster.Name+"/sales/accept-subscription") {
+			return true
+		}
+		if strings.Contains(URL, "/api/clusters/"+cluster.Name+"/sales/send-credentials") {
+			return true
+		}
+	}
+
+	if cluster.APIUsers[strUser].Grants[config.GrantSalesRefuse] {
+		if strings.Contains(URL, "/api/clusters/"+cluster.Name+"/sales/refuse-subscription") {
+			return true
+		}
+	}
+
+	if cluster.APIUsers[strUser].Grants[config.GrantSalesUnsubscribe] {
+		if strings.Contains(URL, "/api/clusters/"+cluster.Name+"/sales/unsubscribe") {
+			return true
+		}
+	}
+
 	/*	case cluster.APIUsers[strUser].Grants[config.GrantClusterGrant] == true:
 			return false
 		case cluster.APIUsers[strUser].Grants[config.GrantClusterDropMonitor] == true:

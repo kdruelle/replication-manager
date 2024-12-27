@@ -1052,6 +1052,10 @@ const (
 
 	GrantGlobalSettings string = "global-settings" // Can update global settings
 	GrantGlobalGrant    string = "global-grant"    // Can grant global settings
+
+	GrantSalesValidate    string = "sales-validate"    // Can update sales settings
+	GrantSalesRefuse      string = "sales-refuse"      // Can grant sales settings
+	GrantSalesUnsubscribe string = "sales-unsubscribe" // Can grant sales settings
 )
 
 const (
@@ -2127,6 +2131,9 @@ func (conf *Config) GetGrantType() map[string]string {
 		GrantProvProxyUnprovision:      GrantProvProxyUnprovision,
 		GrantGlobalGrant:               GrantGlobalGrant,
 		GrantGlobalSettings:            GrantGlobalSettings,
+		GrantSalesValidate:             GrantSalesValidate,
+		GrantSalesRefuse:               GrantSalesRefuse,
+		GrantSalesUnsubscribe:          GrantSalesUnsubscribe,
 	}
 }
 
@@ -2265,6 +2272,23 @@ func (conf *Config) HasAllGlobalGrants(grants map[string]bool) bool {
 	return true
 }
 
+func (conf *Config) GetGrantSales() []string {
+	return []string{
+		GrantSalesValidate,
+		GrantSalesRefuse,
+		GrantSalesUnsubscribe,
+	}
+}
+
+func (conf *Config) HasAllSalesGrants(grants map[string]bool) bool {
+	for _, grant := range conf.GetGrantSales() {
+		if !grants[grant] {
+			return false
+		}
+	}
+	return true
+}
+
 func (conf *Config) GetCompactGrants(grants map[string]bool) ([]string, []string) {
 	var compactGrants []string
 	var compactDiscardGrants []string
@@ -2364,6 +2388,26 @@ func (conf *Config) GetCompactGrants(grants map[string]bool) ([]string, []string
 		}
 		if counter == 0 {
 			compactDiscardGrants = append(compactDiscardGrants, "global")
+		} else {
+			compactDiscardGrants = append(compactDiscardGrants, tmp...)
+		}
+	}
+
+	tmp = make([]string, 0)
+	counter = 0
+	if conf.HasAllSalesGrants(grants) {
+		compactGrants = append(compactGrants, "sales")
+	} else {
+		for _, grant := range conf.GetGrantSales() {
+			if grants[grant] {
+				compactGrants = append(compactGrants, grant)
+				counter++
+			} else {
+				tmp = append(tmp, grant)
+			}
+		}
+		if counter == 0 {
+			compactDiscardGrants = append(compactDiscardGrants, "sales")
 		} else {
 			compactDiscardGrants = append(compactDiscardGrants, tmp...)
 		}
