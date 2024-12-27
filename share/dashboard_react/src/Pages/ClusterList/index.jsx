@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { getClusters } from '../../redux/globalClustersSlice'
-import { setCluster } from '../../redux/clusterSlice'
+import { getClusterData, setCluster } from '../../redux/clusterSlice'
 import { Box, Flex, HStack, Text, Wrap } from '@chakra-ui/react'
 import NotFound from '../../components/NotFound'
 import { AiOutlineCluster } from 'react-icons/ai'
@@ -41,8 +41,9 @@ function ClusterList({ onClick }) {
 
   const openAddUserModal = (e, name) => {
     e.stopPropagation()
-    setIsAddUserModalOpen(true)
     setClusterName(name)
+    dispatch(getClusterData({ clusterName: name }))
+    setIsAddUserModalOpen(true)
   }
 
   const closeAddUserModal = () => {

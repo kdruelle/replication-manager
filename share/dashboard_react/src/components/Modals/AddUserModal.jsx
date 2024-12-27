@@ -28,9 +28,11 @@ import GrantCheckList from '../GrantCheckList'
 
 function AddUserModal({ clusterName, isOpen, closeModal }) {
   const dispatch = useDispatch()
+  const [user, setUser] = useState(null)  
 
   const {
-    globalClusters: { monitor }
+    globalClusters: { monitor },
+    cluster: { clusterData }
   } = useSelector((state) => state)
 
   const [userName, setUserName] = useState('')
@@ -47,6 +49,7 @@ function AddUserModal({ clusterName, isOpen, closeModal }) {
   const [selectedGroups, setSelectedGroups] = useState([]);
   const { theme } = useTheme()
   const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  const { serviceAcl = [], serviceRoles = [] } = monitor
 
   useEffect(() => {
     if (monitor === null) {
@@ -55,16 +58,39 @@ function AddUserModal({ clusterName, isOpen, closeModal }) {
   }, [monitor])
 
   useEffect(() => {
-    if (monitor?.serviceAcl?.length > 0 && firstLoad) {
-      const modifiedWithSelectedProp = monitor?.serviceAcl.map((item) => Object.assign({}, item, { selected: false }))
-      const modifiedRolesWithSelectedProp = monitor?.serviceRoles.map((item) => Object.assign({}, item, { selected: false }))
+    if (clusterData) {
+      if (clusterData.apiUsers) {
+        const loggedUser = localStorage.getItem('username')
+        if (loggedUser && clusterData?.apiUsers[loggedUser]) {
+          const apiUser = clusterData.apiUsers[loggedUser]
+          setUser(apiUser)
+        }
+      }
+    }
+  }, [clusterData])
+
+  const listRoles = (user) => {
+    if (user.roles['sysops']) {
+      return ['dbops', 'extdbops', 'extsysops']
+    } else if (user.roles['dbops']) {
+      return ['extdbops']
+    } else if (user.roles['sponsor']) {
+      return ['extdbops', 'extsysops']
+    }
+    return []
+  }
+
+  useEffect(() => {
+    if (serviceAcl?.length > 0 && user != null && firstLoad) {
+      const modifiedWithSelectedProp = serviceAcl.filter((item) => user.grants[item.grant]).map((item) => Object.assign({}, item, { selected: false }))
+      const modifiedRolesWithSelectedProp = serviceRoles.filter((item) => listRoles(user).includes(item.role)).map((item) => Object.assign({}, item, { selected: false }))
       setAcls(modifiedWithSelectedProp)
       setAllAcls(modifiedWithSelectedProp)
       setRoles(modifiedRolesWithSelectedProp)
       setAllRoles(modifiedRolesWithSelectedProp)
       setFirstLoad(false)
     }
-  }, [monitor?.serviceAcl, monitor?.serviceRoles])
+  }, [serviceAcl, serviceRoles, user])
 
   const handleCheckRoles = (e, role) => {
     const isChecked = e.target.checked;
@@ -116,16 +142,7 @@ function AddUserModal({ clusterName, isOpen, closeModal }) {
     }
 
     const selectedRoles = roles.filter((x) => x.selected).map((x) => x.role)
-    if (selectedRoles.length === 0) {
-      setRolesError('Please select at least one role')
-      return
-    }
-
     const selectedGrants = acls
-    if (selectedGrants.length === 0) {
-      setGrantsError('Please select at least one grant')
-      return
-    }
 
     dispatch(addUser({ clusterName, username: userName, grants: selectedGrants.join(' '), roles: selectedRoles.join(' ') }))
     closeModal()
