@@ -977,14 +977,42 @@ func (repman *ReplicationManager) handlerMuxPeerRegister(w http.ResponseWriter, 
 		return
 	}
 
-	_, ok := mycluster.APIUsers[userform.Username]
-	if ok {
-		http.Error(w, "User already registered on peer cluster!", http.StatusConflict)
-		return
+	for _, auser := range mycluster.APIUsers {
+		v, ok := auser.Grants["pending"]
+		v2, ok2 := auser.Grants["sponsor"]
+		if (ok && v) || (ok2 && v2) {
+			if auser.User == userform.Username {
+				http.Error(w, "User already subscribed on peer cluster!", http.StatusConflict)
+			} else {
+				http.Error(w, "Another user already subscribed on peer cluster!", http.StatusConflict)
+			}
+			return
+		}
 	}
 
-	userform.Roles = "pending dbops sponsor"
-	mycluster.AddUser(userform)
+	roles := []string{"pending"}
+	grants := []string{}
+	auser, ok := mycluster.APIUsers[userform.Username]
+	if ok {
+		for role, v := range auser.Roles {
+			if v {
+				roles = append(roles, role)
+			}
+		}
+		userform.Roles = strings.Join(roles, " ")
+
+		for grant, v := range auser.Grants {
+			if v {
+				grants = append(grants, grant)
+			}
+		}
+		userform.Grants = strings.Join(grants, " ")
+		mycluster.UpdateUser(userform)
+	} else {
+		userform.Roles = strings.Join(roles, " ")
+		userform.Grants = strings.Join(grants, " ")
+		mycluster.AddUser(userform)
+	}
 
 	err = repman.SendCloud18ClusterSubscriptionMail(mycluster.Name, userform)
 	if err != nil {
