@@ -66,10 +66,11 @@ function PeerClusterList({ onLogin, mode }) {
   const handlePeerCluster = (clusterItem, isRelogin = false) => {
     const token = localStorage.getItem(`user_token_${btoa(clusterItem['api-public-url'])}`)
     let handler
-    if (token && !isRelogin) {
+    if (token && token != "undefined" && !isRelogin) {
       dispatch(setBaseURL({ baseURL: clusterItem['api-public-url'] }));
       handler = dispatch(getClusterData({ clusterName: clusterItem['cluster-name'] }))
     } else {
+      localStorage.removeItem(`user_token_${btoa(clusterItem['api-public-url'])}`)
       handler = dispatch(peerLogin({ baseURL: clusterItem['api-public-url'] }))
         .then((action) => {
           if (action?.payload?.status === 200) {
