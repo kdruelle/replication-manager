@@ -92,6 +92,7 @@ export const clusterService = {
   peerUnsubscribe,
   acceptSubscription,
   rejectSubscription,
+  sendCredentials,
 }
 
 //#region Cluster data APIs
@@ -418,7 +419,11 @@ function acceptSubscription(clusterName, username, baseURL) {
 }
 
 function rejectSubscription(clusterName, username, baseURL) {
-  return getApi(baseURL).post(`clusters/${clusterName}/sales/reject-subscription`,{username})
+  return getApi(baseURL).post(`clusters/${clusterName}/sales/refuse-subscription`,{username})
+}
+
+function sendCredentials(clusterName, username, baseURL) {
+  return getApi(baseURL).post(`clusters/${clusterName}/sales/send-credentials`,{username})
 }
 
 //#endregion User management APIs
