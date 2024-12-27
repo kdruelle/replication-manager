@@ -182,7 +182,16 @@ func (cluster *Cluster) AddUser(userform UserForm) error {
 		cluster.Conf.Secrets["api-credentials-external"] = new_secret
 
 		// Assign ACL before reloading
-		cluster.Conf.APIUsersACLAllowExternal = cluster.Conf.APIUsersACLAllowExternal + "," + user + ":" + grants + ":" + roles + ":" + cluster.Name
+		new_acl := user + ":" + grants + ":" + cluster.Name
+		if roles != "" {
+			new_acl = new_acl + ":" + roles
+		}
+
+		if cluster.Conf.APIUsersACLAllowExternal == "" {
+			cluster.Conf.APIUsersACLAllowExternal = new_acl
+		} else {
+			cluster.Conf.APIUsersACLAllowExternal = cluster.Conf.APIUsersACLAllowExternal + "," + new_acl
+		}
 
 		cluster.LoadAPIUsers()
 		cluster.SaveAcls()
@@ -197,18 +206,7 @@ func (cluster *Cluster) UpdateUser(userform UserForm) error {
 	roles := userform.Roles
 	grants := userform.Grants
 
-	var internal bool
 	list := cluster.Conf.APIUsersACLAllowExternal
-	if strings.Contains(cluster.Conf.APIUsers, user) {
-		creds := strings.Split(cluster.Conf.APIUsers, ",")
-		for _, cr := range creds {
-			u, _ := misc.SplitPair(cr)
-			if user == u {
-				internal = true
-				list = cluster.Conf.APIUsersACLAllow
-			}
-		}
-	}
 
 	if _, ok := cluster.APIUsers[user]; !ok {
 		return fmt.Errorf("User %s is not exist in cluster. Unable to update roles and grants", user)
@@ -218,32 +216,48 @@ func (cluster *Cluster) UpdateUser(userform UserForm) error {
 		acls := strings.Split(list, ",")
 
 		for _, acl := range acls {
-			useracl, _, _, listcluster := misc.SplitAcls(acl)
+			useracl, _, _, _ := misc.SplitAcls(acl)
 			if useracl == user {
-				if listcluster == "" || listcluster == cluster.Name {
-					acl = user + ":" + grants + ":" + roles + ":" + cluster.Name
-					new_acls = append(new_acls, acl)
-				} else if strings.Contains(listcluster, cluster.Name) {
-					clist := strings.Split(listcluster, " ")
-					for _, cname := range clist {
-						if cname == cluster.Name {
-							acl = user + ":" + grants + ":" + roles + ":" + cluster.Name
-							new_acls = append(new_acls, acl)
-							continue
-						}
-					}
+				acl = user + ":" + grants + ":" + cluster.Name
+				if roles != "" {
+					acl = acl + ":" + roles
 				}
+				new_acls = append(new_acls, acl)
 			} else {
 				new_acls = append(new_acls, acl)
 			}
 		}
 
-		// Assign ACL before reloading
-		if internal {
-			cluster.Conf.APIUsersACLAllow = strings.Join(new_acls, ",")
-		} else {
-			cluster.Conf.APIUsersACLAllowExternal = strings.Join(new_acls, ",")
+		cluster.Conf.APIUsersACLAllowExternal = strings.Join(new_acls, ",")
+
+		cluster.LoadAPIUsers()
+		cluster.SaveAcls()
+		cluster.Save()
+	}
+
+	return nil
+}
+
+func (cluster *Cluster) DropUser(userform UserForm) error {
+	user := userform.Username
+
+	list := cluster.Conf.APIUsersACLAllowExternal
+
+	if _, ok := cluster.APIUsers[user]; !ok {
+		return fmt.Errorf("User %s is not exist in cluster. Unable to update roles and grants", user)
+		// cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlErr, "User %s is not exist in cluster. Unable to update roles and grants", user)
+	} else {
+		new_acls := make([]string, 0)
+		acls := strings.Split(list, ",")
+
+		for _, acl := range acls {
+			useracl, _, _, _ := misc.SplitAcls(acl)
+			if useracl != user {
+				new_acls = append(new_acls, acl)
+			}
 		}
+
+		cluster.Conf.APIUsersACLAllowExternal = strings.Join(new_acls, ",")
 
 		cluster.LoadAPIUsers()
 		cluster.SaveAcls()

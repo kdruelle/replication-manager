@@ -113,12 +113,24 @@ func (cluster *Cluster) SaveAcls() {
 	credentials := strings.Split(cluster.Conf.GetDecryptedValue("api-credentials")+","+cluster.Conf.GetDecryptedValue("api-credentials-external"), ",")
 	aUserAcls := make([]string, 0)
 	aUserDiscardAcls := make([]string, 0)
+	aUserList := make([]string, 0)
 	for _, credential := range credentials {
 		user, _ := misc.SplitPair(credential)
+		if slices.Contains(aUserList, user) {
+			continue
+		}
+		aUserList = append(aUserList, user)
 		enabledAcls, discardedAcls := cluster.SaveUserAcls(user)
 		enabledRoles := cluster.SaveUserRoles(user)
-		aUserAcls = append(aUserAcls, user+":"+enabledAcls+":"+enabledRoles+":"+cluster.Name)
-		aUserDiscardAcls = append(aUserDiscardAcls, user+":"+discardedAcls)
+		userACL := user + ":" + enabledAcls + ":" + cluster.Name
+		if enabledRoles != "" {
+			userACL = userACL + ":" + enabledRoles
+		}
+		aUserAcls = append(aUserAcls, userACL)
+
+		if discardedAcls != "" {
+			aUserDiscardAcls = append(aUserDiscardAcls, user+":"+discardedAcls)
+		}
 	}
 	cluster.Conf.APIUsersACLAllowExternal = strings.Join(aUserAcls, ",")
 	cluster.Conf.APIUsersACLDiscard = strings.Join(aUserDiscardAcls, ",")
@@ -149,13 +161,18 @@ func (cluster *Cluster) GetClusterUserAllowACLs(acls string) map[string]ListUser
 		}
 
 		acl := ListUserACL{}
-		useracl, listacls, listroles, listcluster := misc.SplitAcls(userACL)
-		cluster_acls := strings.Split(listcluster, " ")
+		useracl, listacls, list1, list2 := misc.SplitAcls(userACL)
+		slices1 := strings.Split(list1, " ")
+		slices2 := strings.Split(list2, " ")
 
-		if listcluster == "" || slices.Contains(cluster_acls, cluster.Name) {
+		if (list1 == "" && list2 == "") || slices.Contains(slices1, cluster.Name) || slices.Contains(slices2, cluster.Name) {
 			acl.User = useracl
 			acl.ACLs = listacls
-			acl.Roles = listroles
+			if slices.Contains(slices1, cluster.Name) && list2 != "" {
+				acl.Roles = list2
+			} else if slices.Contains(slices2, cluster.Name) && list1 != "" {
+				acl.Roles = list1
+			}
 
 			results[useracl] = acl
 		}
