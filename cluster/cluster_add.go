@@ -298,3 +298,92 @@ func (cluster *Cluster) AddShardingQueryRules(schema string, table string) error
 	}
 	return nil
 }
+
+func (cluster *Cluster) AcceptSubscription(userform UserForm) error {
+	user := userform.Username
+	if auser, ok := cluster.APIUsers[user]; !ok {
+		return fmt.Errorf("User %s does not exist ", user)
+	} else {
+		grants := strings.Split("db show proxy grant", " ")
+		roles := strings.Split("sponsor", " ")
+		for grant, v := range auser.Grants {
+			if v {
+				grants = append(grants, grant)
+			}
+		}
+		userform.Grants = strings.Join(grants, " ")
+
+		for role, v := range auser.Roles {
+			if v && role != "pending" {
+				roles = append(roles, role)
+			}
+		}
+		userform.Roles = strings.Join(roles, " ")
+
+		new_acls := make([]string, 0)
+
+		acls := strings.Split(cluster.Conf.APIUsersACLAllowExternal, ",")
+		for _, acl := range acls {
+			useracl, listgrants, _, listroles := misc.SplitAcls(acl)
+			if useracl == user {
+				acl = user + ":" + userform.Grants + ":" + cluster.Name
+				if userform.Roles != "" {
+					acl = acl + ":" + userform.Roles
+				}
+				new_acls = append(new_acls, acl)
+			} else {
+				old_roles := strings.Split(listroles, " ")
+				for i, role := range old_roles {
+					if role == "pending" {
+						old_roles = append(old_roles[:i], old_roles[i+1:]...)
+						break
+					}
+				}
+				acl = user + ":" + listgrants + ":" + cluster.Name
+				if len(old_roles) > 0 {
+					acl = acl + ":" + strings.Join(old_roles, " ")
+				}
+				new_acls = append(new_acls, acl)
+			}
+		}
+
+		cluster.Conf.APIUsersACLAllowExternal = strings.Join(new_acls, ",")
+
+		cluster.LoadAPIUsers()
+		cluster.SaveAcls()
+		cluster.Save()
+	}
+
+	return nil
+}
+
+func (cluster *Cluster) RemoveSubscription(userform UserForm) error {
+	user := userform.Username
+	if auser, ok := cluster.APIUsers[user]; !ok {
+		return fmt.Errorf("User %s does not exist ", user)
+	} else {
+		grants := make([]string, 0)
+		roles := make([]string, 0)
+		for grant, v := range auser.Grants {
+			if v {
+				grants = append(grants, grant)
+			}
+		}
+		userform.Grants = strings.Join(grants, " ")
+
+		for role, v := range auser.Roles {
+			if v && role != "pending" {
+				roles = append(roles, role)
+			}
+		}
+		userform.Roles = strings.Join(roles, " ")
+
+		if userform.Grants == "" {
+			cluster.DropUser(userform)
+		} else {
+			cluster.UpdateUser(userform)
+		}
+	}
+
+	return nil
+}

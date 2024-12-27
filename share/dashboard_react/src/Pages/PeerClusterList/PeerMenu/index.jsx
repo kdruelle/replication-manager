@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import MenuOptions from '../../../components/MenuOptions'
 import PeerSubscribeModal from '../../../components/Modals/PeerSubscribeModal'
-import { getClusterData, peerRegister } from '../../../redux/clusterSlice'
+import { getClusterData, peerSubscribe } from '../../../redux/clusterSlice'
 import { peerLogin, setBaseURL } from '../../../redux/authSlice'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -48,14 +48,14 @@ function PeerMenu({
         }
     }
 
-    const handlePeerRegister = () => {
+    const handlepeerSubscribe = () => {
         setTitle("Register to Peer Cluster")
         openPeerSubscribeModal()
     }
 
     const handleSaveModal = (password) => {
         if (mode == "shared") {
-            dispatch(peerRegister({ password, clusterName: clusterItem['cluster-name'], baseURL: clusterItem['api-public-url'] }))
+            dispatch(peerSubscribe({ password, clusterName: clusterItem['cluster-name'], baseURL: clusterItem['api-public-url'] }))
         } else {
             dispatch(peerLogin({ password, baseURL: clusterItem['api-public-url'] }))
         }
@@ -70,7 +70,7 @@ function PeerMenu({
                 opts.push({
                     name: 'Register',
                     onClick: () => {
-                        handlePeerRegister()
+                        handlepeerSubscribe()
                     }
                 })
             } else {

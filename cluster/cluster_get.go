@@ -1083,7 +1083,6 @@ func (cluster *Cluster) GetServicePlans() []config.ServicePlan {
 	return m.Rows
 }
 
-
 func (cluster *Cluster) GetClientCertificates() (map[string]string, error) {
 	certs := make(map[string]string)
 	clientCert, err := misc.ReadFile(cluster.WorkingDir + "/client-cert.pem")

@@ -72,7 +72,7 @@ export const authSlice = createSlice({
       const { data } = payload
       const { arg } = meta
 
-      localStorage.setItem('user_token', typeof variable === 'object' ? JSON.parse(data)?.token : data?.token)
+      localStorage.setItem('user_token', typeof data === 'string' ? JSON.parse(data)?.token : data?.token)
       localStorage.setItem('username', arg.username)
       state.isLogged = true
       state.user = {
@@ -90,7 +90,7 @@ export const authSlice = createSlice({
       state.baseURL = arg.baseURL
       const encodedBaseUrl = btoa(arg.baseURL)
       if (action.payload.status === 200) {
-        localStorage.setItem(`user_token_${encodedBaseUrl}`, typeof variable === 'object' ? JSON.parse(data)?.token : data?.token)
+        localStorage.setItem(`user_token_${encodedBaseUrl}`, typeof data === 'string' ? JSON.parse(data)?.token : data?.token)
         state.isPeerLogged = true 
       } else {
         localStorage.removeItem(`user_token_${encodedBaseUrl}`)

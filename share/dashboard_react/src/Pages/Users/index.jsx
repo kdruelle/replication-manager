@@ -4,15 +4,23 @@ import { DataTable } from '../../components/DataTable'
 import AccordionComponent from '../../components/AccordionComponent'
 import styles from './styles.module.scss'
 import UserGrantModal from '../../components/Modals/UserGrantModal'
+import { acceptSubscription, rejectSubscription } from '../../redux/clusterSlice'
 import RMButton from '../../components/RMButton'
 import RMIconButton from '../../components/RMIconButton'
 import { HiUserGroup } from 'react-icons/hi'
+import { TbUserCancel, TbUserStar } from 'react-icons/tb'
+import ConfirmModal from '../../components/Modals/ConfirmModal'
+import { useDispatch } from 'react-redux'
 
 function Users({ selectedCluster, user }) {
   const [data, setData] = useState([])
   const [selectedUser, setSelectedUser] = useState(null)
+  const [action, setAction] = useState({ type: '', title: '', payload: '' })
   const [isUserGrantModalOpen, setIsUserGrantModalOpen] = useState(null)
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(null)
   const columnHelper = createColumnHelper()
+  const { type, title, payload } = action
+  const dispatch = useDispatch()
 
   const showUser = (user, item) => {
     if (user.user === item.user) {
@@ -28,7 +36,7 @@ function Users({ selectedCluster, user }) {
 
   useEffect(() => {
     if (selectedCluster?.apiUsers) {
-      const result = Object.entries(selectedCluster?.apiUsers).filter(([_,value]) => showUser(user, value)).map(([key, value]) => ({
+      const result = Object.entries(selectedCluster?.apiUsers).filter(([_, value]) => showUser(user, value)).map(([key, value]) => ({
         user: key,
         ...value
       }));
@@ -43,6 +51,23 @@ function Users({ selectedCluster, user }) {
 
   const closeUserGrantModal = () => {
     setIsUserGrantModalOpen(false)
+  }
+
+  const openConfirmModal = () => {
+    setIsConfirmModalOpen(true)
+  }
+
+  const closeConfirmModal = () => {
+    setIsConfirmModalOpen(false)
+  }
+
+  const handleConfirm = () => {
+    if (type === 'accept-sub') {
+      dispatch(acceptSubscription({ clusterName: selectedCluster.name, userName: payload }))
+    } else if (type === 'reject-sub') {
+      dispatch(rejectSubscription({ clusterName: selectedCluster.name, userName: payload }))
+    }
+    closeConfirmModal()
   }
 
   const columns = useMemo(
@@ -70,7 +95,18 @@ function Users({ selectedCluster, user }) {
         header: 'Roles',
         id: 'roles'
       }),
-      columnHelper.accessor((row) => (<RMIconButton icon={HiUserGroup} onClick={(e) => { e.stopPropagation(); setSelectedUser(row); openUserGrantModal()}} />), {
+      columnHelper.accessor((row) => (
+        <>
+          {Object.entries(row.roles).filter(([role, v]) => role == "pending" && v).length > 0 ? (
+            <>
+              <RMIconButton icon={TbUserStar} onClick={(e) => { e.stopPropagation(); setAction({ type: "accept-sub", title: "Are you sure to accept subscription?", payload : row.user }); openConfirmModal() }} />
+              <RMIconButton icon={TbUserCancel} onClick={(e) => { e.stopPropagation(); setAction({ type: "reject-sub", title: "Are you sure to reject subscription?", payload : row.user }); openConfirmModal() }} />
+            </>
+          ) : (
+            <RMIconButton icon={HiUserGroup} onClick={(e) => { e.stopPropagation(); setSelectedUser(row); openUserGrantModal() }} />
+          )}
+        </>
+      ), {
         cell: (info) => info.getValue(),
         header: 'Grants',
         id: 'grants'
@@ -79,17 +115,18 @@ function Users({ selectedCluster, user }) {
     []
   )
 
-  
+
   return (
     <>
-    <AccordionComponent
-      heading={'USERS'}
-      allowToggle={false}
-      className={styles.accordion}
-      panelSX={{ overflowX: 'auto', p: 0 }}
-      body={<DataTable data={data} columns={columns} className={styles.table} />}
-    />
-    {isUserGrantModalOpen && <UserGrantModal clusterName={selectedCluster.name} selectedUser={selectedUser} isOpen={isUserGrantModalOpen} closeModal={closeUserGrantModal} />}
+      <AccordionComponent
+        heading={'USERS'}
+        allowToggle={false}
+        className={styles.accordion}
+        panelSX={{ overflowX: 'auto', p: 0 }}
+        body={<DataTable data={data} columns={columns} className={styles.table} />}
+      />
+      {isUserGrantModalOpen && <UserGrantModal clusterName={selectedCluster.name} selectedUser={selectedUser} isOpen={isUserGrantModalOpen} closeModal={closeUserGrantModal} />}
+      {isConfirmModalOpen && <ConfirmModal title={title} isOpen={isConfirmModalOpen} onConfirmClick={handleConfirm} closeModal={closeConfirmModal} />}
     </>
   )
 }

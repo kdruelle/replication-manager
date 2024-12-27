@@ -12,7 +12,7 @@ import CustomIcon from '../../components/Icons/CustomIcon'
 import TagPill from '../../components/TagPill'
 import { HiCreditCard, HiTag } from 'react-icons/hi'
 import { peerLogin, setBaseURL } from '../../redux/authSlice'
-import { getClusterData, peerRegister } from '../../redux/clusterSlice'
+import { getClusterData, peerSubscribe } from '../../redux/clusterSlice'
 import PeerSubscribeModal from '../../components/Modals/PeerSubscribeModal'
 import { showErrorToast } from '../../redux/toastSlice'
 
@@ -60,7 +60,7 @@ function PeerClusterList({ onLogin, mode }) {
 
   const handleSubscribeModal = (clusterItem) => {
     closePeerSubscribeModal(true)
-    dispatch(peerRegister({ clusterName: clusterItem['cluster-name'], baseURL: clusterItem['api-public-url'] }))
+    dispatch(peerSubscribe({ clusterName: clusterItem['cluster-name'], baseURL: clusterItem['api-public-url'] }))
   }
 
   const handlePeerCluster = (clusterItem, isRelogin = false) => {
@@ -90,19 +90,19 @@ function PeerClusterList({ onLogin, mode }) {
     }
 
     handler.then((resp) => {
-      if (resp?.payload?.status === 200) {
-        if (onLogin) return onLogin(resp.payload.data);
-      }
-
       // Handle peer relogin if peer repman instance was restarted
       if (!isRelogin && resp?.payload?.status === 401 && resp?.payload?.data.includes("crypto/rsa: verification error")) {
         return handlePeerCluster(clusterItem, true)
       }
 
-      if (mode === "shared" && resp?.payload?.status === 403 && resp?.payload?.data.includes("No valid ACL")) {
+      if (mode === "shared") {
         setItem(clusterItem);
         openPeerSubscribeModal();
       } else {
+        if (resp?.payload?.status === 200) {
+          if (onLogin) return onLogin(resp.payload.data);
+        }
+        
         dispatch(setBaseURL({ baseURL: '' }));
         showErrorToast({
           status: 'error',

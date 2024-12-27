@@ -88,7 +88,10 @@ export const clusterService = {
   // User management APIs
   addUser,
   updateGrants,
-  peerRegister,
+  peerSubscribe,
+  peerUnsubscribe,
+  acceptSubscription,
+  rejectSubscription,
 }
 
 //#region Cluster data APIs
@@ -402,8 +405,20 @@ function updateGrants(clusterName, username, grants, roles, baseURL) {
   return getApi(baseURL).post(`clusters/${clusterName}/users/update`, {username, grants, roles})
 }
 
-function peerRegister(username, password, clusterName, baseURL) {
-  return getApi(baseURL).post(`clusters/${clusterName}/peer-register`,{username, password})
+function peerSubscribe(username, password, clusterName, baseURL) {
+  return getApi(baseURL).post(`clusters/${clusterName}/peer-subscribe`,{username, password})
+}
+
+function peerUnsubscribe(username, password, clusterName, baseURL) {
+  return getApi(baseURL).post(`clusters/${clusterName}/peer-unsubscribe`,{username, password})
+}
+
+function acceptSubscription(clusterName, username, baseURL) {
+  return getApi(baseURL).post(`clusters/${clusterName}/sales/accept-subscription`,{username})
+}
+
+function rejectSubscription(clusterName, username, baseURL) {
+  return getApi(baseURL).post(`clusters/${clusterName}/sales/reject-subscription`,{username})
 }
 
 //#endregion User management APIs

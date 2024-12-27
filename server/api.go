@@ -253,8 +253,11 @@ func (repman *ReplicationManager) apiserver() {
 	router.Handle("/api/clusters/peers", negroni.New(
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxPeerClusters)),
 	))
-	router.Handle("/api/clusters/{clusterName}/peer-register", negroni.New(
-		negroni.Wrap(http.HandlerFunc(repman.handlerMuxPeerRegister)),
+	router.Handle("/api/clusters/{clusterName}/peer-subscribe", negroni.New(
+		negroni.Wrap(http.HandlerFunc(repman.handlerMuxPeerSubscribe)),
+	))
+	router.Handle("/api/clusters/{clusterName}/peer-unsubscribe", negroni.New(
+		negroni.Wrap(http.HandlerFunc(repman.handlerMuxRejectSubscription)),
 	))
 	router.Handle("/api/prometheus", negroni.New(
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxPrometheus)),
@@ -934,7 +937,7 @@ func (repman *ReplicationManager) handlerMuxPeerClustersForSale(w http.ResponseW
 	w.Write(cl)
 }
 
-func (repman *ReplicationManager) handlerMuxPeerRegister(w http.ResponseWriter, r *http.Request) {
+func (repman *ReplicationManager) handlerMuxPeerSubscribe(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
 
@@ -1091,6 +1094,75 @@ Best regards,
 
 Signal18
 `, userform.Username, clustername, time.Now().Format("2006-01-02 15:04:05"), "", "", "", "", "")
+
+	return repman.Mailer.SendEmailMessage(msg, subj, repman.Conf.MailFrom, to, "", repman.Conf.MailSMTPTLSSkipVerify)
+}
+
+func (repman *ReplicationManager) SendSponsorActivationMail(cl *cluster.Cluster, userform cluster.UserForm) error {
+	to := userform.Username
+
+	subj := fmt.Sprintf("Subscription Active for Cluster %s: %s", cl.Name, userform.Username)
+	msg := fmt.Sprintf(`Dear Sponsor,
+
+We’re excited to let you know that your subscription is now active!
+
+As part of your subscription, you’ll soon receive an email containing your database credentials. 
+
+You can use these credentials to access your cluster resources after the provisioning complete.
+
+If you have any questions in the meantime, feel free to contact our support team by replying to this email.
+
+Thank you for choosing Cloud18!
+
+Best regards,
+
+Signal18
+`)
+
+	return repman.Mailer.SendEmailMessage(msg, subj, repman.Conf.MailFrom, to, "", repman.Conf.MailSMTPTLSSkipVerify)
+}
+
+func (repman *ReplicationManager) SendSponsorCredentialsMail(cl *cluster.Cluster) error {
+	var user cluster.APIUser
+	for _, u := range cl.APIUsers {
+		if u.Roles[config.RoleSponsor] {
+			user = u
+			break
+		}
+	}
+
+	if user.User == "" {
+		return fmt.Errorf("No sponsor found for cluster %s", cl.Name)
+	}
+
+	to := user.User
+
+	subj := fmt.Sprintf("DB Credentials for Cluster %s: %s", cl.Name, user.User)
+	msg := fmt.Sprintf(`Dear Sponsor,
+
+We’re excited to let you know that your subscription is now active!
+
+You can now access your cluster resources and start using them right away.
+
+Please find the details below:
+
+Cloud18 DB Read-Write Split Server: %s
+Cloud18 DB Read-Write Server: %s
+Cloud18 DB Read-Only Server: %s
+Username: %s
+Password: %s
+
+If you are unfamiliar with how to connect to the database, please refer to our User Guide/Documentation or contact our support team for assistance.
+
+Should you have any questions or require further support, do not hesitate to reach out to us by replying this email.
+
+Thank you for choosing Cloud18. We look forward to supporting your success.
+
+
+Best regards,
+
+Signal18
+`, cl.Conf.Cloud18DatabaseReadWriteSplitSrvRecord, cl.Conf.Cloud18DatabaseReadWriteSrvRecord, cl.Conf.Cloud18DatabaseReadSrvRecord, cl.GetDbUser(), cl.GetDbPass())
 
 	return repman.Mailer.SendEmailMessage(msg, subj, repman.Conf.MailFrom, to, "", repman.Conf.MailSMTPTLSSkipVerify)
 }

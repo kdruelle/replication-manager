@@ -997,9 +997,9 @@ export const updateGrants = createAsyncThunk(
   }
 )
 
-export const peerRegister = createAsyncThunk('auth/peerRegister', async ({  password, clusterName, baseURL }, thunkAPI) => {
+export const peerSubscribe = createAsyncThunk('auth/peerSubscribe', async ({  password, clusterName, baseURL }, thunkAPI) => {
   try {
-    const { data, status } = await clusterService.peerRegister(thunkAPI.getState().auth.user.username, password, clusterName, baseURL)
+    const { data, status } = await clusterService.peerSubscribe(thunkAPI.getState().auth.user.username, password, clusterName, baseURL)
     showSuccessBanner(`Register user to peer cluster sent!`, status, thunkAPI)
     return { data, status }
   } catch (error) {
@@ -1010,6 +1010,36 @@ export const peerRegister = createAsyncThunk('auth/peerRegister', async ({  pass
     return thunkAPI.rejectWithValue({ errorMessage, errorStatus }) // Pass the entire Error object to the rejected action
   }
 })
+
+export const acceptSubscription = createAsyncThunk(
+  'cluster/acceptSubscription',
+  async ({ clusterName, username }, thunkAPI) => {
+    try {
+      const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+      const { data, status } = await clusterService.acceptSubscription(clusterName, username, baseURL)
+      showSuccessBanner(`Subscription accepted successfully!`, status, thunkAPI)
+      return { data, status }
+    } catch (error) {
+      showErrorBanner(`Accept subscription failed!`, error, thunkAPI)
+      handleError(error, thunkAPI)
+    }
+  }
+)
+
+export const rejectSubscription = createAsyncThunk(
+  'cluster/rejectSubscription',
+  async ({ clusterName, username }, thunkAPI) => {
+    try {
+      const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+      const { data, status } = await clusterService.rejectSubscription(clusterName, username, baseURL)
+      showSuccessBanner(`Subscription rejected successfully!`, status, thunkAPI)
+      return { data, status }
+    } catch (error) {
+      showErrorBanner(`Reject subscription failed!`, error, thunkAPI)
+      handleError(error, thunkAPI)
+    }
+  }
+)
 
 const initialState = {
   loading: false,
