@@ -23,7 +23,9 @@ function Users({ selectedCluster, user }) {
   const dispatch = useDispatch()
 
   const showUser = (user, item) => {
-    if (user.user === item.user) {
+    if (user.user === "admin") {
+      return true
+    } else if (user.user === item.user) {
       return true
     } else if (user.roles['sysops']) {
       return true
