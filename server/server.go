@@ -2133,6 +2133,10 @@ func (repman *ReplicationManager) StartCluster(clusterName string) (*cluster.Clu
 		repman.currentCluster.SetState("ERR00090", state.State{ErrType: "WARNING", ErrDesc: fmt.Sprintf(repman.currentCluster.GetErrorList()["ERR00090"]), ErrFrom: "CLUSTER"})
 	}
 
+	if repman.Conf.Cloud18GitUser != "" && repman.Conf.Cloud18GitPassword != "" && repman.Conf.Cloud18 {
+		repman.AddCloud18GitUser(repman.currentCluster)
+	}
+
 	go repman.currentCluster.Run()
 	return repman.currentCluster, nil
 }
