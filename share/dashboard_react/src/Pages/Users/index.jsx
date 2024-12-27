@@ -65,9 +65,9 @@ function Users({ selectedCluster, user }) {
 
   const handleConfirm = () => {
     if (type === 'accept-sub') {
-      dispatch(acceptSubscription({ clusterName: selectedCluster.name, userName: payload }))
+      dispatch(acceptSubscription({ clusterName: selectedCluster.name, username: payload }))
     } else if (type === 'reject-sub') {
-      dispatch(rejectSubscription({ clusterName: selectedCluster.name, userName: payload }))
+      dispatch(rejectSubscription({ clusterName: selectedCluster.name, username: payload }))
     }
     closeConfirmModal()
   }
