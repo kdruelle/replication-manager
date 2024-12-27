@@ -7,6 +7,8 @@
 package server
 
 import (
+	"fmt"
+
 	"github.com/signal18/replication-manager/cluster"
 	"github.com/signal18/replication-manager/config"
 )
@@ -57,4 +59,20 @@ func (repman *ReplicationManager) AddCloud18GitUser(cl *cluster.Cluster) error {
 	} else {
 		return cl.AddUser(userform)
 	}
+}
+
+func (repman *ReplicationManager) AddLocalAdminUserACL(cl *cluster.Cluster) error {
+	username := "admin"
+	// Create user and grant for new cluster
+	userform := cluster.UserForm{
+		Username: username,
+		Roles:    "sysops dbops",
+		Grants:   "cluster db proxy prov global grant show sale extrole",
+	}
+
+	if _, ok := cl.APIUsers[username]; ok {
+		return cl.UpdateUser(userform)
+	}
+
+	return fmt.Errorf("User %s not found in cluster %s", username, cl.Name)
 }
