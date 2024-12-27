@@ -64,14 +64,24 @@ function PeerClusterList({ onLogin, mode }) {
   }
 
   const handlePeerCluster = (clusterItem, isRelogin = false) => {
-    const token = localStorage.getItem(`user_token_${btoa(clusterItem['api-public-url'])}`)
     let handler
-    if (token && token != "undefined" && !isRelogin) {
-      dispatch(setBaseURL({ baseURL: clusterItem['api-public-url'] }));
+    let baseURL = clusterItem['api-public-url']
+    let token = localStorage.getItem(`user_token`)
+
+    if (monitor?.config?.apiPublicUrl == baseURL) {
+      baseURL = ''
+    }
+
+    if (baseURL !== '') {
+      token = localStorage.getItem(`user_token_${btoa(baseURL)}`)
+    }
+
+    if (token && !isRelogin) {
+      dispatch(setBaseURL({ baseURL: baseURL }));
       handler = dispatch(getClusterData({ clusterName: clusterItem['cluster-name'] }))
     } else {
-      localStorage.removeItem(`user_token_${btoa(clusterItem['api-public-url'])}`)
-      handler = dispatch(peerLogin({ baseURL: clusterItem['api-public-url'] }))
+      localStorage.removeItem(`user_token_${btoa(baseURL)}`)
+      handler = dispatch(peerLogin({ baseURL: baseURL }))
         .then((action) => {
           if (action?.payload?.status === 200) {
             return dispatch(getClusterData({ clusterName: clusterItem['cluster-name'] }))
@@ -102,7 +112,7 @@ function PeerClusterList({ onLogin, mode }) {
         if (resp?.payload?.status === 200) {
           if (onLogin) return onLogin(resp.payload.data);
         }
-        
+
         dispatch(setBaseURL({ baseURL: '' }));
         showErrorToast({
           status: 'error',
