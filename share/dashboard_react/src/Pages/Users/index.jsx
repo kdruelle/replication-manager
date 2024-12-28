@@ -37,7 +37,6 @@ function Users({ selectedCluster, user }) {
     } else if (user.roles['sponsor']) {
       return item.roles['extdbops'] || item.roles['extsysops'] || normalUser
     }
-    
     return false
   }
 
@@ -105,7 +104,7 @@ function Users({ selectedCluster, user }) {
         id: 'roles'
       }),
       columnHelper.accessor((row) => (
-        <HStack align={"center"}>
+        <HStack align={"center"} justifyContent={"center"}>
           { row?.roles?.["pending"] ? (
             <>
               <RMIconButton icon={TbUserStar} onClick={(e) => { e.stopPropagation(); setAction({ type: "accept-sub", title: "Are you sure to accept subscription?", payload: row.user }); openConfirmModal() }} />
