@@ -384,6 +384,11 @@ func (repman *ReplicationManager) apiClusterProtectedHandler(router *mux.Router)
 		negroni.HandlerFunc(repman.validateTokenMiddleware),
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxSendCredentials)),
 	))
+
+	router.Handle("/api/clusters/{clusterName}/sales/end-subscription", negroni.New(
+		negroni.HandlerFunc(repman.validateTokenMiddleware),
+		negroni.Wrap(http.HandlerFunc(repman.handlerMuxRemoveSponsor)),
+	))
 }
 
 func (repman *ReplicationManager) handlerMuxServers(w http.ResponseWriter, r *http.Request) {
@@ -3140,14 +3145,58 @@ func (repman *ReplicationManager) handlerMuxRejectSubscription(w http.ResponseWr
 		}
 	}
 
-	err = mycluster.RemoveSubscription(userform)
+	err = mycluster.RemoveSubscription(userform, false)
 	if err != nil {
-		http.Error(w, "Error accepting subscription :"+err.Error(), 500)
+		http.Error(w, "Error removing subscription :"+err.Error(), 500)
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Email sent to admin!"))
+	w.Write([]byte("Subscription removed!"))
+}
+
+func (repman *ReplicationManager) handlerMuxRemoveSponsor(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	vars := mux.Vars(r)
+
+	mycluster := repman.getClusterByName(vars["clusterName"])
+	if mycluster == nil {
+		http.Error(w, "No valid cluster", 500)
+		return
+	}
+
+	var userform cluster.UserForm
+	//decode request into UserCredentials struct
+	err := json.NewDecoder(r.Body).Decode(&userform)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "Error in request")
+		return
+	}
+
+	uinfomap, err := repman.GetJWTClaims(r)
+	if err != nil {
+		w.WriteHeader(http.StatusForbidden)
+		fmt.Fprintf(w, "Error parsing JWT: "+err.Error())
+		return
+	}
+
+	// If user is not the submitter, check if he has the right to remove sponsor
+	if uinfomap["User"] != userform.Username {
+		if valid, _ := repman.IsValidClusterACL(r, mycluster); !valid {
+			http.Error(w, "No valid ACL", http.StatusForbidden)
+			return
+		}
+	}
+
+	err = mycluster.RemoveSubscription(userform, true)
+	if err != nil {
+		http.Error(w, "Error removing sponsor subscription :"+err.Error(), 500)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Sponsor subscription removed!"))
 }
 
 func (repman *ReplicationManager) handlerMuxSendCredentials(w http.ResponseWriter, r *http.Request) {

@@ -357,7 +357,7 @@ func (cluster *Cluster) AcceptSubscription(userform UserForm) error {
 	return nil
 }
 
-func (cluster *Cluster) RemoveSubscription(userform UserForm) error {
+func (cluster *Cluster) RemoveSubscription(userform UserForm, isRemoveSponsor bool) error {
 	user := userform.Username
 	if auser, ok := cluster.APIUsers[user]; !ok {
 		return fmt.Errorf("User %s does not exist ", user)
@@ -372,8 +372,19 @@ func (cluster *Cluster) RemoveSubscription(userform UserForm) error {
 		userform.Grants = strings.Join(grants, " ")
 
 		for role, v := range auser.Roles {
-			if v && role != "pending" {
-				roles = append(roles, role)
+			if isRemoveSponsor {
+				if v && role != "sponsor" {
+					roles = append(roles, role)
+
+					// If use has no other roles, remove grants
+					if len(roles) == 0 {
+						userform.Grants = ""
+					}
+				}
+			} else {
+				if v && role != "pending" {
+					roles = append(roles, role)
+				}
 			}
 		}
 		userform.Roles = strings.Join(roles, " ")

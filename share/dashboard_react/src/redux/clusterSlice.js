@@ -1041,6 +1041,21 @@ export const rejectSubscription = createAsyncThunk(
   }
 )
 
+export const endSubscription = createAsyncThunk(
+  'cluster/endSubscription',
+  async ({ clusterName, username }, thunkAPI) => {
+    try {
+      const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
+      const { data, status } = await clusterService.endSubscription(clusterName, username, baseURL)
+      showSuccessBanner(`Subscription ended successfully!`, status, thunkAPI)
+      return { data, status }
+    } catch (error) {
+      showErrorBanner(`Failed to end subscription!`, error, thunkAPI)
+      handleError(error, thunkAPI)
+    }
+  }
+)
+
 const initialState = {
   loading: false,
   error: null,

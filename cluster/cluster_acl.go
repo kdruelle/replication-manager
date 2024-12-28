@@ -818,10 +818,14 @@ func (cluster *Cluster) IsURLPassACL(strUser string, URL string, errorPrint bool
 		if strings.Contains(URL, "/api/clusters/"+cluster.Name+"/sales/refuse-subscription") {
 			return true
 		}
+
+		if strings.Contains(URL, "/api/clusters/"+cluster.Name+"/peer-unsubscribe") {
+			return true
+		}
 	}
 
 	if cluster.APIUsers[strUser].Grants[config.GrantSalesUnsubscribe] {
-		if strings.Contains(URL, "/api/clusters/"+cluster.Name+"/sales/unsubscribe") {
+		if strings.Contains(URL, "/api/clusters/"+cluster.Name+"/sales/end-subscription") {
 			return true
 		}
 	}

@@ -4,13 +4,14 @@ import { DataTable } from '../../components/DataTable'
 import AccordionComponent from '../../components/AccordionComponent'
 import styles from './styles.module.scss'
 import UserGrantModal from '../../components/Modals/UserGrantModal'
-import { acceptSubscription, rejectSubscription } from '../../redux/clusterSlice'
+import { acceptSubscription, endSubscription, rejectSubscription } from '../../redux/clusterSlice'
 import RMButton from '../../components/RMButton'
 import RMIconButton from '../../components/RMIconButton'
 import { HiUserGroup } from 'react-icons/hi'
 import { TbUserCancel, TbUserStar } from 'react-icons/tb'
 import ConfirmModal from '../../components/Modals/ConfirmModal'
 import { useDispatch } from 'react-redux'
+import { HStack } from '@chakra-ui/react'
 
 function Users({ selectedCluster, user }) {
   const [data, setData] = useState([])
@@ -68,6 +69,8 @@ function Users({ selectedCluster, user }) {
       dispatch(acceptSubscription({ clusterName: selectedCluster.name, username: payload }))
     } else if (type === 'reject-sub') {
       dispatch(rejectSubscription({ clusterName: selectedCluster.name, username: payload }))
+    } else if (type === 'end-sub') {
+      dispatch(endSubscription({ clusterName: selectedCluster.name, username: payload }))
     }
     closeConfirmModal()
   }
@@ -98,16 +101,19 @@ function Users({ selectedCluster, user }) {
         id: 'roles'
       }),
       columnHelper.accessor((row) => (
-        <>
-          {Object.entries(row.roles).filter(([role, v]) => role == "pending" && v).length > 0 ? (
+        <HStack align={"center"}>
+          { row?.roles?.["pending"] ? (
             <>
-              <RMIconButton icon={TbUserStar} onClick={(e) => { e.stopPropagation(); setAction({ type: "accept-sub", title: "Are you sure to accept subscription?", payload : row.user }); openConfirmModal() }} />
-              <RMIconButton icon={TbUserCancel} onClick={(e) => { e.stopPropagation(); setAction({ type: "reject-sub", title: "Are you sure to reject subscription?", payload : row.user }); openConfirmModal() }} />
+              <RMIconButton icon={TbUserStar} onClick={(e) => { e.stopPropagation(); setAction({ type: "accept-sub", title: "Are you sure to accept subscription?", payload: row.user }); openConfirmModal() }} />
+              <RMIconButton icon={TbUserCancel} onClick={(e) => { e.stopPropagation(); setAction({ type: "reject-sub", title: "Are you sure to reject subscription?", payload: row.user }); openConfirmModal() }} />
             </>
           ) : (
-            <RMIconButton icon={HiUserGroup} onClick={(e) => { e.stopPropagation(); setSelectedUser(row); openUserGrantModal() }} />
+            <>
+              { row?.roles?.["sponsor"] && <RMIconButton icon={TbUserCancel} onClick={(e) => { e.stopPropagation(); setAction({ type: "end-sub", title: "Are you sure to end subscription?", payload: row.user }); openConfirmModal() }} />}
+              <RMIconButton icon={HiUserGroup} onClick={(e) => { e.stopPropagation(); setSelectedUser(row); openUserGrantModal() }} />
+            </>
           )}
-        </>
+        </HStack>
       ), {
         cell: (info) => info.getValue(),
         header: 'Grants',
