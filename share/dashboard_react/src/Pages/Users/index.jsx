@@ -24,6 +24,8 @@ function Users({ selectedCluster, user }) {
   const dispatch = useDispatch()
 
   const showUser = (user, item) => {
+    let normalUser = Object.entries(item.roles).every(([_, v]) => !v)
+
     if (user.user === "admin") {
       return true
     } else if (user.user === item.user) {
@@ -33,8 +35,10 @@ function Users({ selectedCluster, user }) {
     } else if (user.roles['dbops']) {
       return item.roles['extdbops']
     } else if (user.roles['sponsor']) {
-      return item.roles['extdbops'] || item.roles['extsysops']
+      return item.roles['extdbops'] || item.roles['extsysops'] || normalUser
     }
+    
+    return false
   }
 
   useEffect(() => {
