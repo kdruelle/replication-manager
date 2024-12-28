@@ -8,6 +8,7 @@ package server
 
 import (
 	"bytes"
+	"compress/zlib"
 	"context"
 	cryptorand "crypto/rand"
 	"crypto/rsa"
@@ -32,6 +33,7 @@ import (
 	"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/iancoleman/strcase"
 	"github.com/klauspost/compress/zstd"
+	"github.com/klauspost/pgzip"
 	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
@@ -1559,33 +1561,47 @@ func (repman *ReplicationManager) DynamicPeerHandler(w http.ResponseWriter, r *h
 	// logResponse(resp)
 
 	var body []byte
-	// Check if the response is compressed with zstd
-	if resp.Header.Get("Content-Encoding") == "zstd" {
-		// Decompress the zstd response
+
+	// Check if the response is compressed with either zstd, gzip, or deflate
+	switch resp.Header.Get("Content-Encoding") {
+	case "zstd":
+		// Handle zstd encoding
 		decoder, err := zstd.NewReader(resp.Body)
 		if err != nil {
 			http.Error(w, "Failed to create zstd decoder: "+err.Error(), http.StatusInternalServerError)
 			return
 		}
 		defer decoder.Close()
-
-		// Read the decompressed data
 		body, err = io.ReadAll(decoder)
+
+	case "gzip":
+		// Handle gzip encoding
+		reader, err := pgzip.NewReader(resp.Body)
 		if err != nil {
-			http.Error(w, "Failed to read decompressed body: "+err.Error(), http.StatusInternalServerError)
+			http.Error(w, "Failed to create gzip reader: "+err.Error(), http.StatusInternalServerError)
 			return
 		}
+		defer reader.Close()
+		body, err = io.ReadAll(reader)
 
-		// fmt.Printf("Decompressed Response: %s\n", body)
-	} else {
+	case "deflate":
+		// Handle deflate encoding
+		reader, err := zlib.NewReader(resp.Body)
+		if err != nil {
+			http.Error(w, "Failed to create deflate reader: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+		defer reader.Close()
+		body, err = io.ReadAll(reader)
+
+	default:
 		// Handle uncompressed response
 		body, err = io.ReadAll(resp.Body)
-		if err != nil {
-			http.Error(w, "Failed to read response body: "+err.Error(), http.StatusInternalServerError)
-			return
-		}
+	}
 
-		// fmt.Printf("Response: %s\n", body)
+	if err != nil {
+		http.Error(w, "Failed to read response body: "+err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	// Forward the response back to the React client
