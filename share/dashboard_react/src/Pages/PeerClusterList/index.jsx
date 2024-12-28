@@ -59,8 +59,14 @@ function PeerClusterList({ onLogin, mode }) {
   }
 
   const handleSubscribeModal = (clusterItem) => {
+    let baseURL = clusterItem['api-public-url']
+    if (monitor?.config?.apiPublicUrl == baseURL) {
+      baseURL = ''
+    }
+
+
     closePeerSubscribeModal(true)
-    dispatch(peerSubscribe({ clusterName: clusterItem['cluster-name'], baseURL: clusterItem['api-public-url'] }))
+    dispatch(peerSubscribe({ clusterName: clusterItem['cluster-name'], baseURL: baseURL }))
   }
 
   const handlePeerCluster = (clusterItem, isRelogin = false) => {
