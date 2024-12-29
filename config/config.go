@@ -1053,6 +1053,14 @@ const (
 	GrantGlobalSettings string = "global-settings" // Can update global settings
 	GrantGlobalGrant    string = "global-grant"    // Can grant global settings
 
+	GrantGrantShow   string = "grant-show"   // Can show users settings
+	GrantGrantAdd    string = "grant-add"    // Can add new user
+	GrantGrantDrop   string = "grant-drop"   // Can drop user ACL
+	GrantGrantModify string = "grant-modify" // Can modify user ACL
+	GrantGrantGlobal string = "grant-global" // Can grant global acl
+
+	GrantShow string = "show" // Can show basic view
+
 	GrantSalesValidate    string = "sales-validate"    // Can update sales settings
 	GrantSalesRefuse      string = "sales-refuse"      // Can grant sales settings
 	GrantSalesUnsubscribe string = "sales-unsubscribe" // Can grant sales settings
@@ -2134,6 +2142,12 @@ func (conf *Config) GetGrantType() map[string]string {
 		GrantSalesValidate:             GrantSalesValidate,
 		GrantSalesRefuse:               GrantSalesRefuse,
 		GrantSalesUnsubscribe:          GrantSalesUnsubscribe,
+		GrantGrantShow:                 GrantGrantShow,
+		GrantGrantAdd:                  GrantGrantAdd,
+		GrantGrantModify:               GrantGrantModify,
+		GrantGrantDrop:                 GrantGrantDrop,
+		GrantGrantGlobal:               GrantGrantGlobal,
+		GrantShow:                      GrantShow,
 	}
 }
 
@@ -2289,11 +2303,31 @@ func (conf *Config) HasAllSalesGrants(grants map[string]bool) bool {
 	return true
 }
 
+func (conf *Config) GetGrantGrant() []string {
+	return []string{
+		GrantGrantShow,
+		GrantGrantAdd,
+		GrantGrantModify,
+		GrantGrantDrop,
+		GrantGrantGlobal,
+	}
+}
+
+func (conf *Config) HasAllGrantGrants(grants map[string]bool) bool {
+	for _, grant := range conf.GetGrantGrant() {
+		if !grants[grant] {
+			return false
+		}
+	}
+	return true
+}
+
 func (conf *Config) GetCompactGrants(grants map[string]bool) ([]string, []string) {
 	var compactGrants []string
 	var compactDiscardGrants []string
 	var counter int
 
+	// DB
 	tmp := make([]string, 0)
 	if conf.HasAllDBGrants(grants) {
 		compactGrants = append(compactGrants, "db")
@@ -2313,6 +2347,7 @@ func (conf *Config) GetCompactGrants(grants map[string]bool) ([]string, []string
 		}
 	}
 
+	// Cluster
 	tmp = make([]string, 0)
 	counter = 0
 	if conf.HasAllClusterGrants(grants) {
@@ -2333,6 +2368,7 @@ func (conf *Config) GetCompactGrants(grants map[string]bool) ([]string, []string
 		}
 	}
 
+	// Proxy
 	tmp = make([]string, 0)
 	counter = 0
 	if conf.HasAllProxyGrants(grants) {
@@ -2353,6 +2389,7 @@ func (conf *Config) GetCompactGrants(grants map[string]bool) ([]string, []string
 		}
 	}
 
+	// Provision
 	tmp = make([]string, 0)
 	counter = 0
 	if conf.HasAllProvisionGrants(grants) {
@@ -2373,6 +2410,7 @@ func (conf *Config) GetCompactGrants(grants map[string]bool) ([]string, []string
 		}
 	}
 
+	// Global
 	tmp = make([]string, 0)
 	counter = 0
 	if conf.HasAllGlobalGrants(grants) {
@@ -2393,6 +2431,7 @@ func (conf *Config) GetCompactGrants(grants map[string]bool) ([]string, []string
 		}
 	}
 
+	// Sales
 	tmp = make([]string, 0)
 	counter = 0
 	if conf.HasAllSalesGrants(grants) {
@@ -2412,6 +2451,34 @@ func (conf *Config) GetCompactGrants(grants map[string]bool) ([]string, []string
 			compactDiscardGrants = append(compactDiscardGrants, tmp...)
 		}
 	}
+
+	// Grant
+	tmp = make([]string, 0)
+	counter = 0
+	if conf.HasAllGrantGrants(grants) {
+		compactGrants = append(compactGrants, "grant")
+	} else {
+		for _, grant := range conf.GetGrantGrant() {
+			if grants[grant] {
+				compactGrants = append(compactGrants, grant)
+				counter++
+			} else {
+				tmp = append(tmp, grant)
+			}
+		}
+		if counter == 0 {
+			compactDiscardGrants = append(compactDiscardGrants, "grant")
+		} else {
+			compactDiscardGrants = append(compactDiscardGrants, tmp...)
+		}
+	}
+
+	if grants["show"] {
+		compactGrants = append(compactGrants, "show")
+	} else {
+		compactDiscardGrants = append(compactDiscardGrants, "show")
+	}
+
 	return compactGrants, compactDiscardGrants
 }
 

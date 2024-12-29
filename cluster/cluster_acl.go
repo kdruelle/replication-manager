@@ -44,12 +44,6 @@ func (cluster *Cluster) SetNewUserGrants(u *APIUser, grant string) {
 func (cluster *Cluster) SetNewUserRoles(u *APIUser, roles string) {
 	list := strings.Split(roles, " ")
 
-	if u.Grants[config.GrantGlobalGrant] && roles == "" {
-		u.Roles[config.RoleSysOps] = true
-		u.Roles[config.RoleDBOps] = true
-		return
-	}
-
 	for key, value := range cluster.Roles {
 		found := false
 		if slices.Contains(list, key) {
@@ -796,11 +790,23 @@ func (cluster *Cluster) IsURLPassACL(strUser string, URL string, errorPrint bool
 		}
 	}
 
-	if cluster.APIUsers[strUser].Grants[config.GrantClusterGrant] {
+	if cluster.APIUsers[strUser].Grants[config.GrantGrantAdd] {
 		if strings.Contains(URL, "/api/monitor/actions/adduser/") {
 			return true
 		}
 		if strings.Contains(URL, "/api/clusters/"+cluster.Name+"/users/add") {
+			return true
+		}
+	}
+
+	if cluster.APIUsers[strUser].Grants[config.GrantGrantModify] {
+		if strings.Contains(URL, "/api/clusters/"+cluster.Name+"/users/update") {
+			return true
+		}
+	}
+
+	if cluster.APIUsers[strUser].Grants[config.GrantGrantDrop] {
+		if strings.Contains(URL, "/api/clusters/"+cluster.Name+"/users/drop") {
 			return true
 		}
 	}
@@ -829,14 +835,6 @@ func (cluster *Cluster) IsURLPassACL(strUser string, URL string, errorPrint bool
 			return true
 		}
 	}
-
-	/*	case cluster.APIUsers[strUser].Grants[config.GrantClusterGrant] == true:
-			return false
-		case cluster.APIUsers[strUser].Grants[config.GrantClusterDropMonitor] == true:
-			return false
-		case cluster.APIUsers[strUser].Grants[config.GrantClusterCreate] == true:
-			return false
-	*/
 
 	// Print error with no valid ACL
 	if errorPrint {

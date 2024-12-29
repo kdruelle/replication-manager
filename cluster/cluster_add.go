@@ -304,7 +304,7 @@ func (cluster *Cluster) AcceptSubscription(userform UserForm) error {
 	if auser, ok := cluster.APIUsers[user]; !ok {
 		return fmt.Errorf("User %s does not exist ", user)
 	} else {
-		grants := strings.Split("db show proxy grant", " ")
+		grants := strings.Split("db show proxy grant extrole sales-unsubscribe", " ")
 		roles := strings.Split("sponsor", " ")
 		for grant, v := range auser.Grants {
 			if v {
@@ -333,21 +333,23 @@ func (cluster *Cluster) AcceptSubscription(userform UserForm) error {
 				new_acls = append(new_acls, acl)
 			} else {
 				old_roles := strings.Split(listroles, " ")
-				for i, role := range old_roles {
-					if role == "pending" {
-						old_roles = append(old_roles[:i], old_roles[i+1:]...)
-						break
+				new_roles := make([]string, 0)
+				for _, role := range old_roles {
+					if role != "pending" {
+						new_roles = append(new_roles, role)
 					}
 				}
 				acl = user + ":" + listgrants + ":" + cluster.Name
-				if len(old_roles) > 0 {
-					acl = acl + ":" + strings.Join(old_roles, " ")
+				if len(new_roles) > 0 {
+					acl = acl + ":" + strings.Join(new_roles, " ")
 				}
 				new_acls = append(new_acls, acl)
 			}
+			// log.Printf("ACL: %s", acl)
 		}
 
 		cluster.Conf.APIUsersACLAllowExternal = strings.Join(new_acls, ",")
+		// log.Printf("APIUsersACLAllowExternal: %s", cluster.Conf.APIUsersACLAllowExternal)
 
 		cluster.LoadAPIUsers()
 		cluster.SaveAcls()

@@ -44,15 +44,19 @@ func (repman *ReplicationManager) AddCluster(clusterName string, clusterHead str
 
 }
 
-func (repman *ReplicationManager) AddCloud18GitUser(cl *cluster.Cluster) error {
-	username := repman.Conf.Cloud18GitUser
-
-	// Create user and grant for new cluster
-	userform := cluster.UserForm{
+func (repman *ReplicationManager) CreateAdminUserForm(username string) cluster.UserForm {
+	return cluster.UserForm{
 		Username: username,
 		Roles:    "sysops dbops",
 		Grants:   "cluster db proxy prov global grant show sale extrole",
 	}
+}
+
+func (repman *ReplicationManager) AddCloud18GitUser(cl *cluster.Cluster) error {
+	username := repman.Conf.Cloud18GitUser
+
+	// Create user and grant for new cluster
+	userform := repman.CreateAdminUserForm(username)
 
 	if _, ok := cl.APIUsers[username]; ok {
 		return cl.UpdateUser(userform)
@@ -64,11 +68,7 @@ func (repman *ReplicationManager) AddCloud18GitUser(cl *cluster.Cluster) error {
 func (repman *ReplicationManager) AddLocalAdminUserACL(cl *cluster.Cluster) error {
 	username := "admin"
 	// Create user and grant for new cluster
-	userform := cluster.UserForm{
-		Username: username,
-		Roles:    "sysops dbops",
-		Grants:   "cluster db proxy prov global grant show sale extrole",
-	}
+	userform := repman.CreateAdminUserForm(username)
 
 	if _, ok := cl.APIUsers[username]; ok {
 		return cl.UpdateUser(userform)
