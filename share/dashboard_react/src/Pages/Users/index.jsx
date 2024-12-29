@@ -10,7 +10,7 @@ import RMIconButton from '../../components/RMIconButton'
 import { HiUserGroup } from 'react-icons/hi'
 import { TbTrash, TbUserCancel, TbUserStar } from 'react-icons/tb'
 import ConfirmModal from '../../components/Modals/ConfirmModal'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { HStack } from '@chakra-ui/react'
 
 function Users({ selectedCluster, user }) {
@@ -22,6 +22,9 @@ function Users({ selectedCluster, user }) {
   const columnHelper = createColumnHelper()
   const { type, title, payload } = action
   const dispatch = useDispatch()
+  const {
+    globalClusters: { monitor },
+  } = useSelector((state) => state)
 
   const showUser = (user, item) => {
     if (user.user === "admin") {
@@ -34,6 +37,16 @@ function Users({ selectedCluster, user }) {
       return item.roles['extdbops']
     } else if (user.roles['sponsor']) {
       return item.roles['extdbops'] || item.roles['extsysops'] || item.roles['visitor']
+    }
+    return false
+  }
+
+  const isShowDropUser = (user, item) => {
+    let immutable = user.user == item.user || monitor?.config?.cloud18GitUser == item.user || item.user == "admin"
+    if (user.roles['sysops']) {
+      return !immutable
+    } else if (user.roles['sponsor']) {
+      return item.roles['visitor']
     }
     return false
   }
@@ -114,14 +127,14 @@ function Users({ selectedCluster, user }) {
             <>
               { row?.roles?.["sponsor"] && <RMIconButton icon={TbUserCancel} onClick={(e) => { e.stopPropagation(); setAction({ type: "end-sub", title: "Are you sure to end subscription?", payload: row.user }); openConfirmModal() }} />}
               <RMIconButton icon={HiUserGroup} onClick={(e) => { e.stopPropagation(); setSelectedUser(row); openUserGrantModal() }} />
-                { user.user != row.user && <RMIconButton icon={TbTrash} onClick={(e) => { e.stopPropagation(); setAction({ type: "drop-user", title: "Are you sure to drop user "+row.user+"?", payload: row.user }); openConfirmModal() }} /> }
+                { isShowDropUser(user,row) && <RMIconButton icon={TbTrash} onClick={(e) => { e.stopPropagation(); setAction({ type: "drop-user", title: "Are you sure to drop user "+row.user+"?", payload: row.user }); openConfirmModal() }} /> }
             </>
           )}
         </HStack>
       ), {
         cell: (info) => info.getValue(),
-        header: 'Grants',
-        id: 'grants'
+        header: 'Actions',
+        id: 'actions'
       })
     ],
     []
