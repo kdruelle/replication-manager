@@ -4,11 +4,11 @@ import { DataTable } from '../../components/DataTable'
 import AccordionComponent from '../../components/AccordionComponent'
 import styles from './styles.module.scss'
 import UserGrantModal from '../../components/Modals/UserGrantModal'
-import { acceptSubscription, endSubscription, rejectSubscription } from '../../redux/clusterSlice'
+import { acceptSubscription, dropUser, endSubscription, rejectSubscription } from '../../redux/clusterSlice'
 import RMButton from '../../components/RMButton'
 import RMIconButton from '../../components/RMIconButton'
 import { HiUserGroup } from 'react-icons/hi'
-import { TbUserCancel, TbUserStar } from 'react-icons/tb'
+import { TbTrash, TbUserCancel, TbUserStar } from 'react-icons/tb'
 import ConfirmModal from '../../components/Modals/ConfirmModal'
 import { useDispatch } from 'react-redux'
 import { HStack } from '@chakra-ui/react'
@@ -24,8 +24,6 @@ function Users({ selectedCluster, user }) {
   const dispatch = useDispatch()
 
   const showUser = (user, item) => {
-    let normalUser = Object.entries(item.roles).every(([_, v]) => !v)
-
     if (user.user === "admin") {
       return true
     } else if (user.user === item.user) {
@@ -35,7 +33,7 @@ function Users({ selectedCluster, user }) {
     } else if (user.roles['dbops']) {
       return item.roles['extdbops']
     } else if (user.roles['sponsor']) {
-      return item.roles['extdbops'] || item.roles['extsysops'] || normalUser
+      return item.roles['extdbops'] || item.roles['extsysops'] || item.roles['visitor']
     }
     return false
   }
@@ -74,6 +72,8 @@ function Users({ selectedCluster, user }) {
       dispatch(rejectSubscription({ clusterName: selectedCluster.name, username: payload }))
     } else if (type === 'end-sub') {
       dispatch(endSubscription({ clusterName: selectedCluster.name, username: payload }))
+    } else if (type === 'drop-user') {
+      dispatch(dropUser({ clusterName: selectedCluster.name, username: payload }))
     }
     closeConfirmModal()
   }
@@ -114,6 +114,7 @@ function Users({ selectedCluster, user }) {
             <>
               { row?.roles?.["sponsor"] && <RMIconButton icon={TbUserCancel} onClick={(e) => { e.stopPropagation(); setAction({ type: "end-sub", title: "Are you sure to end subscription?", payload: row.user }); openConfirmModal() }} />}
               <RMIconButton icon={HiUserGroup} onClick={(e) => { e.stopPropagation(); setSelectedUser(row); openUserGrantModal() }} />
+                { user.user != row.user && <RMIconButton icon={TbTrash} onClick={(e) => { e.stopPropagation(); setAction({ type: "drop-user", title: "Are you sure to drop user "+row.user+"?", payload: row.user }); openConfirmModal() }} /> }
             </>
           )}
         </HStack>

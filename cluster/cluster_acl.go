@@ -44,12 +44,10 @@ func (cluster *Cluster) SetNewUserGrants(u *APIUser, grant string) {
 func (cluster *Cluster) SetNewUserRoles(u *APIUser, roles string) {
 	list := strings.Split(roles, " ")
 
-	for key, value := range cluster.Roles {
-		found := false
-		if slices.Contains(list, key) {
-			found = true
+	for _, role := range cluster.Roles {
+		if slices.Contains(list, role) {
+			u.Roles[role] = true
 		}
-		u.Roles[value] = found
 	}
 }
 
@@ -110,7 +108,7 @@ func (cluster *Cluster) SaveAcls() {
 	aUserList := make([]string, 0)
 	for _, credential := range credentials {
 		user, _ := misc.SplitPair(credential)
-		if slices.Contains(aUserList, user) {
+		if _, ok := cluster.APIUsers[user]; !ok || slices.Contains(aUserList, user) {
 			continue
 		}
 		aUserList = append(aUserList, user)
@@ -240,6 +238,22 @@ func (cluster *Cluster) LoadAPIUsers() error {
 		if userACL, ok := listACLsExt[newapiuser.User]; ok {
 			cluster.SetNewUserGrants(&newapiuser, userACL.ACLs)
 			cluster.SetNewUserRoles(&newapiuser, userACL.Roles)
+		}
+
+		// No Roles
+		visitor := true
+		for role, v := range newapiuser.Roles {
+			if role == config.RoleVisitor {
+				continue
+			}
+			if v {
+				visitor = false
+				break
+			}
+		}
+
+		if visitor {
+			newapiuser.Roles[config.RoleVisitor] = true
 		}
 
 		meUsers[newapiuser.User] = newapiuser
@@ -825,7 +839,7 @@ func (cluster *Cluster) IsURLPassACL(strUser string, URL string, errorPrint bool
 			return true
 		}
 
-		if strings.Contains(URL, "/api/clusters/"+cluster.Name+"/peer-unsubscribe") {
+		if strings.Contains(URL, "/api/clusters/"+cluster.Name+"/unsubscribe") {
 			return true
 		}
 	}

@@ -21,7 +21,7 @@ import { useTheme } from '../../ThemeProvider'
 import parentStyles from './styles.module.scss'
 import remarkGFM from 'remark-gfm'
 
-function PeerSubscribeModal({ cluster, user, isOpen, closeModal, onSaveModal, terms = `` }) {
+function ClusterSubscribeModal({ cluster, user, isOpen, closeModal, onSaveModal, terms = `` }) {
   const { theme } = useTheme()
   const [agreement, setAgreement] = useState(``)
   const [agree, setAgree] = useState(false)
@@ -83,4 +83,4 @@ function PeerSubscribeModal({ cluster, user, isOpen, closeModal, onSaveModal, te
   )
 }
 
-export default PeerSubscribeModal
+export default ClusterSubscribeModal

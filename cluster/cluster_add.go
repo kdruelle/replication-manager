@@ -241,25 +241,11 @@ func (cluster *Cluster) UpdateUser(userform UserForm) error {
 func (cluster *Cluster) DropUser(userform UserForm) error {
 	user := userform.Username
 
-	list := cluster.Conf.APIUsersACLAllowExternal
-
 	if _, ok := cluster.APIUsers[user]; !ok {
-		return fmt.Errorf("User %s is not exist in cluster. Unable to update roles and grants", user)
+		return fmt.Errorf("User %s is not exist in cluster", user)
 		// cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlErr, "User %s is not exist in cluster. Unable to update roles and grants", user)
 	} else {
-		new_acls := make([]string, 0)
-		acls := strings.Split(list, ",")
-
-		for _, acl := range acls {
-			useracl, _, _, _ := misc.SplitAcls(acl)
-			if useracl != user {
-				new_acls = append(new_acls, acl)
-			}
-		}
-
-		cluster.Conf.APIUsersACLAllowExternal = strings.Join(new_acls, ",")
-
-		cluster.LoadAPIUsers()
+		delete(cluster.APIUsers, user)
 		cluster.SaveAcls()
 		cluster.Save()
 	}
@@ -320,13 +306,16 @@ func (cluster *Cluster) AcceptSubscription(userform UserForm) error {
 		}
 		userform.Roles = strings.Join(roles, " ")
 
+		// log.Printf("User %s grants %s roles %s", user, userform.Grants, userform.Roles)
+
 		new_acls := make([]string, 0)
 
 		acls := strings.Split(cluster.Conf.APIUsersACLAllowExternal, ",")
 		for _, acl := range acls {
 			useracl, listgrants, _, listroles := misc.SplitAcls(acl)
+			// log.Printf("ACL: %s", acl)
 			if useracl == user {
-				acl = user + ":" + userform.Grants + ":" + cluster.Name
+				acl = useracl + ":" + userform.Grants + ":" + cluster.Name
 				if userform.Roles != "" {
 					acl = acl + ":" + userform.Roles
 				}
@@ -335,17 +324,18 @@ func (cluster *Cluster) AcceptSubscription(userform UserForm) error {
 				old_roles := strings.Split(listroles, " ")
 				new_roles := make([]string, 0)
 				for _, role := range old_roles {
-					if role != "pending" {
-						new_roles = append(new_roles, role)
+					if role == "pending" {
+						continue
 					}
+					new_roles = append(new_roles, role)
 				}
-				acl = user + ":" + listgrants + ":" + cluster.Name
+				acl = useracl + ":" + listgrants + ":" + cluster.Name
 				if len(new_roles) > 0 {
 					acl = acl + ":" + strings.Join(new_roles, " ")
 				}
 				new_acls = append(new_acls, acl)
 			}
-			// log.Printf("ACL: %s", acl)
+			// log.Printf("New ACL: %s", acl)
 		}
 
 		cluster.Conf.APIUsersACLAllowExternal = strings.Join(new_acls, ",")

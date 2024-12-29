@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import MenuOptions from '../../../components/MenuOptions'
-import PeerSubscribeModal from '../../../components/Modals/PeerSubscribeModal'
-import { getClusterData, peerSubscribe } from '../../../redux/clusterSlice'
+import ClusterSubscribeModal from '../../../components/Modals/ClusterSubscribeModal'
+import { getClusterData, clusterSubscribe } from '../../../redux/clusterSlice'
 import { peerLogin, setBaseURL } from '../../../redux/authSlice'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -15,19 +15,19 @@ function PeerMenu({
     const dispatch = useDispatch()
     const [options, setOptions] = useState([])
     const [title, setTitle] = useState("Login to Peer Cluster")
-    const [isPeerSubscribeModalOpen, setIsPeerSubscribeModalOpen] = useState(false)
+    const [isClusterSubscribeModalOpen, setIsClusterSubscribeModalOpen] = useState(false)
 
     const {
         auth: { user },
         globalClusters: { monitor }
     } = useSelector((state) => state)
 
-    const openPeerSubscribeModal = () => {
-        setIsPeerSubscribeModalOpen(true)
+    const openClusterSubscribeModal = () => {
+        setIsClusterSubscribeModalOpen(true)
     }
 
-    const closePeerSubscribeModal = () => {
-        setIsPeerSubscribeModalOpen(false)
+    const closeClusterSubscribeModal = () => {
+        setIsClusterSubscribeModalOpen(false)
     }
 
     const handleEnterCluster = () => {
@@ -44,22 +44,22 @@ function PeerMenu({
             dispatch(setBaseURL({ baseURL: clusterItem['api-public-url'] }))
             handleEnterCluster(clusterItem)
         } else {
-            openPeerSubscribeModal()
+            openClusterSubscribeModal()
         }
     }
 
-    const handlepeerSubscribe = () => {
+    const handleclusterSubscribe = () => {
         setTitle("Register to Peer Cluster")
-        openPeerSubscribeModal()
+        openClusterSubscribeModal()
     }
 
     const handleSaveModal = (password) => {
         if (mode == "shared") {
-            dispatch(peerSubscribe({ password, clusterName: clusterItem['cluster-name'], baseURL: clusterItem['api-public-url'] }))
+            dispatch(clusterSubscribe({ password, clusterName: clusterItem['cluster-name'], baseURL: clusterItem['api-public-url'] }))
         } else {
             dispatch(peerLogin({ password, baseURL: clusterItem['api-public-url'] }))
         }
-        closePeerSubscribeModal()
+        closeClusterSubscribeModal()
     }
 
     useEffect(() => {
@@ -70,7 +70,7 @@ function PeerMenu({
                 opts.push({
                     name: 'Register',
                     onClick: () => {
-                        handlepeerSubscribe()
+                        handleclusterSubscribe()
                     }
                 })
             } else {
@@ -96,7 +96,7 @@ function PeerMenu({
                     placement='left-end'
                     options={options}
                 />
-                {isPeerSubscribeModalOpen && <PeerSubscribeModal title={title} isOpen={isPeerSubscribeModalOpen} closeModal={closePeerSubscribeModal} onSaveModal={handleSaveModal} />}
+                {isClusterSubscribeModalOpen && <ClusterSubscribeModal title={title} isOpen={isClusterSubscribeModalOpen} closeModal={closeClusterSubscribeModal} onSaveModal={handleSaveModal} />}
             </>
         )
     }

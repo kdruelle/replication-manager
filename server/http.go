@@ -142,10 +142,10 @@ func (repman *ReplicationManager) httpserver() {
 	router.Handle("/api/clusters/peers", negroni.New(
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxPeerClusters)),
 	))
-	router.Handle("/api/clusters/{clusterName}/peer-subscribe", negroni.New(
-		negroni.Wrap(http.HandlerFunc(repman.handlerMuxPeerSubscribe)),
+	router.Handle("/api/clusters/{clusterName}/subscribe", negroni.New(
+		negroni.Wrap(http.HandlerFunc(repman.handlerMuxClusterSubscribe)),
 	))
-	router.Handle("/api/clusters/{clusterName}/peer-unsubscribe", negroni.New(
+	router.Handle("/api/clusters/{clusterName}/unsubscribe", negroni.New(
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxRejectSubscription)),
 	))
 	router.Handle("/api/status", negroni.New(

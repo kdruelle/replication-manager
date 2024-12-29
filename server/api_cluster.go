@@ -370,6 +370,11 @@ func (repman *ReplicationManager) apiClusterProtectedHandler(router *mux.Router)
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxUpdateClusterUser)),
 	))
 
+	router.Handle("/api/clusters/{clusterName}/users/drop", negroni.New(
+		negroni.HandlerFunc(repman.validateTokenMiddleware),
+		negroni.Wrap(http.HandlerFunc(repman.handlerMuxDropClusterUser)),
+	))
+
 	router.Handle("/api/clusters/{clusterName}/sales/accept-subscription", negroni.New(
 		negroni.HandlerFunc(repman.validateTokenMiddleware),
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxAcceptSubscription)),

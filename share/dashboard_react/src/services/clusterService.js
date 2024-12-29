@@ -88,8 +88,9 @@ export const clusterService = {
   // User management APIs
   addUser,
   updateGrants,
-  peerSubscribe,
-  peerUnsubscribe,
+  dropUser,
+  clusterSubscribe,
+  clusterUnsubscribe,
   acceptSubscription,
   rejectSubscription,
   sendCredentials,
@@ -402,17 +403,21 @@ function addUser(clusterName, username, grants, roles, baseURL) {
   return getApi(baseURL).post(`clusters/${clusterName}/users/add`, {username, grants, roles})
 }
 
-//#region User management APIs
 function updateGrants(clusterName, username, grants, roles, baseURL) {
   return getApi(baseURL).post(`clusters/${clusterName}/users/update`, {username, grants, roles})
 }
 
-function peerSubscribe(username, password, clusterName, baseURL) {
-  return getApi(baseURL).post(`clusters/${clusterName}/peer-subscribe`,{username, password})
+function dropUser(clusterName, username, baseURL) {
+  return getApi(baseURL).post(`clusters/${clusterName}/users/drop`, {username})
 }
 
-function peerUnsubscribe(username, clusterName, baseURL) {
-  return getApi(baseURL).post(`clusters/${clusterName}/peer-unsubscribe`,{username})
+//#Peer subscription APIs
+function clusterSubscribe(username, password, clusterName, baseURL) {
+  return getApi(baseURL).post(`clusters/${clusterName}/subscribe`,{username, password})
+}
+
+function clusterUnsubscribe(username, clusterName, baseURL) {
+  return getApi(baseURL).post(`clusters/${clusterName}/unsubscribe`,{username})
 }
 
 function acceptSubscription(clusterName, username, baseURL) {

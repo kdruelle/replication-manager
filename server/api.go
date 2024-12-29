@@ -255,10 +255,10 @@ func (repman *ReplicationManager) apiserver() {
 	router.Handle("/api/clusters/peers", negroni.New(
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxPeerClusters)),
 	))
-	router.Handle("/api/clusters/{clusterName}/peer-subscribe", negroni.New(
-		negroni.Wrap(http.HandlerFunc(repman.handlerMuxPeerSubscribe)),
+	router.Handle("/api/clusters/{clusterName}/subscribe", negroni.New(
+		negroni.Wrap(http.HandlerFunc(repman.handlerMuxClusterSubscribe)),
 	))
-	router.Handle("/api/clusters/{clusterName}/peer-unsubscribe", negroni.New(
+	router.Handle("/api/clusters/{clusterName}/unsubscribe", negroni.New(
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxRejectSubscription)),
 	))
 	router.Handle("/api/prometheus", negroni.New(
@@ -818,6 +818,32 @@ func (repman *ReplicationManager) handlerMuxUpdateClusterUser(w http.ResponseWri
 	}
 }
 
+func (repman *ReplicationManager) handlerMuxDropClusterUser(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	vars := mux.Vars(r)
+
+	var userform cluster.UserForm
+	//decode request into UserCredentials struct
+	err := json.NewDecoder(r.Body).Decode(&userform)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "Error in request")
+		return
+	}
+
+	mycluster := repman.getClusterByName(vars["clusterName"])
+	if mycluster != nil {
+		err := mycluster.DropUser(userform)
+		if err != nil {
+			http.Error(w, "Error dropping user: "+err.Error(), 500)
+			return
+		}
+	} else {
+		http.Error(w, "No valid cluster", 500)
+		return
+	}
+}
+
 // swagger:route GET /api/clusters clusters
 //
 // This will show all the available clusters
@@ -939,7 +965,7 @@ func (repman *ReplicationManager) handlerMuxPeerClustersForSale(w http.ResponseW
 	w.Write(cl)
 }
 
-func (repman *ReplicationManager) handlerMuxPeerSubscribe(w http.ResponseWriter, r *http.Request) {
+func (repman *ReplicationManager) handlerMuxClusterSubscribe(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
 

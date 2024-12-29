@@ -12,15 +12,15 @@ import CustomIcon from '../../components/Icons/CustomIcon'
 import TagPill from '../../components/TagPill'
 import { HiCreditCard, HiTag } from 'react-icons/hi'
 import { peerLogin, setBaseURL } from '../../redux/authSlice'
-import { getClusterData, peerSubscribe } from '../../redux/clusterSlice'
-import PeerSubscribeModal from '../../components/Modals/PeerSubscribeModal'
+import { getClusterData, clusterSubscribe } from '../../redux/clusterSlice'
+import ClusterSubscribeModal from '../../components/Modals/ClusterSubscribeModal'
 import { showErrorToast } from '../../redux/toastSlice'
 
 function PeerClusterList({ onLogin, mode }) {
   const dispatch = useDispatch()
   const [clusters, setClusters] = useState([])
   const [item, setItem] = useState({})
-  const [isPeerSubscribeModalOpen, setIsPeerSubscribeModalOpen] = useState(false)
+  const [isClusterSubscribeModalOpen, setIsClusterSubscribeModalOpen] = useState(false)
 
   const {
     globalClusters: { loading, clusterPeers, clusterForSale, monitor, terms },
@@ -47,15 +47,15 @@ function PeerClusterList({ onLogin, mode }) {
     }
   }, [clusterPeers,clusterForSale])
 
-  const openPeerSubscribeModal = () => {
-    setIsPeerSubscribeModalOpen(true)
+  const openClusterSubscribeModal = () => {
+    setIsClusterSubscribeModalOpen(true)
   }
 
-  const closePeerSubscribeModal = (keepBaseURL = false) => {
+  const closeClusterSubscribeModal = (keepBaseURL = false) => {
     if (!keepBaseURL) {
       dispatch(setBaseURL({ baseURL: '' }))
     }
-    setIsPeerSubscribeModalOpen(false)
+    setIsClusterSubscribeModalOpen(false)
   }
 
   const handleSubscribeModal = (clusterItem) => {
@@ -65,8 +65,8 @@ function PeerClusterList({ onLogin, mode }) {
     }
 
 
-    closePeerSubscribeModal(true)
-    dispatch(peerSubscribe({ clusterName: clusterItem['cluster-name'], baseURL: baseURL }))
+    closeClusterSubscribeModal(true)
+    dispatch(clusterSubscribe({ clusterName: clusterItem['cluster-name'], baseURL: baseURL }))
   }
 
   const handlePeerCluster = (clusterItem, isRelogin = false) => {
@@ -113,7 +113,7 @@ function PeerClusterList({ onLogin, mode }) {
 
       if (mode === "shared") {
         setItem(clusterItem);
-        openPeerSubscribeModal();
+        openClusterSubscribeModal();
       } else {
         if (resp?.payload?.status === 200) {
           if (onLogin) return onLogin(resp.payload.data);
@@ -258,7 +258,7 @@ function PeerClusterList({ onLogin, mode }) {
           )
         })}
       </Flex>
-      {isPeerSubscribeModalOpen && <PeerSubscribeModal terms={terms} cluster={item} user={user} isOpen={isPeerSubscribeModalOpen} closeModal={closePeerSubscribeModal} onSaveModal={handleSubscribeModal} />}
+      {isClusterSubscribeModalOpen && <ClusterSubscribeModal terms={terms} cluster={item} user={user} isOpen={isClusterSubscribeModalOpen} closeModal={closeClusterSubscribeModal} onSaveModal={handleSubscribeModal} />}
     </>
   )
 }

@@ -1234,19 +1234,19 @@ func (cluster *Cluster) GetEncryptedValueFromMemory(key string) string {
 		lst_Users := strings.Split(cluster.Conf.Secrets["api-credentials"].Value, ",")
 		for ind := range lst_Users {
 			user_pass := strings.Split(lst_Users[ind], ":")
-			APIuser := cluster.APIUsers[user_pass[0]]
-			tab_ApiUser = append(tab_ApiUser, APIuser.User+":"+cluster.Conf.GetEncryptedString(APIuser.Password))
-
+			if APIuser, ok := cluster.APIUsers[user_pass[0]]; ok {
+				tab_ApiUser = append(tab_ApiUser, APIuser.User+":"+cluster.Conf.GetEncryptedString(APIuser.Password))
+			}
 		}
-
 		return strings.Join(tab_ApiUser, ",")
 	case "api-credentials-external":
 		var tab_ApiUser []string
 		lst_Users := strings.Split(cluster.Conf.Secrets["api-credentials-external"].Value, ",")
 		for ind := range lst_Users {
 			user_pass := strings.Split(lst_Users[ind], ":")
-			APIuser := cluster.APIUsers[user_pass[0]]
-			tab_ApiUser = append(tab_ApiUser, APIuser.User+":"+cluster.Conf.GetEncryptedString(APIuser.Password))
+			if APIuser, ok := cluster.APIUsers[user_pass[0]]; ok {
+				tab_ApiUser = append(tab_ApiUser, APIuser.User+":"+cluster.Conf.GetEncryptedString(APIuser.Password))
+			}
 		}
 		return strings.Join(tab_ApiUser, ",")
 	case "db-servers-credential":
