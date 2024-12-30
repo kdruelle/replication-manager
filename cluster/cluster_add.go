@@ -162,11 +162,36 @@ type UserForm struct {
 	Grants   string `json:"grants"`
 }
 
-func (cluster *Cluster) AddUser(userform UserForm) error {
+func (cluster *Cluster) FilterGrants(grants string, delegator *APIUser) string {
+	user := new(APIUser)
+	cluster.SetNewUserGrants(user, grants)
+
+	for grant, v := range delegator.Grants {
+		if !v {
+			user.Grants[grant] = false
+		}
+	}
+
+	allow, _ := cluster.Conf.GetCompactGrants(user.Grants)
+
+	return strings.Join(allow, " ")
+}
+
+func (cluster *Cluster) AddUser(userform UserForm, delegator string) error {
 	user := userform.Username
 	roles := userform.Roles
 	grants := userform.Grants
 	pass, _ := cluster.GeneratePassword()
+
+	if delegator != "admin" {
+		duser, dok := cluster.APIUsers[delegator]
+		if !dok {
+			return fmt.Errorf("Delegator %s is not exist in cluster", delegator)
+		}
+
+		grants = cluster.FilterGrants(grants, &duser)
+	}
+
 	if _, ok := cluster.APIUsers[user]; ok {
 		return fmt.Errorf("User %s already exist ", user)
 		// cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlErr, "User %s already exist ", user)
@@ -201,12 +226,21 @@ func (cluster *Cluster) AddUser(userform UserForm) error {
 	return nil
 }
 
-func (cluster *Cluster) UpdateUser(userform UserForm) error {
+func (cluster *Cluster) UpdateUser(userform UserForm, delegator string) error {
+	list := cluster.Conf.APIUsersACLAllowExternal
+
 	user := userform.Username
 	roles := userform.Roles
 	grants := userform.Grants
 
-	list := cluster.Conf.APIUsersACLAllowExternal
+	if delegator != "admin" {
+		duser, dok := cluster.APIUsers[delegator]
+		if !dok {
+			return fmt.Errorf("Delegator %s is not exist in cluster", delegator)
+		}
+
+		grants = cluster.FilterGrants(grants, &duser)
+	}
 
 	if _, ok := cluster.APIUsers[user]; !ok {
 		return fmt.Errorf("User %s is not exist in cluster. Unable to update roles and grants", user)
@@ -282,111 +316,5 @@ func (cluster *Cluster) AddShardingQueryRules(schema string, table string) error
 			pr.AddQueryRulesProxysql(qrs)
 		}
 	}
-	return nil
-}
-
-func (cluster *Cluster) AcceptSubscription(userform UserForm) error {
-	user := userform.Username
-	if auser, ok := cluster.APIUsers[user]; !ok {
-		return fmt.Errorf("User %s does not exist ", user)
-	} else {
-		grants := strings.Split("db show proxy grant extrole sales-unsubscribe", " ")
-		roles := strings.Split("sponsor", " ")
-		for grant, v := range auser.Grants {
-			if v {
-				grants = append(grants, grant)
-			}
-		}
-		userform.Grants = strings.Join(grants, " ")
-
-		for role, v := range auser.Roles {
-			if v && role != "pending" {
-				roles = append(roles, role)
-			}
-		}
-		userform.Roles = strings.Join(roles, " ")
-
-		// log.Printf("User %s grants %s roles %s", user, userform.Grants, userform.Roles)
-
-		new_acls := make([]string, 0)
-
-		acls := strings.Split(cluster.Conf.APIUsersACLAllowExternal, ",")
-		for _, acl := range acls {
-			useracl, listgrants, _, listroles := misc.SplitAcls(acl)
-			// log.Printf("ACL: %s", acl)
-			if useracl == user {
-				acl = useracl + ":" + userform.Grants + ":" + cluster.Name
-				if userform.Roles != "" {
-					acl = acl + ":" + userform.Roles
-				}
-				new_acls = append(new_acls, acl)
-			} else {
-				old_roles := strings.Split(listroles, " ")
-				new_roles := make([]string, 0)
-				for _, role := range old_roles {
-					if role == "pending" {
-						continue
-					}
-					new_roles = append(new_roles, role)
-				}
-				acl = useracl + ":" + listgrants + ":" + cluster.Name
-				if len(new_roles) > 0 {
-					acl = acl + ":" + strings.Join(new_roles, " ")
-				}
-				new_acls = append(new_acls, acl)
-			}
-			// log.Printf("New ACL: %s", acl)
-		}
-
-		cluster.Conf.APIUsersACLAllowExternal = strings.Join(new_acls, ",")
-		// log.Printf("APIUsersACLAllowExternal: %s", cluster.Conf.APIUsersACLAllowExternal)
-
-		cluster.LoadAPIUsers()
-		cluster.SaveAcls()
-		cluster.Save()
-	}
-
-	return nil
-}
-
-func (cluster *Cluster) RemoveSubscription(userform UserForm, isRemoveSponsor bool) error {
-	user := userform.Username
-	if auser, ok := cluster.APIUsers[user]; !ok {
-		return fmt.Errorf("User %s does not exist ", user)
-	} else {
-		grants := make([]string, 0)
-		roles := make([]string, 0)
-		for grant, v := range auser.Grants {
-			if v {
-				grants = append(grants, grant)
-			}
-		}
-		userform.Grants = strings.Join(grants, " ")
-
-		for role, v := range auser.Roles {
-			if isRemoveSponsor {
-				if v && role != "sponsor" {
-					roles = append(roles, role)
-
-					// If use has no other roles, remove grants
-					if len(roles) == 0 {
-						userform.Grants = ""
-					}
-				}
-			} else {
-				if v && role != "pending" {
-					roles = append(roles, role)
-				}
-			}
-		}
-		userform.Roles = strings.Join(roles, " ")
-
-		if userform.Grants == "" {
-			cluster.DropUser(userform)
-		} else {
-			cluster.UpdateUser(userform)
-		}
-	}
-
 	return nil
 }

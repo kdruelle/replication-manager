@@ -758,8 +758,8 @@ func (repman *ReplicationManager) handlerMuxAddUser(w http.ResponseWriter, r *ht
 	}
 
 	for _, cluster := range repman.Clusters {
-		if valid, _ := repman.IsValidClusterACL(r, cluster); valid {
-			cluster.AddUser(userform)
+		if valid, delegator := repman.IsValidClusterACL(r, cluster); valid {
+			cluster.AddUser(userform, delegator)
 		}
 	}
 
@@ -780,12 +780,16 @@ func (repman *ReplicationManager) handlerMuxAddClusterUser(w http.ResponseWriter
 
 	mycluster := repman.getClusterByName(vars["clusterName"])
 	if mycluster != nil {
-		err := mycluster.AddUser(userform)
-		if err != nil {
-			http.Error(w, "Error adding new user: "+err.Error(), 500)
+		if valid, delegator := repman.IsValidClusterACL(r, mycluster); valid {
+			err := mycluster.AddUser(userform, delegator)
+			if err != nil {
+				http.Error(w, "Error adding new user: "+err.Error(), 500)
+				return
+			}
+		} else {
+			http.Error(w, "No Valid ACL", 403)
 			return
 		}
-
 	} else {
 		http.Error(w, "No valid cluster", 500)
 		return
@@ -807,9 +811,14 @@ func (repman *ReplicationManager) handlerMuxUpdateClusterUser(w http.ResponseWri
 
 	mycluster := repman.getClusterByName(vars["clusterName"])
 	if mycluster != nil {
-		err := mycluster.UpdateUser(userform)
-		if err != nil {
-			http.Error(w, "Error updating user: "+err.Error(), 500)
+		if valid, delegator := repman.IsValidClusterACL(r, mycluster); valid {
+			err := mycluster.UpdateUser(userform, delegator)
+			if err != nil {
+				http.Error(w, "Error updating user: "+err.Error(), 500)
+				return
+			}
+		} else {
+			http.Error(w, "No Valid ACL", 403)
 			return
 		}
 	} else {
@@ -833,9 +842,14 @@ func (repman *ReplicationManager) handlerMuxDropClusterUser(w http.ResponseWrite
 
 	mycluster := repman.getClusterByName(vars["clusterName"])
 	if mycluster != nil {
-		err := mycluster.DropUser(userform)
-		if err != nil {
-			http.Error(w, "Error dropping user: "+err.Error(), 500)
+		if valid, _ := repman.IsValidClusterACL(r, mycluster); valid {
+			err := mycluster.DropUser(userform)
+			if err != nil {
+				http.Error(w, "Error dropping user: "+err.Error(), 500)
+				return
+			}
+		} else {
+			http.Error(w, "No Valid ACL", 403)
 			return
 		}
 	} else {
@@ -1038,11 +1052,11 @@ func (repman *ReplicationManager) handlerMuxClusterSubscribe(w http.ResponseWrit
 			}
 		}
 		userform.Grants = strings.Join(grants, " ")
-		mycluster.UpdateUser(userform)
+		mycluster.UpdateUser(userform, repman.Conf.Cloud18GitUser)
 	} else {
 		userform.Roles = strings.Join(roles, " ")
 		userform.Grants = strings.Join(grants, " ")
-		mycluster.AddUser(userform)
+		mycluster.AddUser(userform, repman.Conf.Cloud18GitUser)
 	}
 
 	err = repman.SendCloud18ClusterSubscriptionMail(mycluster.Name, userform)
@@ -1278,9 +1292,9 @@ func (repman *ReplicationManager) handlerMuxClusterAdd(w http.ResponseWriter, r 
 		}
 
 		if _, ok := cl.APIUsers[username]; !ok {
-			cl.AddUser(userform)
+			cl.AddUser(userform, "admin")
 		} else {
-			cl.UpdateUser(userform)
+			cl.UpdateUser(userform, "admin")
 		}
 
 		// Adjust cluster based on selected orchestrator

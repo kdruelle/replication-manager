@@ -28,6 +28,10 @@ type APIUser struct {
 }
 
 func (cluster *Cluster) SetNewUserGrants(u *APIUser, grant string) {
+	if u.Grants == nil {
+		u.Grants = map[string]bool{}
+	}
+
 	acls := strings.Split(grant, " ")
 	for key, value := range cluster.Grants {
 		found := false
@@ -42,6 +46,10 @@ func (cluster *Cluster) SetNewUserGrants(u *APIUser, grant string) {
 }
 
 func (cluster *Cluster) SetNewUserRoles(u *APIUser, roles string) {
+	if u.Roles == nil {
+		u.Roles = map[string]bool{}
+	}
+
 	list := strings.Split(roles, " ")
 
 	for _, role := range cluster.Roles {

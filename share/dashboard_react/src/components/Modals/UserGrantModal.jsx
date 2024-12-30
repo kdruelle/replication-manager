@@ -164,7 +164,7 @@ function UserGrantModal({ clusterName, selectedUser, isOpen, closeModal }) {
               </List>
             </VStack>
             <Message message={grantsError} />
-            <GrantCheckList grantOptions={allAcls} onChange={setAcls} parentStyles={parentStyles} />
+            <GrantCheckList grantOptions={allAcls} onChange={setAcls} parentStyles={parentStyles} user={user}/>
           </Stack>
         </ModalBody>
         <ModalFooter gap={3} margin='auto'>

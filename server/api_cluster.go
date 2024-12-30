@@ -3100,7 +3100,7 @@ func (repman *ReplicationManager) handlerMuxAcceptSubscription(w http.ResponseWr
 		return
 	}
 
-	err = mycluster.AcceptSubscription(userform)
+	err = repman.AcceptSubscription(userform, mycluster)
 	if err != nil {
 		http.Error(w, "Error accepting subscription :"+err.Error(), 500)
 		return
@@ -3150,7 +3150,7 @@ func (repman *ReplicationManager) handlerMuxRejectSubscription(w http.ResponseWr
 		}
 	}
 
-	err = mycluster.RemoveSubscription(userform, false)
+	err = repman.RemoveSubscription(userform, false, mycluster)
 	if err != nil {
 		http.Error(w, "Error removing subscription :"+err.Error(), 500)
 		return
@@ -3194,7 +3194,7 @@ func (repman *ReplicationManager) handlerMuxRemoveSponsor(w http.ResponseWriter,
 		}
 	}
 
-	err = mycluster.RemoveSubscription(userform, true)
+	err = repman.RemoveSubscription(userform, true, mycluster)
 	if err != nil {
 		http.Error(w, "Error removing sponsor subscription :"+err.Error(), 500)
 		return

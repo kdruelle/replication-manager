@@ -59,9 +59,9 @@ func (repman *ReplicationManager) AddCloud18GitUser(cl *cluster.Cluster) error {
 	userform := repman.CreateAdminUserForm(username)
 
 	if _, ok := cl.APIUsers[username]; ok {
-		return cl.UpdateUser(userform)
+		return cl.UpdateUser(userform, "admin")
 	} else {
-		return cl.AddUser(userform)
+		return cl.AddUser(userform, "admin")
 	}
 }
 
@@ -71,7 +71,7 @@ func (repman *ReplicationManager) AddLocalAdminUserACL(cl *cluster.Cluster) erro
 	userform := repman.CreateAdminUserForm(username)
 
 	if _, ok := cl.APIUsers[username]; ok {
-		return cl.UpdateUser(userform)
+		return cl.UpdateUser(userform, "admin")
 	}
 
 	return fmt.Errorf("User %s not found in cluster %s", username, cl.Name)
