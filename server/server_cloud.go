@@ -5,69 +5,75 @@ import (
 	"strings"
 
 	"github.com/signal18/replication-manager/cluster"
+	"github.com/signal18/replication-manager/config"
 	"github.com/signal18/replication-manager/utils/misc"
 )
 
 func (repman *ReplicationManager) AcceptSubscription(userform cluster.UserForm, cl *cluster.Cluster) error {
 	user := userform.Username
-	if auser, ok := cl.APIUsers[user]; !ok {
+	auser, ok := cl.APIUsers[user]
+	if !ok {
 		return fmt.Errorf("User %s does not exist ", user)
-	} else {
-		grants := strings.Split("db show proxy grant extrole sales-unsubscribe", " ")
-		roles := strings.Split("sponsor", " ")
-		for grant, v := range auser.Grants {
-			if v {
-				grants = append(grants, grant)
-			}
-		}
-		userform.Grants = strings.Join(grants, " ")
-
-		for role, v := range auser.Roles {
-			if v && role != "pending" {
-				roles = append(roles, role)
-			}
-		}
-		userform.Roles = strings.Join(roles, " ")
-
-		// log.Printf("User %s grants %s roles %s", user, userform.Grants, userform.Roles)
-
-		new_acls := make([]string, 0)
-
-		acls := strings.Split(cl.Conf.APIUsersACLAllowExternal, ",")
-		for _, acl := range acls {
-			useracl, listgrants, _, listroles := misc.SplitAcls(acl)
-			// log.Printf("ACL: %s", acl)
-			if useracl == user {
-				acl = useracl + ":" + userform.Grants + ":" + cl.Name
-				if userform.Roles != "" {
-					acl = acl + ":" + userform.Roles
-				}
-				new_acls = append(new_acls, acl)
-			} else {
-				old_roles := strings.Split(listroles, " ")
-				new_roles := make([]string, 0)
-				for _, role := range old_roles {
-					if role == "pending" {
-						continue
-					}
-					new_roles = append(new_roles, role)
-				}
-				acl = useracl + ":" + listgrants + ":" + cl.Name
-				if len(new_roles) > 0 {
-					acl = acl + ":" + strings.Join(new_roles, " ")
-				}
-				new_acls = append(new_acls, acl)
-			}
-			// log.Printf("New ACL: %s", acl)
-		}
-
-		cl.Conf.APIUsersACLAllowExternal = strings.Join(new_acls, ",")
-		// log.Printf("APIUsersACLAllowExternal: %s", cl.Conf.APIUsersACLAllowExternal)
-
-		cl.LoadAPIUsers()
-		cl.SaveAcls()
-		cl.Save()
 	}
+
+	if v, ok := auser.Roles[config.RolePending]; !ok || !v {
+		return fmt.Errorf("User %s does not have 'pending' role", user)
+	}
+
+	grants := strings.Split("db show proxy grant extrole sales-unsubscribe", " ")
+	roles := strings.Split("sponsor", " ")
+	for grant, v := range auser.Grants {
+		if v {
+			grants = append(grants, grant)
+		}
+	}
+	userform.Grants = strings.Join(grants, " ")
+
+	for role, v := range auser.Roles {
+		if v && role != "pending" {
+			roles = append(roles, role)
+		}
+	}
+	userform.Roles = strings.Join(roles, " ")
+
+	// log.Printf("User %s grants %s roles %s", user, userform.Grants, userform.Roles)
+
+	new_acls := make([]string, 0)
+
+	acls := strings.Split(cl.Conf.APIUsersACLAllowExternal, ",")
+	for _, acl := range acls {
+		useracl, listgrants, _, listroles := misc.SplitAcls(acl)
+		// log.Printf("ACL: %s", acl)
+		if useracl == user {
+			acl = useracl + ":" + userform.Grants + ":" + cl.Name
+			if userform.Roles != "" {
+				acl = acl + ":" + userform.Roles
+			}
+			new_acls = append(new_acls, acl)
+		} else {
+			old_roles := strings.Split(listroles, " ")
+			new_roles := make([]string, 0)
+			for _, role := range old_roles {
+				if role == "pending" {
+					continue
+				}
+				new_roles = append(new_roles, role)
+			}
+			acl = useracl + ":" + listgrants + ":" + cl.Name
+			if len(new_roles) > 0 {
+				acl = acl + ":" + strings.Join(new_roles, " ")
+			}
+			new_acls = append(new_acls, acl)
+		}
+		// log.Printf("New ACL: %s", acl)
+	}
+
+	cl.Conf.APIUsersACLAllowExternal = strings.Join(new_acls, ",")
+	// log.Printf("APIUsersACLAllowExternal: %s", cl.Conf.APIUsersACLAllowExternal)
+
+	cl.LoadAPIUsers()
+	cl.SaveAcls()
+	cl.Save()
 
 	return nil
 }
