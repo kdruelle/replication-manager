@@ -78,44 +78,75 @@ func (repman *ReplicationManager) AcceptSubscription(userform cluster.UserForm, 
 	return nil
 }
 
-func (repman *ReplicationManager) RemoveSubscription(userform cluster.UserForm, isRemoveSponsor bool, cl *cluster.Cluster) error {
+func (repman *ReplicationManager) CancelSubscription(userform cluster.UserForm, cl *cluster.Cluster) error {
 	user := userform.Username
-	if auser, ok := cl.APIUsers[user]; !ok {
+	auser, ok := cl.APIUsers[user]
+	if !ok {
 		return fmt.Errorf("User %s does not exist ", user)
-	} else {
-		grants := make([]string, 0)
-		roles := make([]string, 0)
-		for grant, v := range auser.Grants {
-			if v {
-				grants = append(grants, grant)
-			}
-		}
-		userform.Grants = strings.Join(grants, " ")
-
-		for role, v := range auser.Roles {
-			if isRemoveSponsor {
-				if v && role != "sponsor" {
-					roles = append(roles, role)
-
-					// If use has no other roles, remove grants
-					if len(roles) == 0 {
-						userform.Grants = ""
-					}
-				}
-			} else {
-				if v && role != "pending" {
-					roles = append(roles, role)
-				}
-			}
-		}
-		userform.Roles = strings.Join(roles, " ")
-
-		if userform.Grants == "" {
-			cl.DropUser(userform)
-		} else {
-			cl.UpdateUser(userform, "admin")
+	}
+	grants := make([]string, 0)
+	roles := make([]string, 0)
+	for grant, v := range auser.Grants {
+		if v {
+			grants = append(grants, grant)
 		}
 	}
+	userform.Grants = strings.Join(grants, " ")
+
+	for role, v := range auser.Roles {
+		if v && role != "pending" {
+			roles = append(roles, role)
+		}
+	}
+
+	userform.Roles = strings.Join(roles, " ")
+
+	if userform.Grants == "" {
+		cl.DropUser(userform)
+	} else {
+		cl.UpdateUser(userform, "admin")
+	}
+
+	return nil
+}
+
+func (repman *ReplicationManager) EndSubscription(userform cluster.UserForm, cl *cluster.Cluster) error {
+	user := userform.Username
+	auser, ok := cl.APIUsers[user]
+
+	if !ok {
+		return fmt.Errorf("User %s does not exist ", user)
+	}
+
+	if v, ok := auser.Roles[config.RoleSponsor]; !ok || !v {
+		return fmt.Errorf("User %s does not have 'sponsor' role", user)
+	}
+
+	grants := make([]string, 0)
+	roles := make([]string, 0)
+	for grant, v := range auser.Grants {
+		if v {
+			grants = append(grants, grant)
+		}
+	}
+	userform.Grants = strings.Join(grants, " ")
+
+	for role, v := range auser.Roles {
+		if v && role != "sponsor" {
+			roles = append(roles, role)
+		}
+	}
+
+	// If use has no other roles, remove grants
+	if len(roles) == 0 {
+		userform.Grants = ""
+	}
+
+	roles = append(roles, config.RoleUnsubscribed)
+
+	userform.Roles = strings.Join(roles, " ")
+
+	cl.UpdateUser(userform, "admin")
 
 	return nil
 }

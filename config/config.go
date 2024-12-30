@@ -974,13 +974,14 @@ type Role struct {
 }
 
 const (
-	RoleSysOps    string = "sysops"
-	RoleDBOps     string = "dbops"
-	RoleExtSysOps string = "extsysops"
-	RoleExtDBOps  string = "extdbops"
-	RoleSponsor   string = "sponsor"
-	RolePending   string = "pending"
-	RoleVisitor   string = "visitor"
+	RoleSysOps       string = "sysops"
+	RoleDBOps        string = "dbops"
+	RoleExtSysOps    string = "extsysops"
+	RoleExtDBOps     string = "extdbops"
+	RoleSponsor      string = "sponsor"
+	RoleUnsubscribed string = "unsubscribed"
+	RolePending      string = "pending"
+	RoleVisitor      string = "visitor"
 )
 
 const (
@@ -2484,13 +2485,14 @@ func (conf *Config) GetCompactGrants(grants map[string]bool) ([]string, []string
 
 func (conf *Config) GetRoleType() map[string]string {
 	return map[string]string{
-		RoleSysOps:    RoleSysOps,
-		RoleDBOps:     RoleDBOps,
-		RoleExtSysOps: RoleExtSysOps,
-		RoleExtDBOps:  RoleExtDBOps,
-		RoleSponsor:   RoleSponsor,
-		RolePending:   RolePending,
-		RoleVisitor:   RoleVisitor,
+		RoleSysOps:       RoleSysOps,
+		RoleDBOps:        RoleDBOps,
+		RoleExtSysOps:    RoleExtSysOps,
+		RoleExtDBOps:     RoleExtDBOps,
+		RoleSponsor:      RoleSponsor,
+		RolePending:      RolePending,
+		RoleUnsubscribed: RoleUnsubscribed,
+		RoleVisitor:      RoleVisitor,
 	}
 }
 
