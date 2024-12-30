@@ -1540,6 +1540,7 @@ func (repman *ReplicationManager) handlerMuxSetCron(w http.ResponseWriter, r *ht
 }
 
 func (repman *ReplicationManager) setClusterSetting(mycluster *cluster.Cluster, name string, value string) error {
+	var err error
 	//not immutable
 	if !mycluster.Conf.IsVariableImmutable(name) {
 		mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, "INFO", "API receive set setting %s", name)
@@ -1904,6 +1905,56 @@ func (repman *ReplicationManager) setClusterSetting(mycluster *cluster.Cluster, 
 		new_secret.Value = mycluster.Conf.Cloud18DbaUserCredentials
 		new_secret.OldValue = mycluster.Conf.GetDecryptedValue("cloud18-dba-user-credentials")
 		mycluster.Conf.Secrets["cloud18-dba-user-credentials"] = new_secret
+	case "cloud18-cloud18-dbops":
+		if value != "" && value != mycluster.Conf.Cloud18GitUser {
+			dbops := repman.CreateDBOpsForm(value)
+			if dbuser, ok := mycluster.APIUsers[value]; !ok {
+				err = mycluster.AddUser(dbops, mycluster.Conf.Cloud18GitUser, true)
+			} else {
+				dbops.Grants = mycluster.AppendGrants(dbops.Grants, &dbuser)
+				dbops.Roles = mycluster.AppendRoles(dbops.Roles, &dbuser)
+				err = mycluster.UpdateUser(dbops, mycluster.Conf.Cloud18GitUser, true)
+			}
+
+			if err != nil {
+				return err
+			}
+
+			mycluster.Conf.Cloud18DbOps = value
+		}
+	case "cloud18-external-sysops":
+		if value != "" && value != mycluster.Conf.Cloud18GitUser {
+			esys := repman.CreateExtSysopsForm(value)
+			if euser, ok := mycluster.APIUsers[value]; !ok {
+				err = mycluster.AddUser(esys, mycluster.Conf.Cloud18GitUser, true)
+			} else {
+				esys.Grants = mycluster.AppendGrants(esys.Grants, &euser)
+				esys.Roles = mycluster.AppendRoles(esys.Roles, &euser)
+				err = mycluster.UpdateUser(esys, mycluster.Conf.Cloud18GitUser, true)
+			}
+
+			if err != nil {
+				return err
+			}
+			mycluster.Conf.Cloud18ExternalSysOps = value
+		}
+	case "cloud18-external-dbops":
+		// If external dbops different from cloud18 dbops
+		if mycluster.Conf.Cloud18ExternalDbOps != "" && mycluster.Conf.Cloud18ExternalDbOps != mycluster.Conf.Cloud18DbOps {
+			edbops := repman.CreateExtDBOpsForm(mycluster.Conf.Cloud18ExternalDbOps)
+			if edbuser, ok := mycluster.APIUsers[mycluster.Conf.Cloud18ExternalDbOps]; !ok {
+				err = mycluster.AddUser(edbops, mycluster.Conf.Cloud18GitUser, true)
+			} else {
+				edbops.Grants = mycluster.AppendGrants(edbops.Grants, &edbuser)
+				edbops.Roles = mycluster.AppendRoles(edbops.Roles, &edbuser)
+				err = mycluster.UpdateUser(edbops, mycluster.Conf.Cloud18GitUser, true)
+			}
+
+			if err != nil {
+				return err
+			}
+			mycluster.Conf.Cloud18ExternalDbOps = value
+		}
 	default:
 		return errors.New("Setting not found")
 	}
@@ -3088,6 +3139,21 @@ func (repman *ReplicationManager) handlerMuxAcceptSubscription(w http.ResponseWr
 
 	if valid, _ := repman.IsValidClusterACL(r, mycluster); !valid {
 		http.Error(w, "No valid ACL", http.StatusForbidden)
+		return
+	}
+
+	if mycluster.Conf.Cloud18DatabaseReadSrvRecord == "" {
+		http.Error(w, "Empty Read Srv Record", http.StatusForbidden)
+		return
+	}
+
+	if mycluster.Conf.Cloud18DatabaseReadWriteSrvRecord == "" {
+		http.Error(w, "Empty Read-Write Srv Record", http.StatusForbidden)
+		return
+	}
+
+	if mycluster.Conf.Cloud18DatabaseReadWriteSplitSrvRecord == "" {
+		http.Error(w, "Empty Read-Write Split Srv Record", http.StatusForbidden)
 		return
 	}
 

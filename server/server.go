@@ -507,8 +507,9 @@ func (repman *ReplicationManager) AddFlags(flags *pflag.FlagSet, conf *config.Co
 	flags.StringVar(&conf.APIUsers, "api-credentials", "admin:repman", "Rest API user list user:password,..")
 	flags.StringVar(&conf.APIUsersExternal, "api-credentials-external", "", "Rest API user list user:password,.. as dba:repman,foo:bar")
 	flags.StringVar(&conf.APIUsersACLAllow, "api-credentials-acl-allow", "admin:global cluster proxy db prov,dba:cluster proxy db,foo:", "User acl allow")
-	flags.StringVar(&conf.APIUsersACLAllowExternal, "api-credentials-acl-allow-external", "", "External user acl allow")
+	flags.StringVar(&conf.APIUsersACLAllowExternal, "api-credentials-acl-allow-external", "", "User dynamic acl allow")
 	flags.StringVar(&conf.APIUsersACLDiscard, "api-credentials-acl-discard", "", "User acl discard")
+	flags.StringVar(&conf.APIUsersACLDiscardExternal, "api-credentials-acl-discard-external", "", "User dynamic acl discard")
 	flags.StringVar(&conf.APIBind, "api-bind", "0.0.0.0", "Rest API bind ip")
 	flags.BoolVar(&conf.APIHttpsBind, "api-https-bind", false, "Bind API call to https Web UI will error with http")
 	flags.BoolVar(&conf.APISecureConfig, "api-credentials-secure-config", false, "Need JWT token to download config tar.gz")
@@ -2133,11 +2134,16 @@ func (repman *ReplicationManager) StartCluster(clusterName string) (*cluster.Clu
 		repman.currentCluster.SetState("ERR00090", state.State{ErrType: "WARNING", ErrDesc: fmt.Sprintf(repman.currentCluster.GetErrorList()["ERR00090"]), ErrFrom: "CLUSTER"})
 	}
 
-	repman.AddLocalAdminUserACL(repman.currentCluster)
+	repman.AddLocalAdminUserACL(repman.currentCluster, false)
 
 	if repman.Conf.Cloud18GitUser != "" && repman.Conf.Cloud18GitPassword != "" && repman.Conf.Cloud18 {
-		repman.AddCloud18GitUser(repman.currentCluster)
+		repman.AddCloud18GitUser(repman.currentCluster, false)
 	}
+
+	// Reload Users
+	repman.currentCluster.LoadAPIUsers()
+	repman.currentCluster.SaveAcls()
+	repman.currentCluster.Save()
 
 	go repman.currentCluster.Run()
 	return repman.currentCluster, nil
@@ -2393,7 +2399,7 @@ func (a RoleSorter) Less(i, j int) bool { return a[i].Role < a[j].Role }
 
 func (repman *ReplicationManager) InitGrants() error {
 	acls := []config.Grant{}
-	for _, value := range repman.Conf.GetGrantType() {
+	for _, value := range config.GetGrantType() {
 		var acl config.Grant
 		acl.Grant = value
 		acls = append(acls, acl)
@@ -2405,7 +2411,7 @@ func (repman *ReplicationManager) InitGrants() error {
 
 func (repman *ReplicationManager) InitRoles() error {
 	roles := []config.Role{}
-	for _, value := range repman.Conf.GetRoleType() {
+	for _, value := range config.GetRoleType() {
 		var acl config.Role
 		acl.Role = value
 		roles = append(roles, acl)

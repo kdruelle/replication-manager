@@ -42,7 +42,8 @@ function Users({ selectedCluster, user }) {
   }
 
   const isShowDropUser = (user, item) => {
-    let immutable = user.user == item.user || monitor?.config?.cloud18GitUser == item.user || item.user == "admin"
+    let immutable = user.user == item.user || monitor?.config?.cloud18GitUser == item.user || item.user == "admin" || item.roles['sponsor']
+    
     if (user.roles['sysops']) {
       return !immutable
     } else if (user.roles['sponsor']) {

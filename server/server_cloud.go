@@ -36,7 +36,29 @@ func (repman *ReplicationManager) AcceptSubscription(userform cluster.UserForm, 
 	}
 	userform.Roles = strings.Join(roles, " ")
 
-	// log.Printf("User %s grants %s roles %s", user, userform.Grants, userform.Roles)
+	// If external sysops different from cloud18 git user
+	if cl.Conf.Cloud18ExternalSysOps != "" && cl.Conf.Cloud18ExternalSysOps != cl.Conf.Cloud18GitUser {
+		esys := repman.CreateExtSysopsForm(cl.Conf.Cloud18ExternalSysOps)
+		if euser, ok := cl.APIUsers[cl.Conf.Cloud18ExternalSysOps]; !ok {
+			cl.AddUser(esys, cl.Conf.Cloud18GitUser, false)
+		} else {
+			esys.Grants = cl.AppendGrants(esys.Grants, &euser)
+			esys.Roles = cl.AppendRoles(esys.Roles, &euser)
+			cl.UpdateUser(esys, cl.Conf.Cloud18GitUser, false)
+		}
+	}
+
+	// If external dbops different from cloud18 dbops
+	if cl.Conf.Cloud18ExternalDbOps != "" && cl.Conf.Cloud18ExternalDbOps != cl.Conf.Cloud18DbOps {
+		edbops := repman.CreateExtDBOpsForm(cl.Conf.Cloud18ExternalDbOps)
+		if edbuser, ok := cl.APIUsers[cl.Conf.Cloud18ExternalDbOps]; !ok {
+			cl.AddUser(edbops, cl.Conf.Cloud18GitUser, false)
+		} else {
+			edbops.Grants = cl.AppendGrants(edbops.Grants, &edbuser)
+			edbops.Roles = cl.AppendRoles(edbops.Roles, &edbuser)
+			cl.UpdateUser(edbops, cl.Conf.Cloud18GitUser, false)
+		}
+	}
 
 	new_acls := make([]string, 0)
 
@@ -102,9 +124,9 @@ func (repman *ReplicationManager) CancelSubscription(userform cluster.UserForm, 
 	userform.Roles = strings.Join(roles, " ")
 
 	if userform.Grants == "" {
-		cl.DropUser(userform)
+		cl.DropUser(userform, true)
 	} else {
-		cl.UpdateUser(userform, "admin")
+		cl.UpdateUser(userform, "admin", true)
 	}
 
 	return nil
@@ -146,7 +168,7 @@ func (repman *ReplicationManager) EndSubscription(userform cluster.UserForm, cl 
 
 	userform.Roles = strings.Join(roles, " ")
 
-	cl.UpdateUser(userform, "admin")
+	cl.UpdateUser(userform, "admin", true)
 
 	return nil
 }

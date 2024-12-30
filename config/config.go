@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"hash"
 	"io"
+	"slices"
 
 	"os"
 	"reflect"
@@ -580,6 +581,7 @@ type Config struct {
 	APIUsersACLAllow                          string                 `mapstructure:"api-credentials-acl-allow" toml:"api-credentials-acl-allow" json:"apiCredentialsACLAllow"`
 	APIUsersACLAllowExternal                  string                 `mapstructure:"api-credentials-acl-allow-external" toml:"api-credentials-acl-allow-external" json:"apiCredentialsACLAllowExternal"`
 	APIUsersACLDiscard                        string                 `mapstructure:"api-credentials-acl-discard" toml:"api-credentials-acl-discard" json:"apiCredentialsACLDiscard"`
+	APIUsersACLDiscardExternal                string                 `mapstructure:"api-credentials-acl-discard-external" toml:"api-credentials-acl-discard-external" json:"apiCredentialsACLDiscardExternal"`
 	APISecureConfig                           bool                   `mapstructure:"api-credentials-secure-config" toml:"api-credentials-secure-config" json:"apiCredentialsSecureConfig"`
 	APIPort                                   string                 `scope:"server" mapstructure:"api-port" toml:"api-port" json:"apiPort"`
 	APIBind                                   string                 `scope:"server" mapstructure:"api-bind" toml:"api-bind" json:"apiBind"`
@@ -790,7 +792,7 @@ type PeerCluster struct {
 	Cloud18SlaProvisionTime                float64  `json:"cloud18-sla-provision-time,string"`
 	Cloud18PromotionPct                    float64  `json:"cloud18-promotion-pct,string"`
 	Cloud18ExtDbOps                        string   `json:"cloud18-external-dbops"`
-	Cloud18ExtSysOps                       string   `json"cloud18-external-sysops"`
+	Cloud18ExtSysOps                       string   `json:"cloud18-external-sysops"`
 	Cloud18InfraCertifications             string   `json:"cloud18-infra-certifications"`
 }
 
@@ -2073,7 +2075,7 @@ func (conf *Config) GetMemoryPctThreaded() (map[string]int, error) {
 	return engines, nil
 }
 
-func (conf *Config) GetGrantType() map[string]string {
+func GetGrantType() map[string]string {
 	return map[string]string{
 		GrantDBStart:                   GrantDBStart,
 		GrantDBStop:                    GrantDBStop,
@@ -2152,7 +2154,7 @@ func (conf *Config) GetGrantType() map[string]string {
 	}
 }
 
-func (conf *Config) GetGrantDB() []string {
+func GetGrantDB() []string {
 	return []string{
 		GrantDBStart,
 		GrantDBStop,
@@ -2179,8 +2181,8 @@ func (conf *Config) GetGrantDB() []string {
 	}
 }
 
-func (conf *Config) HasAllDBGrants(grants map[string]bool) bool {
-	for _, grant := range conf.GetGrantDB() {
+func HasAllDBGrants(grants map[string]bool) bool {
+	for _, grant := range GetGrantDB() {
 		if !grants[grant] {
 			return false
 		}
@@ -2188,7 +2190,7 @@ func (conf *Config) HasAllDBGrants(grants map[string]bool) bool {
 	return true
 }
 
-func (conf *Config) GetGrantCluster() []string {
+func GetGrantCluster() []string {
 	return []string{
 		GrantClusterCreate,
 		GrantClusterDrop,
@@ -2220,8 +2222,8 @@ func (conf *Config) GetGrantCluster() []string {
 	}
 }
 
-func (conf *Config) HasAllClusterGrants(grants map[string]bool) bool {
-	for _, grant := range conf.GetGrantCluster() {
+func HasAllClusterGrants(grants map[string]bool) bool {
+	for _, grant := range GetGrantCluster() {
 		if !grants[grant] {
 			return false
 		}
@@ -2229,7 +2231,7 @@ func (conf *Config) HasAllClusterGrants(grants map[string]bool) bool {
 	return true
 }
 
-func (conf *Config) GetGrantProxy() []string {
+func GetGrantProxy() []string {
 	return []string{
 		GrantProxyConfigCreate,
 		GrantProxyConfigGet,
@@ -2240,8 +2242,8 @@ func (conf *Config) GetGrantProxy() []string {
 	}
 }
 
-func (conf *Config) HasAllProxyGrants(grants map[string]bool) bool {
-	for _, grant := range conf.GetGrantProxy() {
+func HasAllProxyGrants(grants map[string]bool) bool {
+	for _, grant := range GetGrantProxy() {
 		if !grants[grant] {
 			return false
 		}
@@ -2249,7 +2251,7 @@ func (conf *Config) HasAllProxyGrants(grants map[string]bool) bool {
 	return true
 }
 
-func (conf *Config) GetGrantProvision() []string {
+func GetGrantProvision() []string {
 	return []string{
 		GrantProvSettings,
 		GrantProvCluster,
@@ -2262,8 +2264,8 @@ func (conf *Config) GetGrantProvision() []string {
 	}
 }
 
-func (conf *Config) HasAllProvisionGrants(grants map[string]bool) bool {
-	for _, grant := range conf.GetGrantProvision() {
+func HasAllProvisionGrants(grants map[string]bool) bool {
+	for _, grant := range GetGrantProvision() {
 		if !grants[grant] {
 			return false
 		}
@@ -2271,15 +2273,15 @@ func (conf *Config) HasAllProvisionGrants(grants map[string]bool) bool {
 	return true
 }
 
-func (conf *Config) GetGrantGlobal() []string {
+func GetGrantGlobal() []string {
 	return []string{
 		GrantGlobalGrant,
 		GrantGlobalSettings,
 	}
 }
 
-func (conf *Config) HasAllGlobalGrants(grants map[string]bool) bool {
-	for _, grant := range conf.GetGrantGlobal() {
+func HasAllGlobalGrants(grants map[string]bool) bool {
+	for _, grant := range GetGrantGlobal() {
 		if !grants[grant] {
 			return false
 		}
@@ -2287,7 +2289,7 @@ func (conf *Config) HasAllGlobalGrants(grants map[string]bool) bool {
 	return true
 }
 
-func (conf *Config) GetGrantSales() []string {
+func GetGrantSales() []string {
 	return []string{
 		GrantSalesValidate,
 		GrantSalesRefuse,
@@ -2295,8 +2297,8 @@ func (conf *Config) GetGrantSales() []string {
 	}
 }
 
-func (conf *Config) HasAllSalesGrants(grants map[string]bool) bool {
-	for _, grant := range conf.GetGrantSales() {
+func HasAllSalesGrants(grants map[string]bool) bool {
+	for _, grant := range GetGrantSales() {
 		if !grants[grant] {
 			return false
 		}
@@ -2304,7 +2306,7 @@ func (conf *Config) HasAllSalesGrants(grants map[string]bool) bool {
 	return true
 }
 
-func (conf *Config) GetGrantGrant() []string {
+func GetGrantGrant() []string {
 	return []string{
 		GrantGrantShow,
 		GrantGrantAdd,
@@ -2314,8 +2316,8 @@ func (conf *Config) GetGrantGrant() []string {
 	}
 }
 
-func (conf *Config) HasAllGrantGrants(grants map[string]bool) bool {
-	for _, grant := range conf.GetGrantGrant() {
+func HasAllGrantGrants(grants map[string]bool) bool {
+	for _, grant := range GetGrantGrant() {
 		if !grants[grant] {
 			return false
 		}
@@ -2323,17 +2325,17 @@ func (conf *Config) HasAllGrantGrants(grants map[string]bool) bool {
 	return true
 }
 
-func (conf *Config) GetCompactGrants(grants map[string]bool) ([]string, []string) {
+func GetCompactGrants(grants map[string]bool) ([]string, []string) {
 	var compactGrants []string
 	var compactDiscardGrants []string
 	var counter int
 
 	// DB
 	tmp := make([]string, 0)
-	if conf.HasAllDBGrants(grants) {
+	if HasAllDBGrants(grants) {
 		compactGrants = append(compactGrants, "db")
 	} else {
-		for _, grant := range conf.GetGrantDB() {
+		for _, grant := range GetGrantDB() {
 			if grants[grant] {
 				compactGrants = append(compactGrants, grant)
 				counter++
@@ -2351,10 +2353,10 @@ func (conf *Config) GetCompactGrants(grants map[string]bool) ([]string, []string
 	// Cluster
 	tmp = make([]string, 0)
 	counter = 0
-	if conf.HasAllClusterGrants(grants) {
+	if HasAllClusterGrants(grants) {
 		compactGrants = append(compactGrants, "cluster")
 	} else {
-		for _, grant := range conf.GetGrantCluster() {
+		for _, grant := range GetGrantCluster() {
 			if grants[grant] {
 				compactGrants = append(compactGrants, grant)
 				counter++
@@ -2372,10 +2374,10 @@ func (conf *Config) GetCompactGrants(grants map[string]bool) ([]string, []string
 	// Proxy
 	tmp = make([]string, 0)
 	counter = 0
-	if conf.HasAllProxyGrants(grants) {
+	if HasAllProxyGrants(grants) {
 		compactGrants = append(compactGrants, "proxy")
 	} else {
-		for _, grant := range conf.GetGrantProxy() {
+		for _, grant := range GetGrantProxy() {
 			if grants[grant] {
 				compactGrants = append(compactGrants, grant)
 				counter++
@@ -2393,10 +2395,10 @@ func (conf *Config) GetCompactGrants(grants map[string]bool) ([]string, []string
 	// Provision
 	tmp = make([]string, 0)
 	counter = 0
-	if conf.HasAllProvisionGrants(grants) {
+	if HasAllProvisionGrants(grants) {
 		compactGrants = append(compactGrants, "prov")
 	} else {
-		for _, grant := range conf.GetGrantProvision() {
+		for _, grant := range GetGrantProvision() {
 			if grants[grant] {
 				compactGrants = append(compactGrants, grant)
 				counter++
@@ -2414,10 +2416,10 @@ func (conf *Config) GetCompactGrants(grants map[string]bool) ([]string, []string
 	// Global
 	tmp = make([]string, 0)
 	counter = 0
-	if conf.HasAllGlobalGrants(grants) {
+	if HasAllGlobalGrants(grants) {
 		compactGrants = append(compactGrants, "global")
 	} else {
-		for _, grant := range conf.GetGrantGlobal() {
+		for _, grant := range GetGrantGlobal() {
 			if grants[grant] {
 				compactGrants = append(compactGrants, grant)
 				counter++
@@ -2435,10 +2437,10 @@ func (conf *Config) GetCompactGrants(grants map[string]bool) ([]string, []string
 	// Sales
 	tmp = make([]string, 0)
 	counter = 0
-	if conf.HasAllSalesGrants(grants) {
+	if HasAllSalesGrants(grants) {
 		compactGrants = append(compactGrants, "sales")
 	} else {
-		for _, grant := range conf.GetGrantSales() {
+		for _, grant := range GetGrantSales() {
 			if grants[grant] {
 				compactGrants = append(compactGrants, grant)
 				counter++
@@ -2456,10 +2458,10 @@ func (conf *Config) GetCompactGrants(grants map[string]bool) ([]string, []string
 	// Grant
 	tmp = make([]string, 0)
 	counter = 0
-	if conf.HasAllGrantGrants(grants) {
+	if HasAllGrantGrants(grants) {
 		compactGrants = append(compactGrants, "grant")
 	} else {
-		for _, grant := range conf.GetGrantGrant() {
+		for _, grant := range GetGrantGrant() {
 			if grants[grant] {
 				compactGrants = append(compactGrants, grant)
 				counter++
@@ -2483,7 +2485,7 @@ func (conf *Config) GetCompactGrants(grants map[string]bool) ([]string, []string
 	return compactGrants, compactDiscardGrants
 }
 
-func (conf *Config) GetRoleType() map[string]string {
+func GetRoleType() map[string]string {
 	return map[string]string{
 		RoleSysOps:       RoleSysOps,
 		RoleDBOps:        RoleDBOps,
@@ -2494,6 +2496,86 @@ func (conf *Config) GetRoleType() map[string]string {
 		RoleUnsubscribed: RoleUnsubscribed,
 		RoleVisitor:      RoleVisitor,
 	}
+}
+
+func GetCompactRoles(roles map[string]bool) []string {
+	rolelist := make([]string, 0)
+	for role, v := range roles {
+		if v {
+			rolelist = append(rolelist, role)
+		}
+	}
+
+	return rolelist
+}
+
+func GetDefaultAllowDiscardACL(role string) (string, string) {
+	switch role {
+	case RoleSysOps:
+		return "*", ""
+	case RoleExtSysOps:
+		return "*", "sales global"
+	case RoleDBOps:
+		return "*", "cluster prov sales global"
+	case RoleSponsor:
+		return "db show proxy grant extrole sales-unsubscribe", ""
+	case RoleExtDBOps:
+		return "db show proxy grant", ""
+	default:
+		return "show", ""
+	}
+}
+
+func GetDefaultGrants(role string) string {
+	grants := make(map[string]bool)
+	gtypes := GetGrantType()
+	allow, discard := GetDefaultAllowDiscardACL(role)
+
+	for _, grant := range gtypes {
+		found := false
+
+		if allow == "*" {
+			found = true
+		} else {
+			for _, acl := range strings.Split(allow, " ") {
+				if strings.HasPrefix(grant, acl) && acl != "" {
+					found = true
+					break
+				}
+			}
+		}
+
+		if discard != "" {
+			for _, acl := range strings.Split(discard, " ") {
+				if strings.HasPrefix(grant, acl) && acl != "" {
+					found = false
+					break
+				}
+			}
+		}
+
+		grants[grant] = found
+	}
+
+	allowlist, _ := GetCompactGrants(grants)
+
+	return strings.Join(allowlist, " ")
+}
+
+func GetRoleDefaultGrant(roles string) string {
+	list := strings.Split(roles, " ")
+	if slices.Contains(list, RoleSysOps) {
+		return GetDefaultGrants(RoleSysOps)
+	} else if slices.Contains(list, RoleExtSysOps) {
+		return GetDefaultGrants(RoleExtSysOps)
+	} else if slices.Contains(list, RoleSponsor) {
+		return GetDefaultGrants(RoleSponsor)
+	} else if slices.Contains(list, RoleDBOps) {
+		return GetDefaultGrants(RoleDBOps)
+	} else if slices.Contains(list, RoleExtDBOps) {
+		return GetDefaultGrants(RoleExtDBOps)
+	}
+	return ""
 }
 
 func (conf *Config) GetDockerRepos(file string, is_not_embed bool) ([]DockerRepo, error) {

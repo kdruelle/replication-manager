@@ -27,7 +27,7 @@ type APIUser struct {
 	Grants     map[string]bool `json:"grants"`
 }
 
-func (cluster *Cluster) SetNewUserGrants(u *APIUser, grant string) {
+func (cluster *Cluster) SetUserGrants(u *APIUser, grant string) {
 	if u.Grants == nil {
 		u.Grants = map[string]bool{}
 	}
@@ -41,11 +41,15 @@ func (cluster *Cluster) SetNewUserGrants(u *APIUser, grant string) {
 				break
 			}
 		}
-		u.Grants[value] = found
+
+		_, ok := u.Grants[value]
+		if !ok || found {
+			u.Grants[value] = found
+		}
 	}
 }
 
-func (cluster *Cluster) SetNewUserRoles(u *APIUser, roles string) {
+func (cluster *Cluster) SetUserRoles(u *APIUser, roles string) {
 	if u.Roles == nil {
 		u.Roles = map[string]bool{}
 	}
@@ -95,7 +99,7 @@ func (cluster *Cluster) GetAPIUser(strUser string, strPassword string) (APIUser,
 }
 
 func (cluster *Cluster) SaveUserAcls(user string) (string, string) {
-	granted, discarded := cluster.Conf.GetCompactGrants(cluster.APIUsers[user].Grants)
+	granted, discarded := config.GetCompactGrants(cluster.APIUsers[user].Grants)
 	return strings.Join(granted, " "), strings.Join(discarded, " ")
 }
 
@@ -133,7 +137,7 @@ func (cluster *Cluster) SaveAcls() {
 		}
 	}
 	cluster.Conf.APIUsersACLAllowExternal = strings.Join(aUserAcls, ",")
-	cluster.Conf.APIUsersACLDiscard = strings.Join(aUserDiscardAcls, ",")
+	cluster.Conf.APIUsersACLDiscardExternal = strings.Join(aUserDiscardAcls, ",")
 }
 
 // func (cluster *Cluster) SetGrant(user string, grant string, enable bool) {
@@ -183,7 +187,7 @@ func (cluster *Cluster) GetClusterUserAllowACLs(acls string) map[string]ListUser
 
 func (cluster *Cluster) GetClusterUserDiscardACLs(acls string) map[string]ListUserACL {
 	results := make(map[string]ListUserACL)
-	usersDiscardACL := strings.Split(cluster.Conf.APIUsersACLDiscard, ",")
+	usersDiscardACL := strings.Split(acls, ",")
 
 	for _, userACL := range usersDiscardACL {
 		if userACL == "" {
@@ -211,6 +215,7 @@ func (cluster *Cluster) LoadAPIUsers() error {
 	listACLs := cluster.GetClusterUserAllowACLs(cluster.Conf.APIUsersACLAllow)
 	listDiscard := cluster.GetClusterUserDiscardACLs(cluster.Conf.APIUsersACLDiscard)
 	listACLsExt := cluster.GetClusterUserAllowACLs(cluster.Conf.APIUsersACLAllowExternal)
+	listDiscardExt := cluster.GetClusterUserDiscardACLs(cluster.Conf.APIUsersACLDiscardExternal)
 
 	for _, credential := range credentials {
 		// Prevent empty credentials
@@ -231,8 +236,8 @@ func (cluster *Cluster) LoadAPIUsers() error {
 
 		// Assign Roles and ACLs
 		if userACL, ok := listACLs[newapiuser.User]; ok {
-			cluster.SetNewUserGrants(&newapiuser, userACL.ACLs)
-			cluster.SetNewUserRoles(&newapiuser, userACL.Roles)
+			cluster.SetUserGrants(&newapiuser, userACL.ACLs)
+			cluster.SetUserRoles(&newapiuser, userACL.Roles)
 		}
 
 		if discardACL, ok := listDiscard[newapiuser.User]; ok {
@@ -244,8 +249,15 @@ func (cluster *Cluster) LoadAPIUsers() error {
 
 		// Assign Roles and ACLs
 		if userACL, ok := listACLsExt[newapiuser.User]; ok {
-			cluster.SetNewUserGrants(&newapiuser, userACL.ACLs)
-			cluster.SetNewUserRoles(&newapiuser, userACL.Roles)
+			cluster.SetUserGrants(&newapiuser, userACL.ACLs)
+			cluster.SetUserRoles(&newapiuser, userACL.Roles)
+		}
+
+		if discardACL, ok := listDiscardExt[newapiuser.User]; ok {
+			acls := strings.Split(discardACL.ACLs, " ")
+			for _, acl := range acls {
+				newapiuser.Grants[acl] = false
+			}
 		}
 
 		// No Roles

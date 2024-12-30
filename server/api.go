@@ -759,7 +759,7 @@ func (repman *ReplicationManager) handlerMuxAddUser(w http.ResponseWriter, r *ht
 
 	for _, cluster := range repman.Clusters {
 		if valid, delegator := repman.IsValidClusterACL(r, cluster); valid {
-			cluster.AddUser(userform, delegator)
+			cluster.AddUser(userform, delegator, true)
 		}
 	}
 
@@ -781,7 +781,7 @@ func (repman *ReplicationManager) handlerMuxAddClusterUser(w http.ResponseWriter
 	mycluster := repman.getClusterByName(vars["clusterName"])
 	if mycluster != nil {
 		if valid, delegator := repman.IsValidClusterACL(r, mycluster); valid {
-			err := mycluster.AddUser(userform, delegator)
+			err := mycluster.AddUser(userform, delegator, true)
 			if err != nil {
 				http.Error(w, "Error adding new user: "+err.Error(), 500)
 				return
@@ -812,7 +812,7 @@ func (repman *ReplicationManager) handlerMuxUpdateClusterUser(w http.ResponseWri
 	mycluster := repman.getClusterByName(vars["clusterName"])
 	if mycluster != nil {
 		if valid, delegator := repman.IsValidClusterACL(r, mycluster); valid {
-			err := mycluster.UpdateUser(userform, delegator)
+			err := mycluster.UpdateUser(userform, delegator, true)
 			if err != nil {
 				http.Error(w, "Error updating user: "+err.Error(), 500)
 				return
@@ -843,7 +843,7 @@ func (repman *ReplicationManager) handlerMuxDropClusterUser(w http.ResponseWrite
 	mycluster := repman.getClusterByName(vars["clusterName"])
 	if mycluster != nil {
 		if valid, _ := repman.IsValidClusterACL(r, mycluster); valid {
-			err := mycluster.DropUser(userform)
+			err := mycluster.DropUser(userform, true)
 			if err != nil {
 				http.Error(w, "Error dropping user: "+err.Error(), 500)
 				return
@@ -1052,11 +1052,11 @@ func (repman *ReplicationManager) handlerMuxClusterSubscribe(w http.ResponseWrit
 			}
 		}
 		userform.Grants = strings.Join(grants, " ")
-		mycluster.UpdateUser(userform, repman.Conf.Cloud18GitUser)
+		mycluster.UpdateUser(userform, repman.Conf.Cloud18GitUser, true)
 	} else {
 		userform.Roles = strings.Join(roles, " ")
 		userform.Grants = strings.Join(grants, " ")
-		mycluster.AddUser(userform, repman.Conf.Cloud18GitUser)
+		mycluster.AddUser(userform, repman.Conf.Cloud18GitUser, true)
 	}
 
 	err = repman.SendCloud18ClusterSubscriptionMail(mycluster.Name, userform)
@@ -1280,22 +1280,18 @@ func (repman *ReplicationManager) handlerMuxClusterAdd(w http.ResponseWriter, r 
 	// Create user and grant for new cluster
 	cl = repman.getClusterByName(vars["clusterName"])
 	if cl != nil {
+		cl.Conf.APIUsersExternal = ""
+		cl.Conf.APIUsersACLAllowExternal = ""
+		cl.Conf.APIUsersACLDiscardExternal = ""
+
+		repman.AddLocalAdminUserACL(cl, false)
+
 		if repman.Conf.Cloud18GitUser != "" {
-			repman.AddCloud18GitUser(cl)
+			repman.AddCloud18GitUser(cl, false)
 		}
 
-		// Create user and grant for new cluster
-		userform := cluster.UserForm{
-			Username: username,
-			Roles:    strings.Join(([]string{config.RoleDBOps, config.RoleSysOps}), " "),
-			Grants:   "cluster db proxy prov",
-		}
-
-		if _, ok := cl.APIUsers[username]; !ok {
-			cl.AddUser(userform, "admin")
-		} else {
-			cl.UpdateUser(userform, "admin")
-		}
+		cl.LoadAPIUsers()
+		cl.SaveAcls()
 
 		// Adjust cluster based on selected orchestrator
 		if cForm.Orchestrator != "" && cForm.Orchestrator != cl.Conf.ProvOrchestrator {
@@ -1306,6 +1302,8 @@ func (repman *ReplicationManager) handlerMuxClusterAdd(w http.ResponseWriter, r 
 		if cForm.Plan != "" {
 			cl.SetServicePlan(cForm.Plan)
 		}
+
+		cl.Save()
 	}
 }
 

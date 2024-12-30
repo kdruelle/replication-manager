@@ -1742,6 +1742,8 @@ func (cluster *Cluster) SetInjectVariables() {
 			cluster.Conf.APIUsersACLAllow = fmt.Sprintf("%v", val)
 		case "api-credentials-acl-allow-external":
 			cluster.Conf.APIUsersACLAllowExternal = fmt.Sprintf("%v", val)
+		case "api-credentials-acl-discard-external":
+			cluster.Conf.APIUsersACLDiscardExternal = fmt.Sprintf("%v", val)
 		}
 	}
 }
