@@ -33,61 +33,119 @@ function SetCredentialsModal({ clusterName, isOpen, closeModal, type }) {
     setPasswordError('')
 
     if (!userName) {
-      setUserName('User is required')
+      setUserNameError('User is required')
       return
     }
 
     if (!password) {
-      setPassword('Password is required')
+      setPasswordError('Password is required')
       return
     }
+
+    if (userName.includes(':')) {
+      setUserNameError('User cannot contain colon')
+      return
+    }
+
     const typeLower = type.toLowerCase()
 
-    if (typeLower.includes('database')) {
-      dispatch(
-        setCredentials({ clusterName, credentialType: 'db-servers-credential', credential: `${userName}:${password}` })
-      )
-    } else if (typeLower.includes('replication')) {
-      dispatch(
-        setCredentials({
-          clusterName,
-          credentialType: 'replication-credential',
-          credential: `${userName}:${password}`
-        })
-      )
-    } else if (typeLower.includes('proxysql')) {
-      dispatch(
-        setCredentials({
-          clusterName,
-          credentialType: 'proxysql-servers-credential',
-          credential: `${userName}:${password}`
-        })
-      )
-    } else if (typeLower.includes('maxscale')) {
-      dispatch(
-        setCredentials({
-          clusterName,
-          credentialType: 'maxscale-servers-credential',
-          credential: `${userName}:${password}`
-        })
-      )
-    } else if (typeLower.includes('sharding')) {
-      dispatch(
-        setCredentials({
-          clusterName,
-          credentialType: 'shardproxy-servers-credential',
-          credential: `${userName}:${password}`
-        })
-      )
+    switch (typeLower) {
+      case 'db-servers-credential':
+        dispatch(
+          setCredentials({ 
+            clusterName, 
+            credentialType: 'db-servers-credential', 
+            credential: `${userName}:${password}` 
+          })
+        )
+        break
+      case 'replication-credential':
+        dispatch(
+          setCredentials({
+            clusterName,
+            credentialType: 'replication-credential',
+            credential: `${userName}:${password}`
+          })
+        )
+        break
+      case 'cloud18-dba-user-credentials':
+        dispatch(
+          setCredentials({
+            clusterName,
+            credentialType: 'cloud18-dba-user-credentials',
+            credential: `${userName}:${password}`
+          })
+        )
+        break
+      case 'cloud18-sponsor-user-credentials':
+        dispatch(
+          setCredentials({
+            clusterName,
+            credentialType: 'cloud18-sponsor-user-credentials',
+            credential: `${userName}:${password}`
+          })
+        )
+        break
+      case 'proxysql-servers-credential':
+        dispatch(
+          setCredentials({
+            clusterName,
+            credentialType: 'proxysql-servers-credential',
+            credential: `${userName}:${password}`
+          })
+        )
+        break
+      case 'maxscale-servers-credential':
+        dispatch(
+          setCredentials({
+            clusterName,
+            credentialType: 'maxscale-servers-credential',
+            credential: `${userName}:${password}`
+          })
+        )
+      case 'shardproxy-servers-credential':
+        dispatch(
+          setCredentials({
+            clusterName,
+            credentialType: 'shardproxy-servers-credential',
+            credential: `${userName}:${password}`
+          })
+        )
+        break
+      default:
+        setUserNameError('Invalid credential type')
+        return
     }
+
     closeModal()
+  }
+
+  const getTitle = (type) => {
+    switch (type) {
+      case 'db-servers-credential':
+        return 'Set Database Credentials';
+      case 'replication-credential':
+        return 'Set Replication Credentials';
+      case 'cloud18-dba-user-credentials':
+        return 'Set DBA Credentials'
+      case 'cloud18-sponsor-user-credentials':
+        return 'Set Sponsor DB Credentials'
+      case 'proxysql-servers-credential':
+        return 'Set ProxySQL Credentials'
+      case 'maxscale-servers-credential':
+        return 'Set Maxscale Credentials'
+      case 'shardproxy-servers-credential':
+        return 'Set Sharding Proxy Credentials'
+      default:
+        return ''
+    }
   }
 
   return (
     <Modal isOpen={isOpen} onClose={closeModal}>
       <ModalOverlay />
       <ModalContent className={theme === 'light' ? parentStyles.modalLightContent : parentStyles.modalDarkContent}>
-        <ModalHeader>{type}</ModalHeader>
+        <ModalHeader>{getTitle(type)}</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
           <Stack spacing='5'>

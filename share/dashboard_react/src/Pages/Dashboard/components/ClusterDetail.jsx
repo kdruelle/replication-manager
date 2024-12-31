@@ -154,35 +154,49 @@ function ClusterDetail({ selectedCluster }) {
           name: 'Set Database Credentials',
           onClick: () => {
             setIsCredentialModalOpen(true)
-            setCredentialType('Database Server Credential')
+            setCredentialType('db-servers-credential')
           }
         },
         {
           name: 'Set Replication Credentials',
           onClick: () => {
             setIsCredentialModalOpen(true)
-            setCredentialType('Replication Credential')
+            setCredentialType('replication-credential')
+          }
+        },
+        {
+          name: 'Set DBA Credentials',
+          onClick: () => {
+            setIsCredentialModalOpen(true)
+            setCredentialType('cloud18-dba-user-credentials')
+          }
+        },
+        {
+          name: 'Set Sponsor DB Credentials',
+          onClick: () => {
+            setIsCredentialModalOpen(true)
+            setCredentialType('cloud18-sponsor-user-credentials')
           }
         },
         {
           name: 'Set ProxySQL Credentials',
           onClick: () => {
             setIsCredentialModalOpen(true)
-            setCredentialType('ProxySQL Credential')
+            setCredentialType('proxysql-servers-credential')
           }
         },
         {
           name: 'Set Maxscale Credentials',
           onClick: () => {
             setIsCredentialModalOpen(true)
-            setCredentialType('Maxscale Credential')
+            setCredentialType('maxscale-servers-credential')
           }
         },
         {
           name: 'Set Sharding Proxy Credentials',
           onClick: () => {
             setIsCredentialModalOpen(true)
-            setCredentialType('Sharding Proxy Credential')
+            setCredentialType('shardproxy-servers-credential')
           }
         },
         {

@@ -8,6 +8,9 @@ import Dropdown from '../../components/Dropdown'
 import { convertObjectToArrayForDropdown, formatBytes } from '../../utility/common'
 import { setSetting, switchSetting } from '../../redux/settingsSlice'
 import TextForm from '../../components/TextForm'
+import SetCredentialsModal from '../../components/Modals/SetCredentialsModal'
+import RMIconButton from '../../components/RMIconButton'
+import { HiKey } from 'react-icons/hi'
 
 function CloudSettings({ selectedCluster, user }) {
   const dispatch = useDispatch()
@@ -17,6 +20,9 @@ function CloudSettings({ selectedCluster, user }) {
   } = useSelector((state) => state)
 
   const [planOptions, setPlanOptions] = useState([])
+  const [credentialType, setCredentialType] = useState('')
+  const [isCredentialModalOpen, setIsCredentialModalOpen] = useState(false)
+
   const getPlanOptions = (plist = []) => [{ name: "No Plan", value: '' }, ...plist?.map((obj) => ({ name: obj.plan, value: obj.plan }))]
 
   const onPlanChange = (option) => {
@@ -128,6 +134,18 @@ function CloudSettings({ selectedCluster, user }) {
               }
             />
           )
+        },
+        {
+          key: 'Cloud18 DBA User Credentials',
+          value: (
+            <RMIconButton icon={HiKey} onClick={() => { setCredentialType('cloud18-dba-user-credentials'); setIsCredentialModalOpen(true) }} />
+          )
+        },
+        {
+          key: 'Cloud18 Sponsor User Credentials',
+          value: (
+            <RMIconButton icon={HiKey} onClick={() => { setCredentialType('cloud18-sponsor-user-credentials'); setIsCredentialModalOpen(true) }} />
+          )
         }
       ]
       : [])
@@ -136,6 +154,17 @@ function CloudSettings({ selectedCluster, user }) {
   return (
     <Flex justify='space-between' gap='0'>
       <TableType2 dataArray={dataObject} className={styles.table} />
+      {isCredentialModalOpen && (
+        <SetCredentialsModal
+          clusterName={selectedCluster?.name}
+          isOpen={isCredentialModalOpen}
+          type={credentialType}
+          closeModal={() => {
+            setIsCredentialModalOpen(false)
+            setCredentialType('')
+          }}
+        />
+      )}
     </Flex>
   )
 }
