@@ -47,7 +47,7 @@ func (server *ServerMonitor) RejoinMaster() error {
 	defer func() {
 		cluster.rejoinCond.Send <- true
 	}()
-	if cluster.GetTopology() == topoMultiMasterWsrep {
+	if cluster.GetTopology() == config.TopoMultiMasterWsrep {
 		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGeneral, "INFO", "Rejoining leader %s ignored caused by wsrep protocol", server.URL)
 		return nil
 	}
@@ -527,11 +527,11 @@ func (server *ServerMonitor) rejoinSlave(ss dbhelper.SlaveStatus) error {
 		cluster.rejoinCond.Send <- true
 	}()
 
-	if cluster.GetTopology() == topoMultiMasterRing || cluster.GetTopology() == topoMultiMasterWsrep {
-		if cluster.GetTopology() == topoMultiMasterRing {
+	if cluster.GetTopology() == config.TopoMultiMasterRing || cluster.GetTopology() == config.TopoMultiMasterWsrep {
+		if cluster.GetTopology() == config.TopoMultiMasterRing {
 			server.RejoinLoop()
 		}
-		if cluster.GetTopology() == topoMultiMasterWsrep {
+		if cluster.GetTopology() == config.TopoMultiMasterWsrep {
 			cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGeneral, "INFO", "Rejoining replica %s ignored caused by wsrep protocol", server.URL)
 		}
 		return nil
@@ -777,7 +777,7 @@ func (cluster *Cluster) RejoinClone(source *ServerMonitor, dest *ServerMonitor) 
 }
 
 func (cluster *Cluster) RejoinFixRelay(slave *ServerMonitor, relay *ServerMonitor) error {
-	if cluster.GetTopology() == topoMultiMasterRing || cluster.GetTopology() == topoMultiMasterWsrep {
+	if cluster.GetTopology() == config.TopoMultiMasterRing || cluster.GetTopology() == config.TopoMultiMasterWsrep {
 		return nil
 	}
 	cluster.SetState("ERR00045", state.State{ErrType: "WARNING", ErrDesc: fmt.Sprintf(clusterError["ERR00045"]), ErrFrom: "TOPO"})

@@ -1201,7 +1201,7 @@ func (cluster *Cluster) SetReplicationCredential(credential string) {
 
 func (cluster *Cluster) SetUnDiscovered() {
 	cluster.StateMachine.UnDiscovered()
-	cluster.Topology = topoUnknown
+	cluster.Topology = config.TopoUnknown
 }
 
 func (cluster *Cluster) SetActiveStatus(status string) {

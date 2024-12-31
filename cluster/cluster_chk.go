@@ -282,7 +282,7 @@ func (cluster *Cluster) isMaxscaleSupectRunning() bool {
 
 func (cluster *Cluster) isFoundCandidateMaster() bool {
 
-	if cluster.GetTopology() == topoActivePassive {
+	if cluster.GetTopology() == config.TopoActivePassive {
 		return true
 	}
 	key := -1
@@ -704,7 +704,7 @@ func (cluster *Cluster) CheckSameServerID() {
 }
 
 func (cluster *Cluster) IsSameWsrepUUID() bool {
-	if cluster.GetTopology() != topoMultiMasterWsrep {
+	if cluster.GetTopology() != config.TopoMultiMasterWsrep {
 		return true
 	}
 	for _, s := range cluster.Servers {

@@ -467,7 +467,7 @@ func (server *ServerMonitor) Ping(wg *sync.WaitGroup) {
 			if cluster.master == nil {
 				cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlDbg, "Master not defined")
 			}
-			if cluster.GetMaster() != nil && server.URL == cluster.GetMaster().URL && server.GetCluster().GetTopology() != topoUnknown {
+			if cluster.GetMaster() != nil && server.URL == cluster.GetMaster().URL && server.GetCluster().GetTopology() != config.TopoUnknown {
 				server.FailSuspectHeartbeat = cluster.StateMachine.GetHeartbeats()
 				if cluster.GetMaster() != nil && cluster.GetMaster().FailCount <= cluster.Conf.MaxFail {
 					cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGeneral, "INFO", "Master Failure detected! Retry %d/%d", cluster.GetMaster().FailCount, cluster.Conf.MaxFail)
@@ -486,7 +486,7 @@ func (server *ServerMonitor) Ping(wg *sync.WaitGroup) {
 			} else {
 				// not the master or a virtual master
 				cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlDbg, "Failure detection of no master FailCount %d MaxFail %d", server.FailCount, cluster.Conf.MaxFail)
-				if server.FailCount >= cluster.Conf.MaxFail && server.GetCluster().GetTopology() != topoUnknown {
+				if server.FailCount >= cluster.Conf.MaxFail && server.GetCluster().GetTopology() != config.TopoUnknown {
 					if server.FailCount == cluster.Conf.MaxFail {
 						cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGeneral, "INFO", "Declaring replica %s as failed", server.URL)
 						server.SetState(stateFailed)
@@ -527,7 +527,7 @@ func (server *ServerMonitor) Ping(wg *sync.WaitGroup) {
 	// From here we have a new connection
 
 	//Without topology we should never declare a server failed
-	if (server.State == stateErrorAuth || server.State == stateFailed) && server.GetCluster().GetTopology() == topoUnknown && server.PrevState != stateSuspect {
+	if (server.State == stateErrorAuth || server.State == stateFailed) && server.GetCluster().GetTopology() == config.TopoUnknown && server.PrevState != stateSuspect {
 		server.SetState(stateSuspect)
 	}
 
@@ -598,9 +598,9 @@ func (server *ServerMonitor) Ping(wg *sync.WaitGroup) {
 				}
 			}
 
-			if cluster.Topology == topoActivePassive {
+			if cluster.Topology == config.TopoActivePassive {
 				server.SetState(stateMaster)
-			} else if cluster.GetTopology() != topoMultiMasterWsrep || cluster.GetTopology() != topoMultiMasterGrouprep {
+			} else if cluster.GetTopology() != config.TopoMultiMasterWsrep || cluster.GetTopology() != config.TopoMultiMasterGrouprep {
 				if server.IsGroupReplicationSlave {
 					server.SetState(stateSlave)
 				} else {
@@ -618,7 +618,7 @@ func (server *ServerMonitor) Ping(wg *sync.WaitGroup) {
 
 		} else if server.State != stateMaster && server.PrevState != stateUnconn && server.State == stateUnconn {
 			// Master will never get discovery in topology if it does not get unconnected first it default to suspect
-			//	if cluster.GetTopology() != topoMultiMasterWsrep {
+			//	if cluster.GetTopology() != config.TopoMultiMasterWsrep {
 			if server.IsGroupReplicationSlave {
 				server.SetState(stateSlave)
 			} else {
@@ -643,7 +643,7 @@ func (server *ServerMonitor) Ping(wg *sync.WaitGroup) {
 			} else {
 				server.SetState(stateUnconn)
 			}
-		} else if server.GetCluster().GetTopology() == topoActivePassive {
+		} else if server.GetCluster().GetTopology() == config.TopoActivePassive {
 			if server.PrevState == stateSuspect || (server.PrevState == stateMaintenance && !server.IsMaintenance) {
 				//if active-passive topo and no replication, put the state at standalone
 				server.SetState(stateMaster)
@@ -852,7 +852,7 @@ func (server *ServerMonitor) Refresh() error {
 			}
 			if cluster.StateMachine.GetHeartbeats()%30 == 0 {
 				server.SaveInfos()
-				if server.GetCluster().GetTopology() != topoActivePassive && server.GetCluster().GetTopology() != topoMultiMasterWsrep {
+				if server.GetCluster().GetTopology() != config.TopoActivePassive && server.GetCluster().GetTopology() != config.TopoMultiMasterWsrep {
 					server.CheckPrivileges()
 				}
 

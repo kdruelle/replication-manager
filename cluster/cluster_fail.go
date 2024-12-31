@@ -26,7 +26,7 @@ import (
 
 // MasterFailover triggers a leader change and returns the new master URL when single possible leader
 func (cluster *Cluster) MasterFailover(fail bool) bool {
-	if cluster.GetTopology() == topoMultiMasterRing || cluster.GetTopology() == topoMultiMasterWsrep || cluster.GetTopology() == topoMultiMasterGrouprep {
+	if cluster.GetTopology() == config.TopoMultiMasterRing || cluster.GetTopology() == config.TopoMultiMasterWsrep || cluster.GetTopology() == config.TopoMultiMasterGrouprep {
 		res := cluster.VMasterFailover(fail)
 		return res
 	}
@@ -861,7 +861,7 @@ func (cluster *Cluster) electFailoverCandidate(l []*ServerMonitor, forcingLog bo
 			cluster.SetState("ERR00013", state.State{ErrType: config.LvlWarn, ErrDesc: fmt.Sprintf(clusterError["ERR00013"], sl.URL), ErrFrom: "CHECK", ServerUrl: sl.URL})
 			continue
 		}
-		if cluster.GetTopology() == topoMultiMasterWsrep && cluster.vmaster != nil {
+		if cluster.GetTopology() == config.TopoMultiMasterWsrep && cluster.vmaster != nil {
 			if cluster.vmaster.URL == sl.URL {
 				continue
 			} else if sl.State == stateWsrep {
@@ -1252,7 +1252,7 @@ func (cluster *Cluster) VMasterFailover(fail bool) bool {
 		s.Refresh()
 	}
 	key := -1
-	if cluster.GetTopology() != topoMultiMasterWsrep && cluster.GetTopology() != topoMultiMasterGrouprep {
+	if cluster.GetTopology() != config.TopoMultiMasterWsrep && cluster.GetTopology() != config.TopoMultiMasterGrouprep {
 		key = cluster.electVirtualCandidate(cluster.oldMaster, true)
 	} else {
 		if cluster.Conf.MultiMasterGrouprep {
@@ -1282,7 +1282,7 @@ func (cluster *Cluster) VMasterFailover(fail bool) bool {
 	cluster.failoverPreScript(fail)
 
 	// Phase 2: Reject updates and sync slaves on switchover
-	if fail == false && cluster.GetTopology() != topoMultiMasterWsrep {
+	if fail == false && cluster.GetTopology() != config.TopoMultiMasterWsrep {
 		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlInfo, "Rejecting updates on %s (old master)", cluster.oldMaster.URL)
 		cluster.oldMaster.freeze()
 	}
@@ -1297,7 +1297,7 @@ func (cluster *Cluster) VMasterFailover(fail bool) bool {
 
 	}
 	// Failover for ring
-	if cluster.GetTopology() != topoMultiMasterWsrep && cluster.GetTopology() != topoMultiMasterGrouprep {
+	if cluster.GetTopology() != config.TopoMultiMasterWsrep && cluster.GetTopology() != config.TopoMultiMasterGrouprep {
 		// Sync candidate depending on the master status.
 		// If it's a switchover, use MASTER_POS_WAIT to sync.
 		// If it's a failover, wait for the SQL thread to read all relay logs.
@@ -1395,7 +1395,7 @@ func (cluster *Cluster) VMasterFailover(fail bool) bool {
 			}
 		}
 		// Galara does not freeze old master because of bug https://jira.mariadb.org/browse/MDEV-9134
-		if cluster.Conf.SwitchDecreaseMaxConn && cluster.GetTopology() != topoMultiMasterWsrep {
+		if cluster.Conf.SwitchDecreaseMaxConn && cluster.GetTopology() != config.TopoMultiMasterWsrep {
 			logs, err := dbhelper.SetMaxConnections(cluster.oldMaster.Conn, cluster.oldMaster.maxConn, cluster.oldMaster.DBVersion)
 			cluster.LogSQL(logs, err, cluster.oldMaster.URL, "MasterFailover", config.LvlErr, "Could not set max connections on %s %s", cluster.oldMaster.URL, err)
 		}
@@ -1405,7 +1405,7 @@ func (cluster *Cluster) VMasterFailover(fail bool) bool {
 			cluster.slaves = append(cluster.slaves, cluster.oldMaster)
 		}
 	}
-	if cluster.GetTopology() == topoMultiMasterRing {
+	if cluster.GetTopology() == config.TopoMultiMasterRing {
 		// ********
 		// Phase 5: Closing loop
 		// ********

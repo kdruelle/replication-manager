@@ -25,20 +25,6 @@ type topologyError struct {
 	Msg  string
 }
 
-const (
-	topoMasterSlave         string = "master-slave"
-	topoUnknown             string = "unknown"
-	topoBinlogServer        string = "binlog-server"
-	topoMultiTierSlave      string = "multi-tier-slave"
-	topoMultiMaster         string = "multi-master"
-	topoMultiMasterRing     string = "multi-master-ring"
-	topoMultiMasterWsrep    string = "multi-master-wsrep"
-	topoMultiMasterGrouprep string = "multi-master-grprep"
-	topoMasterSlavePgLog    string = "master-slave-pg-logical"
-	topoMasterSlavePgStream string = "master-slave-pg-stream"
-	topoActivePassive       string = "active-passive"
-)
-
 func (cluster *Cluster) newServerList() error {
 	//sva issue to monitor server should not be fatal
 
@@ -179,7 +165,7 @@ func (cluster *Cluster) TopologyDiscover(wcg *sync.WaitGroup) error {
 
 	// if only one server
 	if len(cluster.Servers) == 1 {
-		cluster.Topology = topoActivePassive
+		cluster.Topology = config.TopoActivePassive
 		cluster.Conf.ActivePassive = true
 		for _, sv := range cluster.Servers {
 			cluster.master = sv
@@ -241,7 +227,7 @@ func (cluster *Cluster) TopologyDiscover(wcg *sync.WaitGroup) error {
 				// }
 			} else {
 				master := cluster.GetMaster()
-				if cluster.IsActive() && master != nil && cluster.GetTopology() == topoMasterSlave && cluster.Servers[k].URL != master.URL {
+				if cluster.IsActive() && master != nil && cluster.GetTopology() == config.TopoMasterSlave && cluster.Servers[k].URL != master.URL {
 					//Extra master in master slave topology rejoin it after split brain
 					cluster.SetState("ERR00063", state.State{ErrType: "ERROR", ErrDesc: fmt.Sprintf(clusterError["ERR00063"]), ErrFrom: "TOPO"})
 					//	cluster.Servers[k].RejoinMaster() /* remove for rolling restart , wrongly rejoin server as master before just after swithover while the server is just stopping */
@@ -272,12 +258,12 @@ func (cluster *Cluster) TopologyDiscover(wcg *sync.WaitGroup) error {
 	} //end loop all servers
 
 	// If no cluster.slaves are detected, generate an error
-	if len(cluster.slaves) == 0 && cluster.GetTopology() != topoMultiMasterWsrep && cluster.GetTopology() != topoMultiMasterGrouprep && cluster.GetTopology() != topoActivePassive {
+	if len(cluster.slaves) == 0 && cluster.GetTopology() != config.TopoMultiMasterWsrep && cluster.GetTopology() != config.TopoMultiMasterGrouprep && cluster.GetTopology() != config.TopoActivePassive {
 		cluster.SetState("ERR00010", state.State{ErrType: "ERROR", ErrDesc: fmt.Sprintf(clusterError["ERR00010"]), ErrFrom: "TOPO"})
 	} else {
 		for k, sv := range cluster.Servers {
 			//Already checked topology once
-			if !cluster.runOnceAfterTopology && cluster.GetMaster() == nil && len(cluster.slaves) > 0 && cluster.Conf.TopologyTarget == topoMasterSlave {
+			if !cluster.runOnceAfterTopology && cluster.GetMaster() == nil && len(cluster.slaves) > 0 && cluster.Conf.TopologyTarget == config.TopoMasterSlave {
 				numSlaves := 0
 				for _, sl := range cluster.slaves {
 					if sl.GetReplicationMasterHost() == sv.Host && sl.GetReplicationMasterPort() == sv.Port {
@@ -313,7 +299,7 @@ func (cluster *Cluster) TopologyDiscover(wcg *sync.WaitGroup) error {
 						cluster.SetState("ERR00011", state.State{ErrType: "WARNING", ErrDesc: fmt.Sprintf(clusterError["ERR00011"]), ErrFrom: "TOPO", ServerUrl: sl.URL})
 						// if cluster.Conf.DynamicTopology {
 						cluster.Conf.MultiMaster = true
-						cluster.Topology = topoMultiMaster
+						cluster.Topology = config.TopoMultiMaster
 						// }
 					}
 					if cluster.Conf.MultiMasterRing == false && len(cluster.Servers) > 2 {
@@ -353,11 +339,11 @@ func (cluster *Cluster) TopologyDiscover(wcg *sync.WaitGroup) error {
 	}
 
 	// If no relay and master-slave is preferred
-	if !hasRelay && !hasCycling && cluster.Conf.TopologyTarget == topoMasterSlave {
-		cluster.BootstrapTopology(topoMasterSlave)
+	if !hasRelay && !hasCycling && cluster.Conf.TopologyTarget == config.TopoMasterSlave {
+		cluster.BootstrapTopology(config.TopoMasterSlave)
 	}
 
-	if cluster.Conf.MultiMaster == true || cluster.GetTopology() == topoMultiMasterWsrep || cluster.GetTopology() == topoMultiMasterGrouprep {
+	if cluster.Conf.MultiMaster == true || cluster.GetTopology() == config.TopoMultiMasterWsrep || cluster.GetTopology() == config.TopoMultiMasterGrouprep {
 		srw := 0
 		for _, s := range cluster.Servers {
 			if s.IsReadWrite() {
@@ -378,7 +364,7 @@ func (cluster *Cluster) TopologyDiscover(wcg *sync.WaitGroup) error {
 				sro++
 			}
 		}
-		if sro > 1 && cluster.GetTopology() != topoMultiMasterGrouprep && cluster.GetTopology() != topoMultiMasterWsrep {
+		if sro > 1 && cluster.GetTopology() != config.TopoMultiMasterGrouprep && cluster.GetTopology() != config.TopoMultiMasterWsrep {
 			cluster.SetState("WARN0004", state.State{ErrType: "WARNING", ErrDesc: "RO server count > 1 in 2 node multi-master mode.  switching to preferred master.", ErrFrom: "TOPO"})
 			server := cluster.getOnePreferedMaster()
 			if server != nil {
@@ -387,7 +373,7 @@ func (cluster *Cluster) TopologyDiscover(wcg *sync.WaitGroup) error {
 				cluster.SetState("WARN0006", state.State{ErrType: "WARNING", ErrDesc: "Multi-master need a preferred master.", ErrFrom: "TOPO"})
 			}
 		}
-		if sro == len(cluster.Servers) && cluster.GetTopology() == topoMultiMasterWsrep {
+		if sro == len(cluster.Servers) && cluster.GetTopology() == config.TopoMultiMasterWsrep {
 			if cluster.GetMaster() == nil {
 				cluster.SetState("WARN0006", state.State{ErrType: "WARNING", ErrDesc: "Wsrep cluster need a leader electing one", ErrFrom: "TOPO"})
 				server := cluster.getOnePreferedMaster()
@@ -418,7 +404,7 @@ func (cluster *Cluster) TopologyDiscover(wcg *sync.WaitGroup) error {
 						break
 					}
 				}
-				if (cluster.Conf.MultiMaster == true || cluster.GetTopology() == topoMultiMasterWsrep || cluster.GetTopology() == topoMultiMasterGrouprep) && !cluster.Servers[k].IsDown() {
+				if (cluster.Conf.MultiMaster == true || cluster.GetTopology() == config.TopoMultiMasterWsrep || cluster.GetTopology() == config.TopoMultiMasterGrouprep) && !cluster.Servers[k].IsDown() {
 					if s.IsReadWrite() {
 						cluster.master = cluster.Servers[k]
 						if cluster.Conf.MultiMaster == true {
@@ -498,12 +484,12 @@ func (cluster *Cluster) TopologyDiscover(wcg *sync.WaitGroup) error {
 
 	// Remove master or vmaster read only if not in maintenance
 	mst := cluster.GetMaster()
-	if cluster.IsDiscovered() && mst != nil && mst.IsReadOnly() && !mst.IsMaintenance && cluster.Topology != topoMasterSlave {
+	if cluster.IsDiscovered() && mst != nil && mst.IsReadOnly() && !mst.IsMaintenance && cluster.Topology != config.TopoMasterSlave {
 		mst.SetReadWrite()
 	}
 
 	// Remove Virtual Master from Master-Slave Topology
-	if cluster.Topology == topoMasterSlave && cluster.master != nil && cluster.vmaster != nil {
+	if cluster.Topology == config.TopoMasterSlave && cluster.master != nil && cluster.vmaster != nil {
 		cluster.vmaster.IsVirtualMaster = false
 		cluster.vmaster = nil
 	}

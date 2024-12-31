@@ -84,7 +84,7 @@ func (cluster *Cluster) HasSchedulerEntry(myname string) bool {
 }
 
 func (cluster *Cluster) HasNoValidSlave() bool {
-	if cluster.Topology == topoActivePassive {
+	if cluster.Topology == config.TopoActivePassive {
 		return true
 	}
 	//All slave stopped
@@ -205,7 +205,7 @@ func (cluster *Cluster) HasAllDbUp() bool {
 			if s.State == stateFailed /*|| s.State == stateErrorAuth /*&& misc.Contains(cluster.ignoreList, s.URL) == false*/ {
 				return false
 			}
-			if s.State == stateSuspect && cluster.GetTopology() != topoUnknown {
+			if s.State == stateSuspect && cluster.GetTopology() != config.TopoUnknown {
 				//supect is used to reload config and avoid backend state change to failed that would disable servers in proxies and cause glinch in cluster traffic
 				// at the same time to enbale bootstrap replication we need to know when server are up
 				return false
@@ -261,7 +261,7 @@ func (cluster *Cluster) HasNoDbUnconnected() bool {
 			if s.State == stateFailed || s.State == stateUnconn /*&& misc.Contains(cluster.ignoreList, s.URL) == false*/ {
 				return false
 			}
-			if s.State == stateSuspect && cluster.GetTopology() != topoUnknown {
+			if s.State == stateSuspect && cluster.GetTopology() != config.TopoUnknown {
 				//supect is used to reload config and avoid backend state change to failed that would disable servers in proxies and cause glinch in cluster traffic
 				// at the same time to enbale bootstrap replication we need to know when server are up
 				return false
@@ -414,7 +414,7 @@ func (cluster *Cluster) IsDiscovered() bool {
 }
 
 func (cluster *Cluster) IsMultiMaster() bool {
-	if cluster.GetTopology() == topoMultiMasterWsrep || cluster.GetTopology() == topoMultiMaster || cluster.GetTopology() == topoMultiMasterRing {
+	if cluster.GetTopology() == config.TopoMultiMasterWsrep || cluster.GetTopology() == config.TopoMultiMaster || cluster.GetTopology() == config.TopoMultiMasterRing {
 		return true
 	}
 	return false

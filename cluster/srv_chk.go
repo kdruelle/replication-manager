@@ -86,7 +86,7 @@ func (server *ServerMonitor) CheckReplication() string {
 	}
 
 	//Prevent maintenance label for topology active passive
-	if cluster.Topology == topoActivePassive {
+	if cluster.Topology == config.TopoActivePassive {
 		return "Master OK"
 	}
 
@@ -177,10 +177,10 @@ func (server *ServerMonitor) CheckReplication() string {
 func (server *ServerMonitor) CheckSlaveSettings() {
 	sl := server
 	cluster := server.ClusterGroup
-	if cluster.Conf.ForceSlaveSemisync && sl.HaveSemiSync == false && cluster.GetTopology() != topoMultiMasterWsrep {
+	if cluster.Conf.ForceSlaveSemisync && sl.HaveSemiSync == false && cluster.GetTopology() != config.TopoMultiMasterWsrep {
 		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGeneral, "DEBUG", "Enforce semisync on slave %s", sl.URL)
 		dbhelper.InstallSemiSync(sl.Conn, server.DBVersion)
-	} else if sl.IsIgnored() == false && sl.HaveSemiSync == false && cluster.GetTopology() != topoMultiMasterWsrep {
+	} else if sl.IsIgnored() == false && sl.HaveSemiSync == false && cluster.GetTopology() != config.TopoMultiMasterWsrep {
 		cluster.SetState("WARN0048", state.State{ErrType: config.LvlWarn, ErrDesc: fmt.Sprintf(clusterError["WARN0048"], sl.URL), ErrFrom: "TOPO", ServerUrl: sl.URL})
 	}
 
@@ -188,7 +188,7 @@ func (server *ServerMonitor) CheckSlaveSettings() {
 		// In non-multimaster mode, enforce read-only flag if the option is set
 		dbhelper.SetBinlogFormat(sl.Conn, "ROW")
 		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGeneral, "INFO", "Enforce binlog format ROW on slave %s", sl.URL)
-	} else if sl.IsIgnored() == false && sl.HaveBinlogRow == false && (cluster.Conf.AutorejoinFlashback == true || cluster.GetTopology() == topoMultiMasterWsrep) {
+	} else if sl.IsIgnored() == false && sl.HaveBinlogRow == false && (cluster.Conf.AutorejoinFlashback == true || cluster.GetTopology() == config.TopoMultiMasterWsrep) {
 		//galera or binlog flashback need row based binlog
 		cluster.SetState("WARN0049", state.State{ErrType: config.LvlWarn, ErrDesc: fmt.Sprintf(clusterError["WARN0049"], sl.URL), ErrFrom: "TOPO", ServerUrl: sl.URL})
 	}
@@ -206,45 +206,45 @@ func (server *ServerMonitor) CheckSlaveSettings() {
 	if cluster.Conf.ForceSlaveGtid && sl.GetReplicationUsingGtid() == "No" {
 		dbhelper.SetSlaveGTIDMode(sl.Conn, "slave_pos", cluster.Conf.MasterConn, server.DBVersion)
 		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGeneral, "INFO", "Enforce GTID replication on slave %s", sl.URL)
-	} else if sl.IsIgnored() == false && sl.GetReplicationUsingGtid() == "No" && cluster.GetTopology() != topoMultiMasterWsrep && server.IsMariaDB() {
+	} else if sl.IsIgnored() == false && sl.GetReplicationUsingGtid() == "No" && cluster.GetTopology() != config.TopoMultiMasterWsrep && server.IsMariaDB() {
 		cluster.SetState("WARN0051", state.State{ErrType: config.LvlWarn, ErrDesc: fmt.Sprintf(clusterError["WARN0051"], sl.URL), ErrFrom: "TOPO", ServerUrl: sl.URL})
 	}
-	if cluster.Conf.ForceSlaveGtidStrict && !sl.IsReplicationUsingGtidStrict() && cluster.GetTopology() != topoMultiMasterWsrep && server.IsMariaDB() {
+	if cluster.Conf.ForceSlaveGtidStrict && !sl.IsReplicationUsingGtidStrict() && cluster.GetTopology() != config.TopoMultiMasterWsrep && server.IsMariaDB() {
 		dbhelper.SetSlaveGTIDModeStrict(sl.Conn, server.DBVersion)
 		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGeneral, "INFO", "Enforce GTID strict mode on slave %s", sl.URL)
-	} else if !sl.IsIgnored() && !sl.IsReplicationUsingGtidStrict() && cluster.GetTopology() != topoMultiMasterWsrep && server.IsMariaDB() {
+	} else if !sl.IsIgnored() && !sl.IsReplicationUsingGtidStrict() && cluster.GetTopology() != config.TopoMultiMasterWsrep && server.IsMariaDB() {
 		cluster.SetState("WARN0058", state.State{ErrType: config.LvlWarn, ErrDesc: fmt.Sprintf(clusterError["WARN0058"], sl.URL), ErrFrom: "TOPO", ServerUrl: sl.URL})
 	}
 
-	if cluster.Conf.ForceSlaveIdempotent && !sl.HaveSlaveIdempotent && cluster.GetTopology() != topoMultiMasterWsrep && server.IsMariaDB() {
+	if cluster.Conf.ForceSlaveIdempotent && !sl.HaveSlaveIdempotent && cluster.GetTopology() != config.TopoMultiMasterWsrep && server.IsMariaDB() {
 		dbhelper.SetSlaveExecMode(sl.Conn, "IDEMPOTENT", cluster.Conf.MasterConn, server.DBVersion)
 		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGeneral, "INFO", "Enforce replication mode idempotent on slave %s", sl.URL)
-	} /* else if !sl.IsIgnored() && cluster.Conf.ForceSlaveIdempotent && sl.HaveSlaveIdempotent && cluster.GetTopology() != topoMultiMasterWsrep && server.IsMariaDB() {
+	} /* else if !sl.IsIgnored() && cluster.Conf.ForceSlaveIdempotent && sl.HaveSlaveIdempotent && cluster.GetTopology() != config.TopoMultiMasterWsrep && server.IsMariaDB() {
 		cluster.SetState("WARN0103", state.State{ErrType: config.LvlWarn, ErrDesc: fmt.Sprintf(clusterError["WARN0103"], sl.URL), ErrFrom: "TOPO", ServerUrl: sl.URL})
 	}*/
-	if cluster.Conf.ForceSlaveStrict && sl.HaveSlaveIdempotent && cluster.GetTopology() != topoMultiMasterWsrep && server.IsMariaDB() {
+	if cluster.Conf.ForceSlaveStrict && sl.HaveSlaveIdempotent && cluster.GetTopology() != config.TopoMultiMasterWsrep && server.IsMariaDB() {
 		dbhelper.SetSlaveExecMode(sl.Conn, "STRICT", cluster.Conf.MasterConn, server.DBVersion)
 		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGeneral, "INFO", "Enforce replication mode strict on slave %s", sl.URL)
-	} /*else if !sl.IsIgnored() && cluster.Conf.ForceSlaveStrict &&  && cluster.GetTopology() != topoMultiMasterWsrep && server.IsMariaDB() {
+	} /*else if !sl.IsIgnored() && cluster.Conf.ForceSlaveStrict &&  && cluster.GetTopology() != config.TopoMultiMasterWsrep && server.IsMariaDB() {
 		cluster.SetState("WARN0104", state.State{ErrType: config.LvlWarn, ErrDesc: fmt.Sprintf(clusterError["WARN0103"], sl.URL), ErrFrom: "TOPO", ServerUrl: sl.URL})
 	} */
-	if strings.ToUpper(cluster.Conf.ForceSlaveParallelMode) == "OPTIMISTIC" && !sl.HaveSlaveOptimistic && cluster.GetTopology() != topoMultiMasterWsrep && server.IsMariaDB() {
+	if strings.ToUpper(cluster.Conf.ForceSlaveParallelMode) == "OPTIMISTIC" && !sl.HaveSlaveOptimistic && cluster.GetTopology() != config.TopoMultiMasterWsrep && server.IsMariaDB() {
 		dbhelper.SetSlaveParallelMode(sl.Conn, "OPTIMISTIC", cluster.Conf.MasterConn, server.DBVersion)
 		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGeneral, "INFO", "Enforce replication parallel mode optimistic on slave %s", sl.URL)
 	}
-	if strings.ToUpper(cluster.Conf.ForceSlaveParallelMode) == "SERIALIZED" && !sl.HaveSlaveSerialized && cluster.GetTopology() != topoMultiMasterWsrep && server.IsMariaDB() {
+	if strings.ToUpper(cluster.Conf.ForceSlaveParallelMode) == "SERIALIZED" && !sl.HaveSlaveSerialized && cluster.GetTopology() != config.TopoMultiMasterWsrep && server.IsMariaDB() {
 		dbhelper.SetSlaveParallelMode(sl.Conn, "NONE", cluster.Conf.MasterConn, server.DBVersion)
 		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGeneral, "INFO", "Enforce replication parallel mode serialized on slave %s", sl.URL)
 	}
-	if strings.ToUpper(cluster.Conf.ForceSlaveParallelMode) == "AGGRESSIVE" && !sl.HaveSlaveAggressive && cluster.GetTopology() != topoMultiMasterWsrep && server.IsMariaDB() {
+	if strings.ToUpper(cluster.Conf.ForceSlaveParallelMode) == "AGGRESSIVE" && !sl.HaveSlaveAggressive && cluster.GetTopology() != config.TopoMultiMasterWsrep && server.IsMariaDB() {
 		dbhelper.SetSlaveParallelMode(sl.Conn, "AGGRESSIVE", cluster.Conf.MasterConn, server.DBVersion)
 		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGeneral, "INFO", "Enforce replication parallel mode aggressive on slave %s", sl.URL)
 	}
-	if strings.ToUpper(cluster.Conf.ForceSlaveParallelMode) == "MINIMAL" && !sl.HaveSlaveMinimal && cluster.GetTopology() != topoMultiMasterWsrep && server.IsMariaDB() {
+	if strings.ToUpper(cluster.Conf.ForceSlaveParallelMode) == "MINIMAL" && !sl.HaveSlaveMinimal && cluster.GetTopology() != config.TopoMultiMasterWsrep && server.IsMariaDB() {
 		dbhelper.SetSlaveParallelMode(sl.Conn, "MINIMAL", cluster.Conf.MasterConn, server.DBVersion)
 		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGeneral, "INFO", "Enforce replication parallel mode minimal on slave %s", sl.URL)
 	}
-	if strings.ToUpper(cluster.Conf.ForceSlaveParallelMode) == "CONSERVATIVE" && !sl.HaveSlaveConservative && cluster.GetTopology() != topoMultiMasterWsrep && server.IsMariaDB() {
+	if strings.ToUpper(cluster.Conf.ForceSlaveParallelMode) == "CONSERVATIVE" && !sl.HaveSlaveConservative && cluster.GetTopology() != config.TopoMultiMasterWsrep && server.IsMariaDB() {
 		dbhelper.SetSlaveParallelMode(sl.Conn, "CONSERVATIVE", cluster.Conf.MasterConn, server.DBVersion)
 		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGeneral, "INFO", "Enforce replication parallel mode conservative on slave %s", sl.URL)
 	}
@@ -295,7 +295,7 @@ func (server *ServerMonitor) CheckMasterSettings() {
 	if cluster.Conf.ForceSlaveSemisync && server.HaveSemiSync == false {
 		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGeneral, "INFO", "Enforce semisync on Master %s", server.URL)
 		dbhelper.InstallSemiSync(server.Conn, server.DBVersion)
-	} else if server.HaveSemiSync == false && cluster.GetTopology() != topoMultiMasterWsrep && cluster.GetTopology() != topoMultiMasterGrouprep {
+	} else if server.HaveSemiSync == false && cluster.GetTopology() != config.TopoMultiMasterWsrep && cluster.GetTopology() != config.TopoMultiMasterGrouprep {
 		cluster.SetState("WARN0060", state.State{ErrType: "WARNING", ErrDesc: fmt.Sprintf(clusterError["WARN0060"], server.URL), ErrFrom: "TOPO", ServerUrl: server.URL})
 	}
 	if cluster.Conf.ForceBinlogRow && server.HaveBinlogRow == false {
@@ -337,7 +337,7 @@ func (server *ServerMonitor) CheckMasterSettings() {
 	if server.HaveBinlogSlaveUpdates == false {
 		cluster.SetState("WARN0069", state.State{ErrType: "WARNING", ErrDesc: fmt.Sprintf(clusterError["WARN0069"], server.URL), ErrFrom: "TOPO", ServerUrl: server.URL})
 	}
-	if server.HaveGtidStrictMode == false && server.DBVersion.Flavor == "MariaDB" && cluster.GetTopology() != topoMultiMasterWsrep && cluster.GetTopology() != topoMultiMasterGrouprep {
+	if server.HaveGtidStrictMode == false && server.DBVersion.Flavor == "MariaDB" && cluster.GetTopology() != config.TopoMultiMasterWsrep && cluster.GetTopology() != config.TopoMultiMasterGrouprep {
 		cluster.SetState("WARN0070", state.State{ErrType: "WARNING", ErrDesc: fmt.Sprintf(clusterError["WARN0070"], server.URL), ErrFrom: "TOPO", ServerUrl: server.URL})
 	}
 	if server.IsAcid() == false && cluster.IsDiscovered() {

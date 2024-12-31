@@ -512,10 +512,10 @@ func (cluster *Cluster) GetGComm() string {
 
 	}
 	//	For bootrap galera cluster on first node
-	if cluster.AllServersFailed() && cluster.GetTopology() == topoMultiMasterWsrep {
+	if cluster.AllServersFailed() && cluster.GetTopology() == config.TopoMultiMasterWsrep {
 		return ""
 	}
-	if cluster.GetTopology() == topoMultiMasterWsrep {
+	if cluster.GetTopology() == config.TopoMultiMasterWsrep {
 		return strings.Join(gcomms, ",") + "?pc.wait_prim=yes"
 	}
 	return strings.Join(gcomms, ",")
@@ -725,37 +725,37 @@ func (cluster *Cluster) GetProxyServerIdList() []string {
 
 func (cluster *Cluster) GetTopologyFromConf() string {
 
-	cluster.Conf.Topology = topoUnknown
+	cluster.Conf.Topology = config.TopoUnknown
 	if cluster.Conf.MultiMaster {
-		cluster.Conf.Topology = topoMultiMaster
+		cluster.Conf.Topology = config.TopoMultiMaster
 	} else if cluster.Conf.MultiMasterRing {
-		cluster.Conf.Topology = topoMultiMasterRing
+		cluster.Conf.Topology = config.TopoMultiMasterRing
 	} else if cluster.Conf.MultiMasterWsrep {
-		cluster.Conf.Topology = topoMultiMasterWsrep
+		cluster.Conf.Topology = config.TopoMultiMasterWsrep
 	} else if cluster.Conf.MultiMasterGrouprep {
-		cluster.Conf.Topology = topoMultiMasterGrouprep
+		cluster.Conf.Topology = config.TopoMultiMasterGrouprep
 	} else if cluster.Conf.MxsBinlogOn {
-		cluster.Conf.Topology = topoBinlogServer
+		cluster.Conf.Topology = config.TopoBinlogServer
 	} else if cluster.Conf.MultiTierSlave {
-		cluster.Conf.Topology = topoMultiTierSlave
+		cluster.Conf.Topology = config.TopoMultiTierSlave
 	} else if cluster.Conf.MasterSlavePgStream {
-		cluster.Conf.Topology = topoMasterSlavePgStream
+		cluster.Conf.Topology = config.TopoMasterSlavePgStream
 		cluster.IsPostgres = true
 	} else if cluster.Conf.MasterSlavePgLogical {
-		cluster.Conf.Topology = topoMasterSlavePgLog
+		cluster.Conf.Topology = config.TopoMasterSlavePgLog
 		cluster.IsPostgres = true
 	} else if cluster.Conf.ActivePassive {
-		cluster.Conf.Topology = topoActivePassive
+		cluster.Conf.Topology = config.TopoActivePassive
 	} else {
 		relay := cluster.GetRelayServer()
 		if relay != nil && cluster.Conf.ReplicationNoRelay == false {
-			cluster.Conf.Topology = topoMultiTierSlave
+			cluster.Conf.Topology = config.TopoMultiTierSlave
 		} else if cluster.master != nil {
-			cluster.Conf.Topology = topoMasterSlave
+			cluster.Conf.Topology = config.TopoMasterSlave
 		}
 	}
 
-	if cluster.Conf.TopologyTarget == "" || cluster.Conf.TopologyTarget == topoUnknown {
+	if cluster.Conf.TopologyTarget == "" || cluster.Conf.TopologyTarget == config.TopoUnknown {
 		cluster.Conf.TopologyTarget = cluster.Conf.Topology
 	}
 

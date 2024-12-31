@@ -507,7 +507,7 @@ func (server *ServerMonitor) IsConnected() bool {
 	if server.State == stateFailed /*&& misc.Contains(cluster.ignoreList, s.URL) == false*/ {
 		return false
 	}
-	if server.State == stateSuspect && server.GetCluster().GetTopology() != topoUnknown {
+	if server.State == stateSuspect && server.GetCluster().GetTopology() != config.TopoUnknown {
 		//supect is used to reload config and avoid backend state change to failed that would disable servers in proxies and cause glinch in cluster traffic
 		// at the same time to enbale bootstrap replication we need to know when server are up
 		return false

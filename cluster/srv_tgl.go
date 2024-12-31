@@ -18,12 +18,12 @@ import (
 
 func (server *ServerMonitor) SwitchMaintenance() error {
 	cluster := server.ClusterGroup
-	if cluster.GetTopology() == topoMultiMasterWsrep || cluster.GetTopology() == topoMultiMasterRing {
+	if cluster.GetTopology() == config.TopoMultiMasterWsrep || cluster.GetTopology() == config.TopoMultiMasterRing {
 		if server.IsVirtualMaster && server.IsMaintenance == false {
 			cluster.SwitchOver()
 		}
 	}
-	if cluster.GetTopology() == topoMultiMasterRing {
+	if cluster.GetTopology() == config.TopoMultiMasterRing {
 		if server.IsMaintenance {
 			cluster.CloseRing(server)
 		} else {

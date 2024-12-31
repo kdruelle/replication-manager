@@ -2038,16 +2038,17 @@ func GetPoolType() map[string]bool {
 
 func GetTopologyType() map[string]string {
 	return map[string]string{
-		"master-slave":            "master-slave",
-		"binlog-server":           "binlog-server",
-		"multi-tier-slave":        "multi-tier-slave",
-		"multi-master":            "multi-master",
-		"multi-master-ring":       "multi-master-ring",
-		"multi-master-wsrep":      "multi-master-wsrep",
-		"multi-master-grprep":     "multi-master-grprep",
-		"master-slave-pg-logical": "master-slave-pg-logical",
-		"master-slave-pg-stream":  "master-slave-pg-stream",
-		"unknown":                 "unknown",
+		TopoMasterSlave:         TopoMasterSlave,
+		TopoBinlogServer:        TopoBinlogServer,
+		TopoMultiTierSlave:      TopoMultiTierSlave,
+		TopoMultiMaster:         TopoMultiMaster,
+		TopoMultiMasterRing:     TopoMultiMasterRing,
+		TopoMultiMasterWsrep:    TopoMultiMasterWsrep,
+		TopoMultiMasterGrouprep: TopoMultiMasterGrouprep,
+		TopoMasterSlavePgLog:    TopoMasterSlavePgLog,
+		TopoMasterSlavePgStream: TopoMasterSlavePgStream,
+		TopoActivePassive:       TopoActivePassive,
+		TopoUnknown:             TopoUnknown,
 	}
 }
 
