@@ -770,6 +770,12 @@ func (cluster *Cluster) SetBinlogServer(binlogserver bool) {
 func (cluster *Cluster) SetMultiMasterWsrep(wsrep bool) {
 	cluster.Conf.MultiMasterWsrep = wsrep
 }
+func (cluster *Cluster) SetMultiMasterGroupRep(grep bool) {
+	cluster.Conf.MultiMasterGrouprep = grep
+}
+func (cluster *Cluster) SetMultiMasterGroupRepPort(port int) {
+	cluster.Conf.MultiMasterGrouprepPort = port
+}
 func (cluster *Cluster) SetBackupRestic(check bool) error {
 	cluster.Conf.BackupRestic = check
 	return nil

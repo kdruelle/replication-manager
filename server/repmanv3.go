@@ -591,7 +591,7 @@ func (s *ReplicationManager) PerformClusterAction(ctx context.Context, in *v3.Cl
 		if in.Topology == v3.ClusterAction_RT_UNSPECIFIED {
 			return nil, v3.NewErrorResource(codes.InvalidArgument, v3.ErrEnumNotSet, "Topology", v3.ClusterAction_RT_UNSPECIFIED.String()).Err()
 		}
-		s.bootstrapTopology(mycluster, in.Topology.Legacy())
+		mycluster.BootstrapTopology(in.Topology.Legacy())
 		err = mycluster.BootstrapReplication(true)
 	case v3.ClusterAction_CANCEL_ROLLING_REPROV:
 		err = mycluster.CancelRollingReprov()

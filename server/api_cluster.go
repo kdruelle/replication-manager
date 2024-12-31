@@ -687,7 +687,8 @@ func (repman *ReplicationManager) handlerMuxBootstrapReplication(w http.Response
 			http.Error(w, "No valid ACL", 403)
 			return
 		}
-		repman.bootstrapTopology(mycluster, vars["topology"])
+
+		mycluster.BootstrapTopology(vars["topology"])
 		err := mycluster.BootstrapReplication(true)
 		if err != nil {
 			mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, "ERROR", "Error bootstraping replication %s", err)
@@ -699,71 +700,6 @@ func (repman *ReplicationManager) handlerMuxBootstrapReplication(w http.Response
 		return
 	}
 	return
-}
-
-func (repman *ReplicationManager) bootstrapTopology(mycluster *cluster.Cluster, topology string) {
-	switch topology {
-	case "master-slave":
-		mycluster.SetMultiMasterRing(false)
-		mycluster.SetMultiTierSlave(false)
-		mycluster.SetForceSlaveNoGtid(false)
-		mycluster.SetMultiMaster(false)
-		mycluster.SetBinlogServer(false)
-		mycluster.SetMultiMasterWsrep(false)
-		mycluster.Topology = config.TopoMasterSlave
-	case "master-slave-no-gtid":
-		mycluster.SetMultiMasterRing(false)
-		mycluster.SetMultiTierSlave(false)
-		mycluster.SetForceSlaveNoGtid(true)
-		mycluster.SetMultiMaster(false)
-		mycluster.SetBinlogServer(false)
-		mycluster.SetMultiMasterWsrep(false)
-		mycluster.Topology = config.TopoMasterSlave
-	case "multi-master":
-		mycluster.SetMultiMasterRing(false)
-		mycluster.SetMultiTierSlave(false)
-		mycluster.SetForceSlaveNoGtid(false)
-		mycluster.SetMultiMaster(true)
-		mycluster.SetBinlogServer(false)
-		mycluster.SetMultiMasterWsrep(false)
-		mycluster.Topology = config.TopoMultiMaster
-	case "multi-tier-slave":
-		mycluster.SetMultiMasterRing(false)
-		mycluster.SetMultiTierSlave(true)
-		mycluster.SetForceSlaveNoGtid(false)
-		mycluster.SetMultiMaster(false)
-		mycluster.SetBinlogServer(false)
-		mycluster.SetMultiMasterWsrep(false)
-		mycluster.Topology = config.TopoMultiTierSlave
-	case "maxscale-binlog":
-		mycluster.SetMultiMasterRing(false)
-		mycluster.SetMultiTierSlave(false)
-		mycluster.SetForceSlaveNoGtid(false)
-		mycluster.SetMultiMaster(false)
-		mycluster.SetBinlogServer(true)
-		mycluster.SetMultiMasterWsrep(false)
-		mycluster.Topology = config.TopoBinlogServer
-	case "multi-master-ring":
-		mycluster.SetMultiTierSlave(false)
-		mycluster.SetForceSlaveNoGtid(false)
-		mycluster.SetMultiMaster(false)
-		mycluster.SetBinlogServer(false)
-		mycluster.SetMultiMasterRing(true)
-		mycluster.SetMultiMasterWsrep(false)
-		mycluster.Topology = config.TopoMultiMasterRing
-	case "multi-master-wsrep":
-		mycluster.SetMultiMasterRing(false)
-		mycluster.SetMultiTierSlave(false)
-		mycluster.SetForceSlaveNoGtid(false)
-		mycluster.SetMultiMaster(false)
-		mycluster.SetBinlogServer(false)
-		mycluster.SetMultiMasterRing(false)
-		mycluster.SetMultiMasterWsrep(true)
-		mycluster.Topology = config.TopoMultiMasterWsrep
-	default:
-		return
-	}
-	mycluster.Conf.TopologyTarget = mycluster.Topology
 }
 
 func (repman *ReplicationManager) handlerMuxServicesBootstrap(w http.ResponseWriter, r *http.Request) {
