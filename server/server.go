@@ -1866,14 +1866,14 @@ func (repman *ReplicationManager) Run() error {
 		repman.Logrus.WithError(err).Errorf("Initialization tarballs repo failed: %s %s", repman.Conf.ShareDir+"/repo/tarballs.json", err)
 	}
 
-	repman.ServiceVM = repman.Conf.GetVMType()
-	repman.ServiceFS = repman.Conf.GetFSType()
-	repman.ServiceDisk = repman.Conf.GetDiskType()
-	repman.ServicePool = repman.Conf.GetPoolType()
-	repman.BackupLogicalList = repman.Conf.GetBackupLogicalType()
-	repman.BackupPhysicalList = repman.Conf.GetBackupPhysicalType()
-	repman.BackupBinlogList = repman.Conf.GetBackupBinlogType()
-	repman.BinlogParseList = repman.Conf.GetBinlogParseMode()
+	repman.ServiceVM = config.GetVMType()
+	repman.ServiceFS = config.GetFSType()
+	repman.ServiceDisk = config.GetDiskType()
+	repman.ServicePool = config.GetPoolType()
+	repman.BackupLogicalList = config.GetBackupLogicalType()
+	repman.BackupPhysicalList = config.GetBackupPhysicalType()
+	repman.BackupBinlogList = config.GetBackupBinlogType()
+	repman.BinlogParseList = config.GetBinlogParseMode()
 	repman.GraphiteTemplateList = repman.Conf.GetGraphiteTemplateList()
 
 	if repman.Conf.ProvOrchestrator == "opensvc" {

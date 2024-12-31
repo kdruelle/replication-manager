@@ -376,11 +376,11 @@ func (cluster *Cluster) InitFromConf() {
 	cluster.Log = s18log.NewHttpLog(200)
 	cluster.LogTask = s18log.NewHttpLog(200)
 
-	cluster.MonitorType = cluster.Conf.GetMonitorType()
-	cluster.TopologyType = cluster.Conf.GetTopologyType()
-	cluster.FSType = cluster.Conf.GetFSType()
-	cluster.DiskType = cluster.Conf.GetDiskType()
-	cluster.VMType = cluster.Conf.GetVMType()
+	cluster.MonitorType = config.GetMonitorType()
+	cluster.TopologyType = config.GetTopologyType()
+	cluster.FSType = config.GetFSType()
+	cluster.DiskType = config.GetDiskType()
+	cluster.VMType = config.GetVMType()
 	cluster.Grants = config.GetGrantType()
 	cluster.Roles = config.GetRoleType()
 

@@ -1853,7 +1853,7 @@ func ForcePullFromRepo(r *git.Repository, url string, auth *git_https.BasicAuth)
 		}
 	}
 */
-func (conf *Config) GetBackupBinlogType() map[string]bool {
+func GetBackupBinlogType() map[string]bool {
 	return map[string]bool{
 		ConstBackupBinlogTypeMysqlbinlog: true,
 		ConstBackupBinlogTypeSSH:         true,
@@ -1861,21 +1861,21 @@ func (conf *Config) GetBackupBinlogType() map[string]bool {
 	}
 }
 
-func (conf *Config) GetBinlogParseMode() map[string]bool {
+func GetBinlogParseMode() map[string]bool {
 	return map[string]bool{
 		ConstBackupBinlogTypeMysqlbinlog: true,
 		ConstBackupBinlogTypeGoMySQL:     true,
 	}
 }
 
-func (conf *Config) GetBackupPhysicalType() map[string]bool {
+func GetBackupPhysicalType() map[string]bool {
 	return map[string]bool{
 		ConstBackupPhysicalTypeXtrabackup:  true,
 		ConstBackupPhysicalTypeMariaBackup: true,
 	}
 }
 
-func (conf *Config) GetBackupLogicalType() map[string]bool {
+func GetBackupLogicalType() map[string]bool {
 	return map[string]bool{
 		ConstBackupLogicalTypeMysqldump: true,
 		ConstBackupLogicalTypeMydumper:  true,
@@ -1884,8 +1884,7 @@ func (conf *Config) GetBackupLogicalType() map[string]bool {
 	}
 }
 
-func (conf *Config) GetCloud18PeerClusters() []PeerCluster {
-
+func GetCloud18PeerClusters() []PeerCluster {
 	return []PeerCluster{
 		PeerCluster{
 			ClusterName:                "Bench",
@@ -1966,7 +1965,7 @@ func (conf *Config) GetOrchestratorsProv() []ConfigVariableType {
 	}
 }
 
-func (conf *Config) GetMonitorType() map[string]string {
+func GetMonitorType() map[string]string {
 
 	return map[string]string{
 		"mariadb":    "database",
@@ -1983,7 +1982,7 @@ func (conf *Config) GetMonitorType() map[string]string {
 	}
 }
 
-func (conf *Config) GetDiskType() map[string]string {
+func GetDiskType() map[string]string {
 
 	return map[string]string{
 		"loopback":  "loopback",
@@ -1994,7 +1993,7 @@ func (conf *Config) GetDiskType() map[string]string {
 	}
 }
 
-func (conf *Config) GetFSType() map[string]bool {
+func GetFSType() map[string]bool {
 
 	return map[string]bool{
 		"ext4": true,
@@ -2005,7 +2004,7 @@ func (conf *Config) GetFSType() map[string]bool {
 	}
 }
 
-func (conf *Config) GetSysbenchTests() map[string]bool {
+func GetSysbenchTests() map[string]bool {
 	return map[string]bool{
 		"oltp_read_write":       true,
 		"oltp_read_only":        true,
@@ -2015,7 +2014,7 @@ func (conf *Config) GetSysbenchTests() map[string]bool {
 	}
 }
 
-func (conf *Config) GetVMType() map[string]bool {
+func GetVMType() map[string]bool {
 
 	return map[string]bool{
 		"package": false,
@@ -2028,7 +2027,7 @@ func (conf *Config) GetVMType() map[string]bool {
 	}
 }
 
-func (conf *Config) GetPoolType() map[string]bool {
+func GetPoolType() map[string]bool {
 
 	return map[string]bool{
 		"none":  true,
@@ -2037,7 +2036,7 @@ func (conf *Config) GetPoolType() map[string]bool {
 	}
 }
 
-func (conf *Config) GetTopologyType() map[string]string {
+func GetTopologyType() map[string]string {
 	return map[string]string{
 		"master-slave":            "master-slave",
 		"binlog-server":           "binlog-server",
@@ -2045,6 +2044,7 @@ func (conf *Config) GetTopologyType() map[string]string {
 		"multi-master":            "multi-master",
 		"multi-master-ring":       "multi-master-ring",
 		"multi-master-wsrep":      "multi-master-wsrep",
+		"multi-master-grprep":     "multi-master-grprep",
 		"master-slave-pg-logical": "master-slave-pg-logical",
 		"master-slave-pg-stream":  "master-slave-pg-stream",
 		"unknown":                 "unknown",
