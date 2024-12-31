@@ -1059,6 +1059,13 @@ func (repman *ReplicationManager) handlerMuxClusterSubscribe(w http.ResponseWrit
 		mycluster.AddUser(userform, repman.Conf.Cloud18GitUser, true)
 	}
 
+	// User already listed as pending
+	mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlInfo, "User %s has subscribed to cluster %s", userform.Username, mycluster.Name)
+
+	if repman.Conf.Cloud18SalesSubscriptionScript != "" {
+		repman.BashScriptSalesSubscribe(mycluster, userform.Username)
+	}
+
 	err = repman.SendCloud18ClusterSubscriptionMail(mycluster.Name, userform)
 	if err != nil {
 		http.Error(w, "Error sending email :"+err.Error(), 500)

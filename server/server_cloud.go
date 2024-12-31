@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"os/exec"
 	"strings"
 
 	"github.com/signal18/replication-manager/cluster"
@@ -170,5 +171,47 @@ func (repman *ReplicationManager) EndSubscription(userform cluster.UserForm, cl 
 
 	cl.UpdateUser(userform, "admin", true)
 
+	return nil
+}
+
+func (repman *ReplicationManager) BashScriptSalesSubscribe(mycluster *cluster.Cluster, subscriber string) error {
+	if repman.Conf.Cloud18SalesSubscriptionScript != "" {
+		mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, "INFO", "Calling cluster subscription script")
+		var out []byte
+		out, err := exec.Command(repman.Conf.Cloud18SalesSubscriptionScript, mycluster.Name, subscriber).CombinedOutput()
+		if err != nil {
+			mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, "ERROR", "%s", err)
+		}
+
+		mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, "INFO", "Cluster subscription script complete %s:", string(out))
+	}
+	return nil
+}
+
+func (repman *ReplicationManager) BashScriptSalesSubscriptionValidate(mycluster *cluster.Cluster, subscriber, operator string) error {
+	if repman.Conf.Cloud18SalesSubscriptionValidateScript != "" {
+		mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, "INFO", "Calling cluster subscription script")
+		var out []byte
+		out, err := exec.Command(repman.Conf.Cloud18SalesSubscriptionValidateScript, mycluster.Name, subscriber, operator).CombinedOutput()
+		if err != nil {
+			mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, "ERROR", "%s", err)
+		}
+
+		mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, "INFO", "Cluster subscription script complete %s:", string(out))
+	}
+	return nil
+}
+
+func (repman *ReplicationManager) BashScriptSalesUnsubscribe(mycluster *cluster.Cluster, subscriber, operator string) error {
+	if repman.Conf.Cloud18SalesUnsubscribeScript != "" {
+		repman.LogModulePrintf(repman.Conf.Verbose, config.ConstLogModGeneral, "INFO", "Calling cluster subscription script")
+		var out []byte
+		out, err := exec.Command(repman.Conf.Cloud18SalesUnsubscribeScript, mycluster.Name, subscriber, operator).CombinedOutput()
+		if err != nil {
+			mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, "ERROR", "%s", err)
+		}
+
+		mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, "INFO", "Cluster subscription script complete %s:", string(out))
+	}
 	return nil
 }

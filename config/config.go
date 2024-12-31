@@ -714,6 +714,9 @@ type Config struct {
 	Cloud18DatabaseReadWriteSrvRecord         string                 `mapstructure:"cloud18-database-read-write-srv-record"  toml:"cloud18-database-read-write-srv-record" json:"cloud18DatabaseReadWriteSrvRecord"`
 	Cloud18DbaUserCredentials                 string                 `mapstructure:"cloud18-dba-user-credentials"  toml:"cloud18-dba-user-credentials" json:"cloud18DbaUserCredential"`
 	Cloud18SponsorUserCredentials             string                 `mapstructure:"cloud18-sponsor-user-credentials"  toml:"cloud18-sponsor-user-credentials" json:"cloud18SponsorUserCredential"`
+	Cloud18SalesSubscriptionScript            string                 `mapstructure:"cloud18-sales-subscription-script"  toml:"cloud18-sales-subscription-script" json:"cloud18SalesSubscriptionScript"`
+	Cloud18SalesSubscriptionValidateScript    string                 `mapstructure:"cloud18-sales-subscription-validate-script"  toml:"cloud18-sales-subscription-validate-script" json:"cloud18SalesSubscriptionValidateScript"`
+	Cloud18SalesUnsubscribeScript             string                 `mapstructure:"cloud18-sales-unsubscribe-script"  toml:"cloud18-sales-unsubscribe-script" json:"cloud18SalesUnsubscribeScript"`
 	LogSecrets                                bool                   `mapstructure:"log-secrets"  toml:"log-secrets" json:"-"`
 	Secrets                                   map[string]Secret      `toml:"-" json:"-"`
 	SecretKey                                 []byte                 `toml:"-" json:"-"`

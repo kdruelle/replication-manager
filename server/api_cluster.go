@@ -3176,28 +3176,52 @@ func (repman *ReplicationManager) handlerMuxAcceptSubscription(w http.ResponseWr
 		return
 	}
 
+	uinfomap, err := repman.GetJWTClaims(r)
+	if err != nil {
+		w.WriteHeader(http.StatusForbidden)
+		fmt.Fprintf(w, "Error parsing JWT: "+err.Error())
+		return
+	}
+
 	err = repman.AcceptSubscription(userform, mycluster)
 	if err != nil {
 		http.Error(w, "Error accepting subscription :"+err.Error(), 500)
 		return
 	}
 
-	err = repman.SendSponsorActivationMail(mycluster, userform)
-	if err != nil {
-		http.Error(w, "Error sending email :"+err.Error(), 500)
-		return
+	mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlInfo, "User %s accepted as sponsor for cluster %s", userform.Username, mycluster.Name)
+
+	if repman.Conf.Cloud18SalesSubscriptionValidateScript != "" {
+		repman.BashScriptSalesSubscriptionValidate(mycluster, userform.Username, uinfomap["User"])
 	}
 
 	if mycluster.Conf.Cloud18SponsorUserCredentials == "" {
+		mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlInfo, "No sponsor db credentials found. Generating sponsor db credentials")
 		pass, _ := mycluster.GeneratePassword()
 		repman.setClusterSetting(mycluster, "cloud18-sponsor-user-credentials", mycluster.Name+":"+pass)
 	}
 
-	err = repman.SendSponsorCredentialsMail(mycluster)
+	mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlInfo, "Sending sponsor activation email to user %s", userform.Username)
+
+	err = repman.SendSponsorActivationMail(mycluster, userform)
 	if err != nil {
+		mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlErr, "Failed to send sponsor activation email to %s: %v", userform.Username, err)
 		http.Error(w, "Error sending email :"+err.Error(), 500)
 		return
 	}
+
+	mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlInfo, "Sponsor activation email sent to %s", userform.Username)
+
+	mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlInfo, "Sending sponsor db credentials to user %s", userform.Username)
+
+	err = repman.SendSponsorCredentialsMail(mycluster)
+	if err != nil {
+		mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlErr, "Failed to send sponsor db credentials to %s: %v", userform.Username, err)
+		http.Error(w, "Error sending email :"+err.Error(), 500)
+		return
+	}
+
+	mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlInfo, "Sponsor DB credentials sent!")
 
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Email sent to sponsor!"))
@@ -3243,6 +3267,14 @@ func (repman *ReplicationManager) handlerMuxRejectSubscription(w http.ResponseWr
 		return
 	}
 
+	mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlInfo, "Pending subscription for %s is rejected!")
+
+	err = repman.SendPendingRejectionMail(mycluster, userform)
+	if err != nil {
+		http.Error(w, "Error sending rejection mail :"+err.Error(), 500)
+		return
+	}
+
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Subscription removed!"))
 }
@@ -3279,12 +3311,21 @@ func (repman *ReplicationManager) handlerMuxRemoveSponsor(w http.ResponseWriter,
 			http.Error(w, "No valid ACL", http.StatusForbidden)
 			return
 		}
+
+		mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlInfo, "Ending subscription from sponsor %s for cluster %s by %s", userform.Username, mycluster.Name, uinfomap["User"])
+	} else {
+		mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlInfo, "Ending subscription for cluster %s by %s", mycluster.Name, uinfomap["User"])
 	}
 
 	err = repman.EndSubscription(userform, mycluster)
 	if err != nil {
+		mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlErr, "Error removing sponsor subscription: %s", err)
 		http.Error(w, "Error removing sponsor subscription :"+err.Error(), 500)
 		return
+	}
+
+	if repman.Conf.Cloud18SalesUnsubscribeScript != "" {
+		repman.BashScriptSalesUnsubscribe(mycluster, userform.Username, uinfomap["User"])
 	}
 
 	w.WriteHeader(http.StatusOK)

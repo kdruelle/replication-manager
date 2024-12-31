@@ -103,6 +103,30 @@ Signal18
 	return repman.Mailer.SendEmailMessage(msg, subj, repman.Conf.MailFrom, to, "", repman.Conf.MailSMTPTLSSkipVerify)
 }
 
+func (repman *ReplicationManager) SendPendingRejectionMail(cl *cluster.Cluster, userform cluster.UserForm) error {
+	to := userform.Username
+
+	subj := fmt.Sprintf("Subscription Rejected for Cluster %s: %s", cl.Name, userform.Username)
+	msg := fmt.Sprintf(`Dear Subscriber,
+
+We regret to inform you that we are unable to process your subscription request for the cluster %s any further.
+
+After further checking, the cluster you requested to subscribe to is currently unavailable or already subscribed by other subscriber. We encourage you to consider subscribing to a different cluster.
+
+We understand that this may be disappointing news, and we apologize for any inconvenience this may cause. 
+
+If you have any questions or require further clarification, please do not hesitate to contact our support team by replying to this email.
+
+Thank you for your understanding.
+
+Best regards,
+
+Signal18
+`, cl.Name)
+
+	return repman.Mailer.SendEmailMessage(msg, subj, repman.Conf.MailFrom, to, "", repman.Conf.MailSMTPTLSSkipVerify)
+}
+
 func (repman *ReplicationManager) SendSponsorCredentialsMail(cl *cluster.Cluster) error {
 	var user cluster.APIUser
 	for _, u := range cl.APIUsers {
