@@ -713,6 +713,7 @@ type Config struct {
 	Cloud18DatabaseReadSrvRecord              string                 `mapstructure:"cloud18-database-read-srv-record"  toml:"cloud18-database-read-srv-record" json:"cloud18DatabaseReadSrvRecord"`
 	Cloud18DatabaseReadWriteSrvRecord         string                 `mapstructure:"cloud18-database-read-write-srv-record"  toml:"cloud18-database-read-write-srv-record" json:"cloud18DatabaseReadWriteSrvRecord"`
 	Cloud18DbaUserCredentials                 string                 `mapstructure:"cloud18-dba-user-credentials"  toml:"cloud18-dba-user-credentials" json:"cloud18DbaUserCredential"`
+	Cloud18SponsorUserCredentials             string                 `mapstructure:"cloud18-sponsor-user-credentials"  toml:"cloud18-sponsor-user-credentials" json:"cloud18SponsorUserCredential"`
 	LogSecrets                                bool                   `mapstructure:"log-secrets"  toml:"log-secrets" json:"-"`
 	Secrets                                   map[string]Secret      `toml:"-" json:"-"`
 	SecretKey                                 []byte                 `toml:"-" json:"-"`
@@ -1222,6 +1223,8 @@ func (conf *Config) DecryptSecretsFromConfig() {
 		"git-acces-token":                       {"", ""},
 		"mail-smtp-password":                    {"", ""},
 		"cloud18-gitlab-password":               {"", ""},
+		"cloud18-dba-user-credentials":          {"", ""},
+		"cloud18-sponsor-user-credentials":      {"", ""},
 		"vault-token":                           {"", ""},
 		"api-oauth-client-secret":               {"", ""}}
 

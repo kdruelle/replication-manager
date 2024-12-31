@@ -1905,6 +1905,16 @@ func (repman *ReplicationManager) setClusterSetting(mycluster *cluster.Cluster, 
 		new_secret.Value = mycluster.Conf.Cloud18DbaUserCredentials
 		new_secret.OldValue = mycluster.Conf.GetDecryptedValue("cloud18-dba-user-credentials")
 		mycluster.Conf.Secrets["cloud18-dba-user-credentials"] = new_secret
+	case "cloud18-sponsor-user-credentials":
+		val, err := base64.StdEncoding.DecodeString(value)
+		if err != nil {
+			return errors.New("Unable to decode")
+		}
+		mycluster.Conf.Cloud18SponsorUserCredentials = string(val)
+		var new_secret config.Secret
+		new_secret.Value = mycluster.Conf.Cloud18SponsorUserCredentials
+		new_secret.OldValue = mycluster.Conf.GetDecryptedValue("cloud18-sponsor-user-credentials")
+		mycluster.Conf.Secrets["cloud18-sponsor-user-credentials"] = new_secret
 	case "cloud18-cloud18-dbops":
 		if value != "" && value != mycluster.Conf.Cloud18GitUser {
 			dbops := repman.CreateDBOpsForm(value)

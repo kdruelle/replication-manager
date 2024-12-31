@@ -395,6 +395,26 @@ func (cluster *Cluster) GetDbPass() string {
 	return pass
 }
 
+func (cluster *Cluster) GetDbaUser() string {
+	user, _ := misc.SplitPair(cluster.Conf.Secrets["cloud18-dba-user-credentials"].Value)
+	return user
+}
+
+func (cluster *Cluster) GetDbaPass() string {
+	_, pass := misc.SplitPair(cluster.Conf.Secrets["cloud18-dba-user-credentials"].Value)
+	return pass
+}
+
+func (cluster *Cluster) GetSponsorUser() string {
+	user, _ := misc.SplitPair(cluster.Conf.Secrets["cloud18-sponsor-user-credentials"].Value)
+	return user
+}
+
+func (cluster *Cluster) GetSponsorPass() string {
+	_, pass := misc.SplitPair(cluster.Conf.Secrets["cloud18-sponsor-user-credentials"].Value)
+	return pass
+}
+
 func (cluster *Cluster) GetRplUser() string {
 	user, _ := misc.SplitPair(cluster.Conf.Secrets["replication-credential"].Value)
 	return user
@@ -1187,7 +1207,7 @@ func (cluster *Cluster) GetVaultReplicationCredentials(client *vault.Client) (st
 		user, pass := misc.SplitPair(secret.Data["replication-credential"].(string))
 		return user, pass, nil
 	} else {
-		secret, err := client.KVv1("").Get(context.Background(), cluster.GetConf().User)
+		secret, err := client.KVv1("").Get(context.Background(), cluster.GetConf().RplUser)
 		if err != nil {
 			return "", "", err
 		}
