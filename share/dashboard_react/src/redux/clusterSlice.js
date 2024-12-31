@@ -231,31 +231,16 @@ export const setCredentials = createAsyncThunk(
   }
 )
 
-export const setDBCredential = createAsyncThunk(
-  'cluster/setDBCredential',
-  async ({ clusterName, credential }, thunkAPI) => {
+export const sendCredentials = createAsyncThunk(
+  'cluster/sendCredentials',
+  async ({ clusterName, username, type }, thunkAPI) => {
     try {
       const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
-      const { data, status } = await clusterService.setDBCredential(clusterName, credential, baseURL)
-      showSuccessBanner('Database credentials set!', status, thunkAPI)
+      const { data, status } = await clusterService.sendCredentials(clusterName, username, type, baseURL)
+      showSuccessBanner('Credentials sent to email!', status, thunkAPI)
       return { data, status }
     } catch (error) {
-      showErrorBanner('Setting Database credentials failed!', error, thunkAPI)
-      handleError(error, thunkAPI)
-    }
-  }
-)
-
-export const setReplicationCredential = createAsyncThunk(
-  'cluster/setReplicationCredential',
-  async ({ clusterName, credential }, thunkAPI) => {
-    try {
-      const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
-      const { data, status } = await clusterService.setReplicationCredential(clusterName, credential, baseURL)
-      showSuccessBanner('Replication credentials set!', status, thunkAPI)
-      return { data, status }
-    } catch (error) {
-      showErrorBanner('Setting Replication credentials failed!', error, thunkAPI)
+      showErrorBanner('Sending credentials email failed!', error, thunkAPI)
       handleError(error, thunkAPI)
     }
   }
@@ -1206,8 +1191,7 @@ export const clusterSlice = createSlice({
         toggleTraffic.pending,
         provisionCluster.pending,
         unProvisionCluster.pending,
-        setDBCredential.pending,
-        setReplicationCredential.pending,
+        sendCredentials.pending,
         rotateDBCredential.pending,
         rollingOptimize.pending,
         rollingRestart.pending,
@@ -1273,8 +1257,7 @@ export const clusterSlice = createSlice({
         toggleTraffic.fulfilled,
         provisionCluster.fulfilled,
         unProvisionCluster.fulfilled,
-        setDBCredential.fulfilled,
-        setReplicationCredential.fulfilled,
+        sendCredentials.fulfilled,
         rotateDBCredential.fulfilled,
         rollingOptimize.fulfilled,
         rollingRestart.fulfilled,
@@ -1340,8 +1323,7 @@ export const clusterSlice = createSlice({
         toggleTraffic.rejected,
         provisionCluster.rejected,
         unProvisionCluster.rejected,
-        setDBCredential.rejected,
-        setReplicationCredential.rejected,
+        sendCredentials.rejected,
         rotateDBCredential.rejected,
         rollingOptimize.rejected,
         rollingRestart.rejected,

@@ -411,6 +411,10 @@ function dropUser(clusterName, username, baseURL) {
   return getApi(baseURL).post(`clusters/${clusterName}/users/drop`, {username})
 }
 
+function sendCredentials(clusterName, username, type, baseURL) {
+  return getApi(baseURL).post(`clusters/${clusterName}/users/send-credentials`,{username, type})
+}
+
 //#Peer subscription APIs
 function clusterSubscribe(username, password, clusterName, baseURL) {
   return getApi(baseURL).post(`clusters/${clusterName}/subscribe`,{username, password})
@@ -426,10 +430,6 @@ function acceptSubscription(clusterName, username, baseURL) {
 
 function rejectSubscription(clusterName, username, baseURL) {
   return getApi(baseURL).post(`clusters/${clusterName}/sales/refuse-subscription`,{username})
-}
-
-function sendCredentials(clusterName, username, baseURL) {
-  return getApi(baseURL).post(`clusters/${clusterName}/sales/send-credentials`,{username})
 }
 
 function endSubscription(clusterName, username, baseURL) {

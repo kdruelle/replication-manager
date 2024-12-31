@@ -4,11 +4,11 @@ import { DataTable } from '../../components/DataTable'
 import AccordionComponent from '../../components/AccordionComponent'
 import styles from './styles.module.scss'
 import UserGrantModal from '../../components/Modals/UserGrantModal'
-import { acceptSubscription, dropUser, endSubscription, rejectSubscription } from '../../redux/clusterSlice'
+import { acceptSubscription, dropUser, endSubscription, rejectSubscription, sendCredentials } from '../../redux/clusterSlice'
 import RMButton from '../../components/RMButton'
 import RMIconButton from '../../components/RMIconButton'
 import { HiUserGroup } from 'react-icons/hi'
-import { TbTrash, TbUserCancel, TbUserStar } from 'react-icons/tb'
+import { TbMail, TbMailCog, TbMailDollar, TbMailStar, TbTrash, TbUserCancel, TbUserStar } from 'react-icons/tb'
 import ConfirmModal from '../../components/Modals/ConfirmModal'
 import { useDispatch, useSelector } from 'react-redux'
 import { HStack } from '@chakra-ui/react'
@@ -52,6 +52,14 @@ function Users({ selectedCluster, user }) {
     return false
   }
 
+  const isShowSendDB = (user, item) => {
+    return user.roles['dbops'] || item.roles['extdbops']
+  }
+
+  const isShowSendSys = (user, item) => {
+    return user.roles['sysops'] || item.roles['extsysops']
+  }
+
   useEffect(() => {
     if (selectedCluster?.apiUsers) {
       const result = Object.entries(selectedCluster?.apiUsers).filter(([_, value]) => showUser(user, value)).map(([key, value]) => ({
@@ -88,6 +96,12 @@ function Users({ selectedCluster, user }) {
       dispatch(endSubscription({ clusterName: selectedCluster.name, username: payload }))
     } else if (type === 'drop-user') {
       dispatch(dropUser({ clusterName: selectedCluster.name, username: payload }))
+    } else if (type === 'send-cred-sponsor') {
+      dispatch(sendCredentials({ clusterName: selectedCluster.name, username: payload, type: 'sponsor' }))
+    } else if (type === 'send-cred-db') {
+      dispatch(sendCredentials({ clusterName: selectedCluster.name, username: payload, type: 'db' }))
+    } else if (type === 'send-cred-sys') {
+      dispatch(sendCredentials({ clusterName: selectedCluster.name, username: payload, type: 'sys' }))
     }
     closeConfirmModal()
   }
@@ -127,8 +141,11 @@ function Users({ selectedCluster, user }) {
           ) : (
             <>
               { row?.roles?.["sponsor"] && <RMIconButton icon={TbUserCancel} onClick={(e) => { e.stopPropagation(); setAction({ type: "end-sub", title: "Are you sure to end subscription?", payload: row.user }); openConfirmModal() }} />}
-              <RMIconButton icon={HiUserGroup} onClick={(e) => { e.stopPropagation(); setSelectedUser(row); openUserGrantModal() }} />
-                { isShowDropUser(user,row) && <RMIconButton icon={TbTrash} onClick={(e) => { e.stopPropagation(); setAction({ type: "drop-user", title: "Are you sure to drop user "+row.user+"?", payload: row.user }); openConfirmModal() }} /> }
+              { user?.user != row?.user && <RMIconButton icon={HiUserGroup} onClick={(e) => { e.stopPropagation(); setSelectedUser(row); openUserGrantModal() }} />}
+              { row?.roles?.["sponsor"] && <RMIconButton tooltip={"send sponsor credentials"} icon={TbMailStar} onClick={(e) => { e.stopPropagation(); setAction({ type: "send-cred-sponsor", title: "Are you sure to send sponsor credentials to "+row.user+"?", payload: row.user }); openConfirmModal() }} />}
+              { isShowSendDB(user, row) && <RMIconButton tooltip={"send dba credentials"} icon={TbMail} onClick={(e) => { e.stopPropagation(); setAction({ type: "send-cred-db", title: "Are you sure to send dba credentials to "+row.user+"?", payload: row.user }); openConfirmModal() }} />}
+              { isShowSendSys(user,row) && <RMIconButton tooltip={"send sysadmin credentials"} icon={TbMailCog} onClick={(e) => { e.stopPropagation(); setAction({ type: "send-cred-sys", title: "Are you sure to send sys admin credentials to "+row.user+"?", payload: row.user }); openConfirmModal() }} />}
+              { isShowDropUser(user,row) && <RMIconButton icon={TbTrash} onClick={(e) => { e.stopPropagation(); setAction({ type: "drop-user", title: "Are you sure to drop user "+row.user+"?", payload: row.user }); openConfirmModal() }} /> }
             </>
           )}
         </HStack>

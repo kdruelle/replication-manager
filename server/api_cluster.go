@@ -375,6 +375,11 @@ func (repman *ReplicationManager) apiClusterProtectedHandler(router *mux.Router)
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxDropClusterUser)),
 	))
 
+	router.Handle("/api/clusters/{clusterName}/users/send-credentials", negroni.New(
+		negroni.HandlerFunc(repman.validateTokenMiddleware),
+		negroni.Wrap(http.HandlerFunc(repman.handlerMuxSendCredentials)),
+	))
+
 	router.Handle("/api/clusters/{clusterName}/sales/accept-subscription", negroni.New(
 		negroni.HandlerFunc(repman.validateTokenMiddleware),
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxAcceptSubscription)),
@@ -383,11 +388,6 @@ func (repman *ReplicationManager) apiClusterProtectedHandler(router *mux.Router)
 	router.Handle("/api/clusters/{clusterName}/sales/refuse-subscription", negroni.New(
 		negroni.HandlerFunc(repman.validateTokenMiddleware),
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxRejectSubscription)),
-	))
-
-	router.Handle("/api/clusters/{clusterName}/sales/send-credentials", negroni.New(
-		negroni.HandlerFunc(repman.validateTokenMiddleware),
-		negroni.Wrap(http.HandlerFunc(repman.handlerMuxSendCredentials)),
 	))
 
 	router.Handle("/api/clusters/{clusterName}/sales/end-subscription", negroni.New(
@@ -3188,8 +3188,19 @@ func (repman *ReplicationManager) handlerMuxAcceptSubscription(w http.ResponseWr
 		return
 	}
 
+	if mycluster.Conf.Cloud18SponsorUserCredentials == "" {
+		pass, _ := mycluster.GeneratePassword()
+		repman.setClusterSetting(mycluster, "cloud18-sponsor-user-credentials", mycluster.Name+":"+pass)
+	}
+
+	err = repman.SendSponsorCredentialsMail(mycluster)
+	if err != nil {
+		http.Error(w, "Error sending email :"+err.Error(), 500)
+		return
+	}
+
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Email sent to admin!"))
+	w.Write([]byte("Email sent to sponsor!"))
 }
 
 func (repman *ReplicationManager) handlerMuxRejectSubscription(w http.ResponseWriter, r *http.Request) {
@@ -3280,6 +3291,11 @@ func (repman *ReplicationManager) handlerMuxRemoveSponsor(w http.ResponseWriter,
 	w.Write([]byte("Sponsor subscription removed!"))
 }
 
+type CredentialMailForm struct {
+	Username       string `json:"username"`
+	CredentialType string `json:"type"`
+}
+
 func (repman *ReplicationManager) handlerMuxSendCredentials(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -3290,17 +3306,69 @@ func (repman *ReplicationManager) handlerMuxSendCredentials(w http.ResponseWrite
 		return
 	}
 
-	if valid, _ := repman.IsValidClusterACL(r, mycluster); !valid {
+	valid, delegator := repman.IsValidClusterACL(r, mycluster)
+	if !valid {
 		http.Error(w, "No valid ACL", http.StatusForbidden)
 		return
 	}
 
-	err := repman.SendSponsorCredentialsMail(mycluster)
+	duser, ok := mycluster.APIUsers[delegator]
+	if !ok {
+		http.Error(w, "User does not exists", http.StatusBadRequest)
+		return
+	}
+
+	var credForm CredentialMailForm
+	//decode request into UserCredentials struct
+	err := json.NewDecoder(r.Body).Decode(&credForm)
 	if err != nil {
-		http.Error(w, "Error sending email :"+err.Error(), 500)
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "Error in request")
+		return
+	}
+
+	u, ok := mycluster.APIUsers[credForm.Username]
+	if !ok {
+		http.Error(w, "User does not exists", http.StatusBadRequest)
+		return
+	}
+
+	to := u.User
+	if to == "admin" {
+		to = repman.Conf.Cloud18GitUser
+	}
+
+	switch credForm.CredentialType {
+	case "db":
+		if !duser.Roles[config.RoleDBOps] && !(duser.Roles[config.RoleExtDBOps] && duser.User == u.User) {
+			http.Error(w, "Delegator has no ACL to send DBA Credentials", http.StatusForbidden)
+			return
+		}
+
+		err = repman.SendDBACredentialsMail(mycluster, to, delegator)
+		if err != nil {
+			http.Error(w, "Error sending email :"+err.Error(), 500)
+			return
+		}
+
+		mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlInfo, "DBA Credentials sent to %s. Delegator: %s", to, delegator)
+	case "sys":
+		if !duser.Roles[config.RoleSysOps] && !(duser.Roles[config.RoleExtSysOps] && duser.User == u.User) {
+			http.Error(w, "Delegator has no ACL to send DBA Credentials", http.StatusForbidden)
+			return
+		}
+		err = repman.SendSysAdmCredentialsMail(mycluster, to, delegator)
+		if err != nil {
+			http.Error(w, "Error sending email :"+err.Error(), 500)
+			return
+		}
+
+		mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlInfo, "SysAdm Credentials sent to %s. Delegator: %s", to, delegator)
+	default:
+		http.Error(w, "Invalid credential type :"+credForm.CredentialType, 500)
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Email sent to admin!"))
+	w.Write([]byte("Credentials sent to user!"))
 }
