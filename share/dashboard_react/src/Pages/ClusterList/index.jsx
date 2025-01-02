@@ -21,7 +21,7 @@ function ClusterList({ onClick }) {
   const [clusterName, setClusterName] = useState('')
 
   const {
-    globalClusters: { clusters, loading, monitor }
+    globalClusters: { clusters, loading, monitor, isDownList, isFailableList }
   } = useSelector((state) => state)
 
   useEffect(() => {
@@ -29,15 +29,8 @@ function ClusterList({ onClick }) {
     // getChannels()
   }, [])
 
-  // const getChannels = async () => {
-  //   const response = await fetch(`https://repman.marie-dev.svc.cloud18:10005/meet/channels`, {
-  //     method: 'GET',
-  //     headers: authHeader()
-  //   })
-  //   console.log('response::', response)
-  //   const data = await response.json()
-  //   console.log('channels::', data)
-  // }
+  useEffect(() => {
+  }, [isDownList, isFailableList])
 
   const openAddUserModal = (e, name) => {
     e.stopPropagation()
