@@ -1391,7 +1391,12 @@ func (repman *ReplicationManager) handlerMuxSetSettings(w http.ResponseWriter, r
 		if valid {
 			err := repman.setClusterSetting(mycluster, setting, value)
 			if err != nil {
-				http.Error(w, "Failed to set cluster setting: "+err.Error(), 501)
+				errCode := 500
+				if err.Error() == "Setting not found" {
+					errCode = 501
+				}
+
+				http.Error(w, "Failed to set cluster setting: "+err.Error(), errCode)
 				return
 			}
 		} else {
@@ -1841,6 +1846,12 @@ func (repman *ReplicationManager) setClusterSetting(mycluster *cluster.Cluster, 
 		new_secret.Value = mycluster.Conf.Cloud18DbaUserCredentials
 		new_secret.OldValue = mycluster.Conf.GetDecryptedValue("cloud18-dba-user-credentials")
 		mycluster.Conf.Secrets["cloud18-dba-user-credentials"] = new_secret
+
+		// Create dba user if not exists for first time
+		err = mycluster.SetUserDBCredentials(mycluster.Conf.Cloud18DbaUserCredentials, true)
+		if err != nil {
+			return err
+		}
 	case "cloud18-sponsor-user-credentials":
 		val, err := base64.StdEncoding.DecodeString(value)
 		if err != nil {
@@ -1851,6 +1862,12 @@ func (repman *ReplicationManager) setClusterSetting(mycluster *cluster.Cluster, 
 		new_secret.Value = mycluster.Conf.Cloud18SponsorUserCredentials
 		new_secret.OldValue = mycluster.Conf.GetDecryptedValue("cloud18-sponsor-user-credentials")
 		mycluster.Conf.Secrets["cloud18-sponsor-user-credentials"] = new_secret
+
+		err = mycluster.SetUserDBCredentials(mycluster.Conf.Cloud18SponsorUserCredentials, true)
+		if err != nil {
+			return err
+		}
+
 	case "cloud18-cloud18-dbops":
 		if value != "" && value != mycluster.Conf.Cloud18GitUser {
 			dbops := repman.CreateDBOpsForm(value)
@@ -3134,7 +3151,7 @@ func (repman *ReplicationManager) handlerMuxAcceptSubscription(w http.ResponseWr
 	if mycluster.Conf.Cloud18SponsorUserCredentials == "" {
 		mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlInfo, "No sponsor db credentials found. Generating sponsor db credentials")
 		pass, _ := mycluster.GeneratePassword()
-		repman.setClusterSetting(mycluster, "cloud18-sponsor-user-credentials", mycluster.Name+":"+pass)
+		repman.setClusterSetting(mycluster, "cloud18-sponsor-user-credentials", base64.StdEncoding.EncodeToString([]byte(mycluster.Name+":"+pass)))
 	}
 
 	mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlInfo, "Sending sponsor activation email to user %s", userform.Username)

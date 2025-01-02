@@ -2907,6 +2907,16 @@ func AddReplicationUser(db *sqlx.DB, myver *version.Version, user string, passwo
 	return nil
 }
 
+func CreateUser(db *sqlx.DB, myver *version.Version, user_host string, user_name string, new_password string) (string, error) {
+	query := "CREATE USER '" + user_name + "'@'" + user_host + "' IDENTIFIED BY '" + new_password + "'"
+	_, err := db.Exec(query)
+	if err != nil {
+
+		return query, err
+	}
+	return query, nil
+}
+
 func SetUserPassword(db *sqlx.DB, myver *version.Version, user_host string, user_name string, new_password string) (string, error) {
 	query := "ALTER USER '" + user_name + "'@'" + user_host + "' IDENTIFIED BY '" + new_password + "'"
 	_, err := db.Exec(query)

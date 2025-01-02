@@ -9,6 +9,7 @@ package cluster
 import (
 	"context"
 	"crypto/tls"
+	"fmt"
 	"net/smtp"
 	"strings"
 
@@ -368,4 +369,37 @@ func (cluster *Cluster) SendVaultTokenByMail(Conf config.Config) error {
 	}
 	return err
 
+}
+
+func (cluster *Cluster) SetUserDBCredentials(user_pass string, create bool) error {
+	var found bool
+	user, password := misc.SplitPair(user_pass)
+
+	master := cluster.GetMaster()
+	if master == nil {
+		return fmt.Errorf("No master found")
+	}
+
+	conn, err := master.GetNewDBConn()
+	if err != nil {
+		return err
+	}
+
+	for _, u := range master.Users.ToNewMap() {
+		if u.User == user {
+			found = true
+			logs, err := dbhelper.SetUserPassword(conn, cluster.master.DBVersion, u.Host, u.User, password)
+			cluster.LogSQL(logs, err, cluster.master.URL, "Security", config.LvlErr, "Alter user : %s", err)
+		}
+
+	}
+
+	if !found && create {
+		for _, prx := range cluster.Proxies {
+			logs, err := dbhelper.CreateUser(conn, cluster.master.DBVersion, prx.GetHost(), user, password)
+			cluster.LogSQL(logs, err, cluster.master.URL, "Security", config.LvlErr, "Create user : %s", err)
+		}
+	}
+
+	return nil
 }
