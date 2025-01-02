@@ -3151,8 +3151,18 @@ func (repman *ReplicationManager) handlerMuxAcceptSubscription(w http.ResponseWr
 	if mycluster.Conf.Cloud18SponsorUserCredentials == "" {
 		mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlInfo, "No sponsor db credentials found. Generating sponsor db credentials")
 		pass, _ := mycluster.GeneratePassword()
-		repman.setClusterSetting(mycluster, "cloud18-sponsor-user-credentials", base64.StdEncoding.EncodeToString([]byte("sponsor:"+pass)))
+		mycluster.Conf.Cloud18SponsorUserCredentials = "sponsor:" + pass
 	}
+
+	repman.setClusterSetting(mycluster, "cloud18-sponsor-user-credentials", base64.StdEncoding.EncodeToString([]byte(mycluster.Conf.Cloud18SponsorUserCredentials)))
+
+	if mycluster.Conf.Cloud18DbaUserCredentials == "" {
+		mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlInfo, "No dba database credentials found. Generating dba credentials")
+		pass, _ := mycluster.GeneratePassword()
+		mycluster.Conf.Cloud18DbaUserCredentials = "dba:" + pass
+	}
+
+	repman.setClusterSetting(mycluster, "cloud18-sponsor-user-credentials", base64.StdEncoding.EncodeToString([]byte(mycluster.Conf.Cloud18DbaUserCredentials)))
 
 	mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlInfo, "Sending sponsor activation email to user %s", userform.Username)
 
