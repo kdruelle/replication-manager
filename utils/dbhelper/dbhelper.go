@@ -2937,6 +2937,32 @@ func RenameUserPassword(db *sqlx.DB, myver *version.Version, user_host string, o
 	return query, nil
 }
 
+func SetUserGrants(db *sqlx.DB, myver *version.Version, user_host string, user_name string, grants ...string) (string, error) {
+	var query string
+
+	for _, grant := range grants {
+		query = "GRANT " + grant + " TO '" + user_name + "'@'" + user_host + "'"
+		_, err := db.Exec(query)
+		if err != nil {
+			return query, err
+		}
+	}
+	return query, nil
+}
+
+func SetUserGrantsWithGrantOption(db *sqlx.DB, myver *version.Version, user_host string, user_name string, grants ...string) (string, error) {
+	var query string
+
+	for _, grant := range grants {
+		query = "GRANT " + grant + " TO '" + user_name + "'@'" + user_host + "' WITH GRANT OPTION"
+		_, err := db.Exec(query)
+		if err != nil {
+			return query, err
+		}
+	}
+	return query, nil
+}
+
 func DuplicateUserPassword(db *sqlx.DB, myver *version.Version, old_user_name string, user_host string, new_user_name string) (string, error) {
 	if myver.IsMySQLOrPercona() && myver.Major >= 8 {
 		query := "SHOW CREATE USER  `" + old_user_name + "`@`" + user_host + "`"

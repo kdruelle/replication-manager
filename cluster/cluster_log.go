@@ -46,6 +46,8 @@ func (cluster *Cluster) display() {
 }
 
 func (cluster *Cluster) LogSQL(logs string, err error, url string, from string, level string, format string, args ...interface{}) {
+	logs = strings.ReplaceAll(logs, "%", "%%")
+
 	if err != nil && args != nil {
 		cluster.LogPrintf(level, format, args...)
 	}

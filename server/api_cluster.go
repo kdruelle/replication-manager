@@ -1848,7 +1848,7 @@ func (repman *ReplicationManager) setClusterSetting(mycluster *cluster.Cluster, 
 		mycluster.Conf.Secrets["cloud18-dba-user-credentials"] = new_secret
 
 		// Create dba user if not exists for first time
-		err = mycluster.SetUserDBCredentials(mycluster.Conf.Cloud18DbaUserCredentials, true)
+		err = mycluster.SetDBAUserCredentials(mycluster.Conf.Cloud18DbaUserCredentials, true)
 		if err != nil {
 			return err
 		}
@@ -1863,7 +1863,7 @@ func (repman *ReplicationManager) setClusterSetting(mycluster *cluster.Cluster, 
 		new_secret.OldValue = mycluster.Conf.GetDecryptedValue("cloud18-sponsor-user-credentials")
 		mycluster.Conf.Secrets["cloud18-sponsor-user-credentials"] = new_secret
 
-		err = mycluster.SetUserDBCredentials(mycluster.Conf.Cloud18SponsorUserCredentials, true)
+		err = mycluster.SetSponsorUserCredentials(mycluster.Conf.Cloud18SponsorUserCredentials, true)
 		if err != nil {
 			return err
 		}
