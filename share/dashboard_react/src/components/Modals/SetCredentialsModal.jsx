@@ -73,7 +73,7 @@ function SetCredentialsModal({ clusterName, isOpen, closeModal, type }) {
           setCredentials({
             clusterName,
             credentialType: 'cloud18-dba-user-credentials',
-            credential: `${userName}:${password}`
+            credential: btoa(`${userName}:${password}`)
           })
         )
         break
@@ -82,7 +82,7 @@ function SetCredentialsModal({ clusterName, isOpen, closeModal, type }) {
           setCredentials({
             clusterName,
             credentialType: 'cloud18-sponsor-user-credentials',
-            credential: `${userName}:${password}`
+            credential: btoa(`${userName}:${password}`)
           })
         )
         break

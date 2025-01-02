@@ -1391,7 +1391,7 @@ func (repman *ReplicationManager) handlerMuxSetSettings(w http.ResponseWriter, r
 		if valid {
 			err := repman.setClusterSetting(mycluster, setting, value)
 			if err != nil {
-				http.Error(w, "Setting Not Found", 501)
+				http.Error(w, "Failed to set cluster setting: "+err.Error(), 501)
 				return
 			}
 		} else {
