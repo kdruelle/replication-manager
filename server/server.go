@@ -82,6 +82,7 @@ type ReplicationManager struct {
 	Clusters         map[string]*cluster.Cluster       `json:"-"`
 	PeerClusters     []config.PeerCluster              `json:"-"`
 	PeerBooked       map[string]string                 `json:"-"`
+	Partners         []config.Partner                  `json:"partners"`
 	Agents           []opensvc.Host                    `json:"agents"`
 	UUID             string                            `json:"uuid"`
 	Hostname         string                            `json:"hostname"`
@@ -148,6 +149,7 @@ type ReplicationManager struct {
 	IsApiListenerReady                               bool                              `json:"-"`
 	Terms                                            []byte                            `json:"-"` //Will be fetched by /api/terms later to prevent excessive data
 	TermsDT                                          time.Time                         `json:"termsDT"`
+	ModTimes                                         map[string]time.Time              `json:"termsDT"`
 	fileHook                                         log.Hook
 	repmanv3.UnimplementedClusterPublicServiceServer `json:"-"`
 	repmanv3.UnimplementedClusterServiceServer       `json:"-"`
@@ -1090,6 +1092,7 @@ func (repman *ReplicationManager) MergeOnStart(conf config.Config) error {
 func (repman *ReplicationManager) InitConfig(conf config.Config, init_git bool) {
 	repman.Logrus = log.New()
 	repman.PeerClusters = make([]config.PeerCluster, 0)
+	repman.ModTimes = make(map[string]time.Time)
 	repman.ServerScopeList = make(map[string]bool)
 	repman.VersionConfs = make(map[string]*config.ConfVersion)
 	repman.ImmuableFlagMaps = make(map[string]map[string]interface{})
@@ -1978,6 +1981,7 @@ func (repman *ReplicationManager) Run() error {
 
 	repman.globalScheduler.Start()
 	repman.LoadPeerJson()
+	repman.LoadPartnersJson()
 
 	repman.LimitPrivileges()
 

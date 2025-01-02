@@ -218,6 +218,7 @@ func (repman *ReplicationManager) PullCloud18Configs() {
 		if repman.Conf.Cloud18 {
 			repman.CheckCloud18Config(filePath)
 			repman.LoadPeerJson()
+			repman.LoadPartnersJson()
 		}
 	}
 
@@ -312,6 +313,22 @@ func (repman *ReplicationManager) CheckCloud18Config(filePath string) {
 func (repman *ReplicationManager) LoadPeerJson() error {
 	filePath := filepath.Join(repman.Conf.WorkingDir, ".pull", "peer.json")
 
+	fstat, err := os.Stat(filePath)
+	if err != nil {
+		repman.PeerClusters = make([]config.PeerCluster, 0)
+		if !os.IsNotExist(err) {
+			repman.Logrus.Errorf("failed reading peer file: %v", err)
+		}
+	}
+
+	modTime := fstat.ModTime()
+
+	if oldModTime, ok := repman.ModTimes["peer"]; ok && oldModTime.Equal(modTime) {
+		return nil // No changes in the file modification time
+	}
+
+	repman.ModTimes["peer"] = modTime
+
 	content, err := os.ReadFile(filePath)
 	if err != nil {
 		repman.PeerClusters = make([]config.PeerCluster, 0)
@@ -327,7 +344,7 @@ func (repman *ReplicationManager) LoadPeerJson() error {
 
 	// Compare with the existing checksum
 	if oldHash, ok := repman.CheckSumConfig["peer"]; ok && bytes.Equal(oldHash.Sum(nil), newHash.Sum(nil)) {
-		return nil // No changes
+		return nil // No changes in the file content
 	}
 
 	// Decode JSON
@@ -340,6 +357,58 @@ func (repman *ReplicationManager) LoadPeerJson() error {
 	// Update state
 	repman.PeerClusters = PeerList
 	repman.CheckSumConfig["peer"] = newHash
+
+	return nil
+
+}
+
+func (repman *ReplicationManager) LoadPartnersJson() error {
+	filePath := filepath.Join(repman.Conf.WorkingDir, ".pull", "partners.json")
+
+	fstat, err := os.Stat(filePath)
+	if err != nil {
+		repman.Partners = make([]config.Partner, 0)
+		if !os.IsNotExist(err) {
+			repman.Logrus.Errorf("failed reading partners file: %v", err)
+		}
+	}
+
+	modTime := fstat.ModTime()
+
+	if oldModTime, ok := repman.ModTimes["partners"]; ok && oldModTime.Equal(modTime) {
+		return nil // No changes in the file modification time
+	}
+
+	repman.ModTimes["partners"] = modTime
+
+	content, err := os.ReadFile(filePath)
+	if err != nil {
+		repman.Partners = make([]config.Partner, 0)
+		if !os.IsNotExist(err) {
+			repman.Logrus.Errorf("failed reading partners file: %v", err)
+		}
+		return err
+	}
+
+	// Calculate the checksum
+	newHash := md5.New()
+	newHash.Write(content)
+
+	// Compare with the existing checksum
+	if oldHash, ok := repman.CheckSumConfig["partners"]; ok && bytes.Equal(oldHash.Sum(nil), newHash.Sum(nil)) {
+		return nil // No changes in the file content
+	}
+
+	// Decode JSON
+	var PartnerList []config.Partner
+	if err := json.Unmarshal(content, &PartnerList); err != nil {
+		repman.Logrus.Errorf("failed to decode partners JSON: %v", err)
+		return err
+	}
+
+	// Update state
+	repman.Partners = PartnerList
+	repman.CheckSumConfig["partners"] = newHash
 
 	return nil
 

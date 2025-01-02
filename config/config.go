@@ -800,6 +800,16 @@ type PeerCluster struct {
 	Cloud18InfraCertifications             string   `json:"cloud18-infra-certifications"`
 }
 
+type Partner struct {
+	Id          int
+	Name        string
+	IsDbops     int
+	IsSysops    int
+	DbopsEmail  string
+	SysopsEmail string
+	Stars       int
+}
+
 // Compliance created in OpenSVC collector and exported as JSON
 type Compliance struct {
 	Filtersets []ComplianceFilterset `json:"filtersets"`
