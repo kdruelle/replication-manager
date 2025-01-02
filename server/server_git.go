@@ -70,6 +70,18 @@ func (repman *ReplicationManager) InitGitConfig(conf *config.Config) error {
 	}
 
 	if conf.Cloud18GitUser != "" && conf.Cloud18GitPassword != "" && conf.Cloud18 {
+		if conf.Cloud18Domain == "" {
+			return fmt.Errorf("Cloud18Domain is empty")
+		}
+
+		if conf.Cloud18SubDomain == "" {
+			return fmt.Errorf("Cloud18SubDomain is empty")
+		}
+
+		if conf.Cloud18SubDomainZone == "" {
+			return fmt.Errorf("Cloud18SubDomainZone is empty")
+		}
+
 		acces_tok, err := githelper.GetGitLabTokenBasicAuth(conf.Cloud18GitUser, conf.GetDecryptedValue("cloud18-gitlab-password"), conf.IsEligibleForPrinting(config.ConstLogModGit, config.LvlDbg))
 		if err != nil {
 			if conf.Verbose || conf.IsEligibleForPrinting(config.ConstLogModGit, config.LvlErr) {
