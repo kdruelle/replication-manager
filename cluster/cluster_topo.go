@@ -516,7 +516,7 @@ func (cluster *Cluster) AllServersFailed() bool {
 func (cluster *Cluster) TopologyClusterDown() bool {
 	// search for all cluster down
 	if cluster.GetMaster() == nil || cluster.GetMaster().State == stateFailed {
-
+		cluster.IsMasterDown = true
 		allslavefailed := true
 		for _, s := range cluster.slaves {
 			if s.State != stateFailed && s.State != stateErrorAuth && !s.IsIgnored() {
@@ -544,6 +544,7 @@ func (cluster *Cluster) TopologyClusterDown() bool {
 
 	}
 	cluster.IsDown = false
+	cluster.IsMasterDown = false
 	return false
 }
 

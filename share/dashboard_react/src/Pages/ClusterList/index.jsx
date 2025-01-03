@@ -79,7 +79,7 @@ function ClusterList({ onClick }) {
             key: 'Is Healthy',
             value: (
               <HStack spacing='4'>
-                {clusterItem.isDown ? (
+                {clusterItem.isDown || clusterItem.isMasterDown ? (
                   <>
                     <CheckOrCrossIcon isValid={false} />
                     <Text>No</Text>

@@ -90,6 +90,7 @@ type Cluster struct {
 	IsLostMajority                bool                 `json:"isLostMajority"`
 	IsDown                        bool                 `json:"isDown"`
 	IsClusterDown                 bool                 `json:"isClusterDown"`
+	IsMasterDown                  bool                 `json:"isMasterDown"`
 	IsAllDbUp                     bool                 `json:"isAllDbUp"`
 	IsFailable                    bool                 `json:"isFailable"`
 	IsPostgres                    bool                 `json:"isPostgres"`
