@@ -319,6 +319,7 @@ func (repman *ReplicationManager) LoadPeerJson() error {
 		if !os.IsNotExist(err) {
 			repman.Logrus.Errorf("failed reading peer file: %v", err)
 		}
+		return err
 	}
 
 	modTime := fstat.ModTime()
@@ -371,6 +372,8 @@ func (repman *ReplicationManager) LoadPartnersJson() error {
 		if !os.IsNotExist(err) {
 			repman.Logrus.Errorf("failed reading partners file: %v", err)
 		}
+
+		return err
 	}
 
 	modTime := fstat.ModTime()
