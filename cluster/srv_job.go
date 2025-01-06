@@ -1819,6 +1819,11 @@ func (server *ServerMonitor) JobBackupMyDumper(outputdir string) error {
 		}
 	}
 
+	if server.IsMariaDB() && server.DBVersion.GreaterEqual("10.7") && dumper.LowerEqual("0.10.1") {
+		cluster.SetState("WARN0133", state.State{ErrType: "WARNING", ErrDesc: fmt.Sprintf(clusterError["WARN0133"], dumper.ToString()), ErrFrom: "JOB"})
+		return fmt.Errorf("MyDumper version %s is not compatible with MariaDB 10.7", dumper.ToString())
+	}
+
 	//Block DDL For Backup
 	if server.IsMariaDB() && server.DBVersion.GreaterEqual("10.4") && dumper.Lower("0.12.3") && cluster.Conf.BackupLockDDL {
 		bckConn, err = server.GetNewDBConn()

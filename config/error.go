@@ -194,6 +194,7 @@ var ClusterError = map[string]string{
 	"WARN0130":  "Error while rotating system logs on %s: %s. Err: %s",
 	"WARN0131":  "Error while reading slow_log on %s. %s. Err: %s",
 	"WARN0132":  "Unable to pull from repository %s. Err: %s",
+	"WARN0133":  "Mydumper version %s is not compatible with MariaDB 10.7 and greater",
 	"MDEV20821": "MariaDB version has replication issue https://jira.mariadb.org/browse/MDEV-20821",
 	"MDEV28310": "MariaDB version has replication issue for non row format https://jira.mariadb.org/browse/MDEV-28310",
 	"MDEV19577": "MariaDB version has replication issue for non row format https://jira.mariadb.org/browse/MDEV-19577",
