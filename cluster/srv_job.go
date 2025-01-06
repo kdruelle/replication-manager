@@ -1843,7 +1843,12 @@ func (server *ServerMonitor) JobBackupMyDumper(outputdir string) error {
 	if dumper.GreaterEqual("0.15.3") {
 		myargs = append(myargs, "--clear")
 	}
-	myargs = append(myargs, "--outputdir", outputdir, "--threads", threads, "--host", misc.Unbracket(server.Host), "--port", server.Port, "--user", cluster.GetDbUser(), "--password", cluster.GetDbPass(), "--regex", cluster.Conf.BackupMyDumperRegex)
+	myargs = append(myargs, "--outputdir", outputdir, "--threads", threads, "--host", misc.Unbracket(server.Host), "--port", server.Port, "--user", cluster.GetDbUser(), "--password", cluster.GetDbPass())
+
+	if cluster.Conf.BackupMyDumperRegex != "" {
+		myargs = append(myargs, "--regex", cluster.Conf.BackupMyDumperRegex)
+	}
+
 	dumpCmd := exec.Command(cluster.GetMyDumperPath(), myargs...)
 
 	cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTask, config.LvlInfo, "%s", strings.Replace(dumpCmd.String(), cluster.GetDbPass(), "XXXX", 1))
