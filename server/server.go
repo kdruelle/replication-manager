@@ -750,7 +750,7 @@ func (repman *ReplicationManager) AddFlags(flags *pflag.FlagSet, conf *config.Co
 	flags.StringVar(&conf.BackupMyLoaderPath, "backup-myloader-path", "/usr/bin/myloader", "Path to myloader binary")
 	flags.StringVar(&conf.BackupMyLoaderOptions, "backup-myloader-options", "--overwrite-tables --verbose=3", "Extra options")
 	flags.StringVar(&conf.BackupMyDumperOptions, "backup-mydumper-options", "--chunk-filesize=1000 --compress --less-locking --verbose=3 --triggers --routines --events --trx-consistency-only --kill-long-queries", "Extra options")
-	flags.StringVar(&conf.BackupMyDumperRegex, "backup-mydumper-regex", "^(?!(sys|performance_schema|information_schema|replication_manager_schema\\.jobs$))", "Mydumper regex for backup")
+	flags.StringVar(&conf.BackupMyDumperRegex, "backup-mydumper-regex", `^(?!(sys\.|performance_schema\.|information_schema\.|replication_manager_schema\.jobs$))`, "Mydumper regex for backup")
 	flags.StringVar(&conf.BackupMysqldumpPath, "backup-mysqldump-path", "", "Path to mysqldump binary")
 	flags.StringVar(&conf.BackupMysqldumpOptions, "backup-mysqldump-options", "--hex-blob --single-transaction --verbose --all-databases --routines=true --triggers=true --system=all", "Extra options")
 	flags.StringVar(&conf.BackupMysqlbinlogPath, "backup-mysqlbinlog-path", "", "Path to mysqlbinlog binary")
