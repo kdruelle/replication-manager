@@ -1804,6 +1804,12 @@ func (repman *ReplicationManager) setClusterSetting(mycluster *cluster.Cluster, 
 			return errors.New("Unable to decode")
 		}
 		mycluster.Conf.BackupMyDumperOptions = string(val)
+	case "backup-mydumper-regex":
+		val, err := base64.StdEncoding.DecodeString(value)
+		if err != nil {
+			return errors.New("Unable to decode")
+		}
+		mycluster.Conf.BackupMyDumperRegex = string(val)
 	case "backup-myloader-options":
 		val, err := base64.StdEncoding.DecodeString(value)
 		if err != nil {

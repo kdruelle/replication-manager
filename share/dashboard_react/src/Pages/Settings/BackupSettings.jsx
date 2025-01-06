@@ -113,6 +113,26 @@ function BackupSettings({ selectedCluster, user }) {
       )
     },
     {
+      key: 'Mydumper Regex',
+      value: (
+        <TextForm
+          value={selectedCluster?.config?.backupMyDumperRegex}
+          confirmTitle={`Confirm backup-mydumper-regex to `}
+          maxLength={1024}
+          className={styles.textbox}
+          onSave={(value) =>
+            dispatch(
+              setSetting({
+                clusterName: selectedCluster?.name,
+                setting: 'backup-mydumper-regex',
+                value: btoa(value)
+              })
+            )
+          }
+        />
+      )
+    },
+    {
       key: 'Myloader options',
       value: (
         <TextForm
