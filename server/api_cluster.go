@@ -396,6 +396,14 @@ func (repman *ReplicationManager) apiClusterProtectedHandler(router *mux.Router)
 	))
 }
 
+// @Summary Retrieve servers for a specific cluster
+// @Description This endpoint retrieves the servers for the specified cluster.
+// @Tags clusters
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Success 200 {array} map[string]interface{} "List of servers"
+// @Failure 500 {string} string "Internal Server Error"
+// @Router /api/clusters/{clusterName}/topology/servers [get]
 func (repman *ReplicationManager) handlerMuxServers(w http.ResponseWriter, r *http.Request) {
 	//marshal unmarchal for ofuscation deep copy of struc
 	w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -444,6 +452,13 @@ func (repman *ReplicationManager) handlerMuxServers(w http.ResponseWriter, r *ht
 	}
 }
 
+// @Summary Shows the slaves for that specific named cluster
+// @Description Shows the slaves for that specific named cluster
+// @Tags clusters
+// @Param clusterName path string true "Cluster Name"
+// @Success 200 {array} map[string]interface{} "A list of slaves"
+// @Failure 500 {string} string "Internal Server Error"
+// @Router /api/clusters/{clusterName}/topology/slaves [get]
 func (repman *ReplicationManager) handlerMuxSlaves(w http.ResponseWriter, r *http.Request) {
 	//marshal unmarchal for ofuscation deep copy of struc
 	w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -477,6 +492,13 @@ func (repman *ReplicationManager) handlerMuxSlaves(w http.ResponseWriter, r *htt
 	}
 }
 
+// @Summary Shows the proxies for that specific named cluster
+// @Description Shows the proxies for that specific named cluster
+// @Tags clusters
+// @Param clusterName path string true "Cluster Name"
+// @Success 200 {array} map[string]interface{} "A list of proxies"
+// @Failure 500 {string} string "Internal Server Error"
+// @Router /api/clusters/{clusterName}/topology/proxies [get]
 func (repman *ReplicationManager) handlerMuxProxies(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	//marshal unmarchal for ofuscation deep copy of struc
@@ -506,6 +528,13 @@ func (repman *ReplicationManager) handlerMuxProxies(w http.ResponseWriter, r *ht
 	}
 }
 
+// @Summary Shows the alerts for that specific named cluster
+// @Description Shows the alerts for that specific named cluster
+// @Tags clusters
+// @Param clusterName path string true "Cluster Name"
+// @Success 200 {object} cluster.Alerts "A list of alerts"
+// @Failure 500 {string} string "Internal Server Error"
+// @Router /api/clusters/{clusterName}/topology/alerts [get]
 func (repman *ReplicationManager) handlerMuxAlerts(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	a := new(cluster.Alerts)
@@ -529,6 +558,14 @@ func (repman *ReplicationManager) handlerMuxAlerts(w http.ResponseWriter, r *htt
 	}
 }
 
+// @Summary Rotate keys for a specific cluster
+// @Description Rotate the keys for the specified cluster
+// @Tags clusters
+// @Param clusterName path string true "Cluster Name"
+// @Success 200 {string} string "Keys rotated successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "No cluster"
+// @Router /api/clusters/{clusterName}/actions/certificates-rotate [post]
 func (repman *ReplicationManager) handlerMuxRotateKeys(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -546,6 +583,14 @@ func (repman *ReplicationManager) handlerMuxRotateKeys(w http.ResponseWriter, r 
 	return
 }
 
+// @Summary Reset SLA for a specific cluster
+// @Description Reset the SLA for the specified cluster
+// @Tags clusters
+// @Param clusterName path string true "Cluster Name"
+// @Success 200 {string} string "SLA reset successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "No cluster"
+// @Router /api/clusters/{clusterName}/actions/reset-sla [post]
 func (repman *ReplicationManager) handlerMuxResetSla(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -557,13 +602,23 @@ func (repman *ReplicationManager) handlerMuxResetSla(w http.ResponseWriter, r *h
 		}
 		mycluster.SetEmptySla()
 	} else {
-
 		http.Error(w, "No cluster", 500)
 		return
 	}
 	return
 }
 
+// handlerMuxFailover handles the failover process for a given cluster.
+// @Summary Handles the failover process for a given cluster.
+// @Description This endpoint triggers a master failover for the specified cluster.
+// @Tags cluster
+// @Accept json
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Success 200 {string} string "Successfully triggered failover"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "No cluster"
+// @Router /api/clusters/{clusterName}/actions/failover [post]
 func (repman *ReplicationManager) handlerMuxFailover(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -582,8 +637,19 @@ func (repman *ReplicationManager) handlerMuxFailover(w http.ResponseWriter, r *h
 	return
 }
 
+// handlerMuxClusterShardingAdd handles the addition of a sharding cluster to an existing cluster.
+// @Summary Add a sharding cluster to an existing cluster
+// @Description This endpoint adds a sharding cluster to an existing cluster and triggers a rolling restart.
+// @Tags clusters
+// @Accept json
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param clusterShardingName path string true "Cluster Sharding Name"
+// @Success 200 {string} string "Sharding cluster added successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "No cluster"
+// @Router /api/clusters/{clusterName}/actions/add/{clusterShardingName} [post]
 func (repman *ReplicationManager) handlerMuxClusterShardingAdd(w http.ResponseWriter, r *http.Request) {
-
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
 	mycluster := repman.getClusterByName(vars["clusterName"])
@@ -601,6 +667,17 @@ func (repman *ReplicationManager) handlerMuxClusterShardingAdd(w http.ResponseWr
 	return
 }
 
+// handlerMuxRolling handles the rolling restart process for a given cluster.
+// @Summary Handles the rolling restart process for a given cluster.
+// @Description This endpoint triggers a rolling restart for the specified cluster.
+// @Tags clusters
+// @Accept json
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Success 200 {string} string "Successfully triggered rolling restart"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "No cluster"
+// @Router /api/clusters/{clusterName}/actions/rolling [post]
 func (repman *ReplicationManager) handlerMuxRolling(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -618,6 +695,17 @@ func (repman *ReplicationManager) handlerMuxRolling(w http.ResponseWriter, r *ht
 	return
 }
 
+// handlerMuxStartTraffic handles the start traffic process for a given cluster.
+// @Summary Start traffic for a specific cluster
+// @Description This endpoint starts traffic for the specified cluster.
+// @Tags clusters
+// @Accept json
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Success 200 {string} string "Successfully started traffic"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "No cluster"
+// @Router /api/clusters/{clusterName}/actions/start-traffic [post]
 func (repman *ReplicationManager) handlerMuxStartTraffic(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -636,6 +724,17 @@ func (repman *ReplicationManager) handlerMuxStartTraffic(w http.ResponseWriter, 
 	return
 }
 
+// handlerMuxStopTraffic handles the stop traffic process for a given cluster.
+// @Summary Stop traffic for a specific cluster
+// @Description This endpoint stops traffic for the specified cluster.
+// @Tags clusters
+// @Accept json
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Success 200 {string} string "Successfully stopped traffic"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "No cluster"
+// @Router /api/clusters/{clusterName}/actions/stop-traffic [post]
 func (repman *ReplicationManager) handlerMuxStopTraffic(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -654,6 +753,17 @@ func (repman *ReplicationManager) handlerMuxStopTraffic(w http.ResponseWriter, r
 	return
 }
 
+// handlerMuxBootstrapReplicationCleanup handles the cleanup process for replication bootstrap.
+// @Summary Cleanup replication bootstrap for a specific cluster
+// @Description This endpoint triggers the cleanup process for replication bootstrap for the specified cluster.
+// @Tags clusters
+// @Accept json
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Success 200 {string} string "Successfully cleaned up replication bootstrap"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "No cluster"
+// @Router /api/clusters/{clusterName}/actions/replication/cleanup [post]
 func (repman *ReplicationManager) handlerMuxBootstrapReplicationCleanup(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -678,6 +788,18 @@ func (repman *ReplicationManager) handlerMuxBootstrapReplicationCleanup(w http.R
 	return
 }
 
+// handlerMuxBootstrapReplication handles the bootstrap replication process for a given cluster.
+// @Summary Bootstrap replication for a specific cluster
+// @Description This endpoint triggers the bootstrap replication process for the specified cluster.
+// @Tags clusters
+// @Accept json
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param topology path string true "Topology"
+// @Success 200 {string} string "Successfully bootstrapped replication"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "No cluster"
+// @Router /api/clusters/{clusterName}/actions/replication/bootstrap/{topology} [post]
 func (repman *ReplicationManager) handlerMuxBootstrapReplication(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -724,6 +846,17 @@ func (repman *ReplicationManager) handlerMuxServicesBootstrap(w http.ResponseWri
 	return
 }
 
+// handlerMuxServicesProvision handles the provisioning of services for a given cluster.
+// @Summary Provision services for a specific cluster
+// @Description This endpoint provisions services for the specified cluster.
+// @Tags clusters
+// @Accept json
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Success 200 {string} string "Successfully provisioned services"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "No cluster"
+// @Router /api/clusters/{clusterName}/services/actions/provision [post]
 func (repman *ReplicationManager) handlerMuxServicesProvision(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -746,6 +879,17 @@ func (repman *ReplicationManager) handlerMuxServicesProvision(w http.ResponseWri
 	return
 }
 
+// handlerMuxServicesUnprovision handles the unprovisioning of services for a given cluster.
+// @Summary Unprovision services for a specific cluster
+// @Description This endpoint unprovisions services for the specified cluster.
+// @Tags clusters
+// @Accept json
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Success 200 {string} string "Successfully unprovisioned services"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "No cluster"
+// @Router /api/clusters/{clusterName}/services/actions/unprovision [post]
 func (repman *ReplicationManager) handlerMuxServicesUnprovision(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -763,6 +907,17 @@ func (repman *ReplicationManager) handlerMuxServicesUnprovision(w http.ResponseW
 	return
 }
 
+// handlerMuxServicesCancelRollingRestart handles the cancellation of rolling restart for a given cluster.
+// @Summary Cancel rolling restart for a specific cluster
+// @Description This endpoint cancels the rolling restart for the specified cluster.
+// @Tags clusters
+// @Accept json
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Success 200 {string} string "Successfully cancelled rolling restart"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "No cluster"
+// @Router /api/clusters/{clusterName}/actions/cancel-rolling-restart [post]
 func (repman *ReplicationManager) handlerMuxServicesCancelRollingRestart(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -780,6 +935,17 @@ func (repman *ReplicationManager) handlerMuxServicesCancelRollingRestart(w http.
 	return
 }
 
+// handlerMuxServicesCancelRollingReprov handles the cancellation of rolling reprovision for a given cluster.
+// @Summary Cancel rolling reprovision for a specific cluster
+// @Description This endpoint cancels the rolling reprovision for the specified cluster.
+// @Tags clusters
+// @Accept json
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Success 200 {string} string "Successfully cancelled rolling reprovision"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "No cluster"
+// @Router /api/clusters/{clusterName}/actions/cancel-rolling-reprov [post]
 func (repman *ReplicationManager) handlerMuxServicesCancelRollingReprov(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -797,6 +963,17 @@ func (repman *ReplicationManager) handlerMuxServicesCancelRollingReprov(w http.R
 	return
 }
 
+// handlerMuxSetSettingsDiscover handles the discovery of settings for a given cluster.
+// @Summary Discover settings for a specific cluster
+// @Description This endpoint triggers the discovery of settings for the specified cluster.
+// @Tags clusters
+// @Accept json
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Success 200 {string} string "Successfully discovered settings"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "No cluster"
+// @Router /api/clusters/{clusterName}/settings/actions/discover [post]
 func (repman *ReplicationManager) handlerMuxSetSettingsDiscover(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -818,6 +995,17 @@ func (repman *ReplicationManager) handlerMuxSetSettingsDiscover(w http.ResponseW
 	return
 }
 
+// handlerMuxClusterResetFailoverControl handles the reset of failover control for a given cluster.
+// @Summary Reset failover control for a specific cluster
+// @Description This endpoint resets the failover control for the specified cluster.
+// @Tags clusters
+// @Accept json
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Success 200 {string} string "Successfully reset failover control"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "No cluster"
+// @Router /api/clusters/{clusterName}/actions/reset-failover-control [post]
 func (repman *ReplicationManager) handlerMuxClusterResetFailoverControl(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -836,6 +1024,19 @@ func (repman *ReplicationManager) handlerMuxClusterResetFailoverControl(w http.R
 	return
 }
 
+// handlerMuxSwitchover handles the switchover process for a given cluster.
+// @Summary Handles the switchover process for a given cluster.
+// @Description This endpoint triggers a master switchover for the specified cluster.
+// @Tags clusters
+// @Accept json
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param prefmaster formData string false "Preferred Master"
+// @Success 200 {string} string "Successfully triggered switchover"
+// @Failure 400 {string} string "Master failed"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "No cluster"
+// @Router /api/clusters/{clusterName}/actions/switchover [post]
 func (repman *ReplicationManager) handlerMuxSwitchover(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -871,6 +1072,15 @@ func (repman *ReplicationManager) handlerMuxSwitchover(w http.ResponseWriter, r 
 	return
 }
 
+// handlerMuxMaster handles the HTTP request to retrieve the master of a specified cluster.
+// @Summary Retrieve master of a cluster
+// @Description This endpoint retrieves the master of a specified cluster and returns it in JSON format.
+// @Tags clusters
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Success 200 {object} cluster.ServerMonitor "Master server"
+// @Failure 500 {string} string "Internal Server Error"
+// @Router /api/clusters/{clusterName}/topology/master [get]
 func (repman *ReplicationManager) handlerMuxMaster(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -903,6 +1113,15 @@ func (repman *ReplicationManager) handlerMuxMaster(w http.ResponseWriter, r *htt
 	}
 }
 
+// handlerMuxClusterCertificates handles the retrieval of client certificates for a given cluster.
+// @Summary Retrieve client certificates for a specific cluster
+// @Description This endpoint retrieves the client certificates for the specified cluster.
+// @Tags clusters
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Success 200 {array} map[string]interface{} "List of client certificates"
+// @Failure 500 {string} string "Internal Server Error"
+// @Router /api/clusters/{clusterName}/certificates [get]
 func (repman *ReplicationManager) handlerMuxClusterCertificates(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -929,6 +1148,15 @@ func (repman *ReplicationManager) handlerMuxClusterCertificates(w http.ResponseW
 	}
 }
 
+// handlerMuxClusterTags handles the retrieval of tags for a given cluster.
+// @Summary Retrieve tags for a specific cluster
+// @Description This endpoint retrieves the tags for the specified cluster.
+// @Tags clusters
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Success 200 {array} string "List of tags"
+// @Failure 500 {string} string "Internal Server Error"
+// @Router /api/clusters/{clusterName}/tags [get]
 func (repman *ReplicationManager) handlerMuxClusterTags(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -948,6 +1176,16 @@ func (repman *ReplicationManager) handlerMuxClusterTags(w http.ResponseWriter, r
 	}
 }
 
+// handlerMuxClusterBackups handles the retrieval of backups for a given cluster.
+// @Summary Retrieve backups for a specific cluster
+// @Description This endpoint retrieves the backups for the specified cluster.
+// @Tags clusters
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Success 200 {array} map[string]interface{} "List of backups"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "No cluster"
+// @Router /api/clusters/{clusterName}/backups [get]
 func (repman *ReplicationManager) handlerMuxClusterBackups(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -970,6 +1208,16 @@ func (repman *ReplicationManager) handlerMuxClusterBackups(w http.ResponseWriter
 	}
 }
 
+// handlerMuxClusterShardClusters handles the retrieval of shard clusters for a given cluster.
+// @Summary Retrieve shard clusters for a specific cluster
+// @Description This endpoint retrieves the shard clusters for the specified cluster.
+// @Tags clusters
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Success 200 {array} map[string]interface{} "List of shard clusters"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "No cluster"
+// @Router /api/clusters/{clusterName}/shardclusters [get]
 func (repman *ReplicationManager) handlerMuxClusterShardClusters(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -992,6 +1240,16 @@ func (repman *ReplicationManager) handlerMuxClusterShardClusters(w http.Response
 	}
 }
 
+// handlerMuxClusterQueryRules handles the retrieval of query rules for a given cluster.
+// @Summary Retrieve query rules for a specific cluster
+// @Description This endpoint retrieves the query rules for the specified cluster.
+// @Tags clusters
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Success 200 {array} map[string]interface{} "List of query rules"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "No cluster"
+// @Router /api/clusters/{clusterName}/queryrules [get]
 func (repman *ReplicationManager) handlerMuxClusterQueryRules(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -1014,6 +1272,17 @@ func (repman *ReplicationManager) handlerMuxClusterQueryRules(w http.ResponseWri
 	}
 }
 
+// handlerMuxClusterTop handles the retrieval of top metrics for a given cluster.
+// @Summary Retrieve top metrics for a specific cluster
+// @Description This endpoint retrieves the top metrics for the specified cluster.
+// @Tags clusters
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName query string false "Server Name"
+// @Success 200 {object} map[string]interface{} "Top metrics"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "No cluster"
+// @Router /api/clusters/{clusterName}/top [get]
 func (repman *ReplicationManager) handlerMuxClusterTop(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -1047,6 +1316,18 @@ func (repman *ReplicationManager) handlerMuxClusterTop(w http.ResponseWriter, r 
 	}
 }
 
+// handlerMuxSwitchSettings handles the switching of settings for a given cluster.
+// @Summary Switch settings for a specific cluster
+// @Description This endpoint switches the settings for the specified cluster.
+// @Tags clusters
+// @Accept json
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param settingName path string true "Setting Name"
+// @Success 200 {string} string "Successfully switched setting"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "No cluster"
+// @Router /api/clusters/{clusterName}/settings/actions/switch/{settingName} [post]
 func (repman *ReplicationManager) handlerMuxSwitchSettings(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -1085,6 +1366,18 @@ func (repman *ReplicationManager) handlerMuxSwitchSettings(w http.ResponseWriter
 
 }
 
+// handlerMuxSwitchGlobalSettings handles the switching of global settings for the server.
+// @Summary Switch global settings for the server
+// @Description This endpoint switches the global settings for the server.
+// @Tags settings
+// @Accept json
+// @Produce json
+// @Param settingName path string true "Setting Name"
+// @Param clusterName path string false "Cluster Name"
+// @Success 200 {string} string "Successfully switched setting"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "No cluster"
+// @Router /api/clusters/settings/actions/switch/{settingName} [post]
 func (repman *ReplicationManager) handlerMuxSwitchGlobalSettings(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -1368,6 +1661,19 @@ func (repman *ReplicationManager) switchClusterSettings(mycluster *cluster.Clust
 	return nil
 }
 
+// handlerMuxSetSettings handles the setting of settings for a given cluster.
+// @Summary Set settings for a specific cluster
+// @Description This endpoint sets the settings for the specified cluster.
+// @Tags clusters
+// @Accept json
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param settingName path string true "Setting Name"
+// @Param settingValue path string true "Setting Value"
+// @Success 200 {string} string "Successfully set setting"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "No cluster"
+// @Router /api/clusters/{clusterName}/settings/actions/set/{settingName}/{settingValue} [post]
 func (repman *ReplicationManager) handlerMuxSetSettings(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -1409,6 +1715,19 @@ func (repman *ReplicationManager) handlerMuxSetSettings(w http.ResponseWriter, r
 	}
 }
 
+// handlerMuxSetGlobalSettings handles the setting of global settings for the server.
+// @Summary Set global settings for the server
+// @Description This endpoint sets the global settings for the server.
+// @Tags settings
+// @Accept json
+// @Produce json
+// @Param settingName path string true "Setting Name"
+// @Param clusterName path string false "Cluster Name"
+// @Param settingValue path string true "Setting Value"
+// @Success 200 {string} string "Successfully set setting"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "No cluster"
+// @Router /api/clusters/settings/actions/set/{settingName}/{settingValue} [post]
 func (repman *ReplicationManager) handlerMuxSetGlobalSettings(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -1458,6 +1777,19 @@ func (repman *ReplicationManager) handlerMuxSetGlobalSettings(w http.ResponseWri
 	}
 }
 
+// handlerMuxSetCron handles the setting of cron jobs for a given cluster.
+// @Summary Set cron jobs for a specific cluster
+// @Description This endpoint sets the cron jobs for the specified cluster.
+// @Tags clusters
+// @Accept json
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param settingName path string true "Setting Name"
+// @Param settingValue path string true "Setting Value"
+// @Success 200 {string} string "Successfully set cron job"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "No cluster"
+// @Router /api/clusters/{clusterName}/settings/actions/set-cron/{settingName}/{settingValue} [post]
 func (repman *ReplicationManager) handlerMuxSetCron(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -2179,6 +2511,14 @@ func (repman *ReplicationManager) switchServerSetting(user string, URL string, n
 	return nil
 }
 
+// handlerMuxReloadPlans handles the reloading of cluster plans.
+// @Summary Reload cluster plans
+// @Description This endpoint reloads the cluster plans for all clusters.
+// @Tags clusters
+// @Success 200 {string} string "Successfully reloaded plans"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "No cluster"
+// @Router /api/clusters/settings/actions/reload-clusters-plans [post]
 func (repman *ReplicationManager) handlerMuxReloadPlans(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
@@ -2210,6 +2550,18 @@ func (repman *ReplicationManager) handlerMuxReloadPlans(w http.ResponseWriter, r
 	}
 }
 
+// handlerMuxAddTag handles the addition of a tag to a given cluster.
+// @Summary Add a tag to a specific cluster
+// @Description This endpoint adds a tag to the specified cluster.
+// @Tags clusters
+// @Accept json
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param tagValue path string true "Tag Value"
+// @Success 200 {string} string "Tag added successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found"
+// @Router /api/clusters/{clusterName}/settings/actions/add-db-tag/{tagValue} [post]
 func (repman *ReplicationManager) handlerMuxAddTag(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -2227,6 +2579,18 @@ func (repman *ReplicationManager) handlerMuxAddTag(w http.ResponseWriter, r *htt
 	return
 }
 
+// handlerMuxAddProxyTag handles the addition of a proxy tag to a given cluster.
+// @Summary Add a proxy tag to a specific cluster
+// @Description This endpoint adds a proxy tag to the specified cluster.
+// @Tags clusters
+// @Accept json
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param tagValue path string true "Tag Value"
+// @Success 200 {string} string "Tag added successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found"
+// @Router /api/clusters/{clusterName}/settings/actions/add-proxy-tag/{tagValue} [post]
 func (repman *ReplicationManager) handlerMuxAddProxyTag(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -2249,6 +2613,18 @@ func (repman *ReplicationManager) handlerMuxAddProxyTag(w http.ResponseWriter, r
 	return
 }
 
+// handlerMuxDropTag handles the removal of a tag from a given cluster.
+// @Summary Remove a tag from a specific cluster
+// @Description This endpoint removes a tag from the specified cluster.
+// @Tags clusters
+// @Accept json
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param tagValue path string true "Tag Value"
+// @Success 200 {string} string "Tag removed successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found"
+// @Router /api/clusters/{clusterName}/settings/actions/drop-db-tag/{tagValue} [post]
 func (repman *ReplicationManager) handlerMuxDropTag(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -2266,6 +2642,18 @@ func (repman *ReplicationManager) handlerMuxDropTag(w http.ResponseWriter, r *ht
 	return
 }
 
+// handlerMuxDropProxyTag handles the removal of a proxy tag from a given cluster.
+// @Summary Remove a proxy tag from a specific cluster
+// @Description This endpoint removes a proxy tag from the specified cluster.
+// @Tags clusters
+// @Accept json
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param tagValue path string true "Tag Value"
+// @Success 200 {string} string "Tag removed successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found"
+// @Router /api/clusters/{clusterName}/settings/actions/drop-proxy-tag/{tagValue} [post]
 func (repman *ReplicationManager) handlerMuxDropProxyTag(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -2300,6 +2688,15 @@ func (repman *ReplicationManager) handlerMuxSwitchReadOnly(w http.ResponseWriter
 	return
 }
 
+// handlerMuxLog handles the retrieval of logs for a given cluster.
+// @Summary Retrieve logs for a specific cluster
+// @Description This endpoint retrieves the logs for the specified cluster.
+// @Tags clusters
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Success 200 {array} string "List of logs"
+// @Failure 500 {string} string "Internal Server Error"
+// @Router /api/clusters/{clusterName}/topology/logs [get]
 func (repman *ReplicationManager) handlerMuxLog(w http.ResponseWriter, r *http.Request) {
 	var clusterlogs []string
 	vars := mux.Vars(r)
@@ -2317,6 +2714,15 @@ func (repman *ReplicationManager) handlerMuxLog(w http.ResponseWriter, r *http.R
 	}
 }
 
+// handlerMuxCrashes handles the retrieval of crashes for a given cluster.
+// @Summary Retrieve crashes for a specific cluster
+// @Description This endpoint retrieves the crashes for the specified cluster.
+// @Tags clusters
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Success 200 {array} string "List of crashes"
+// @Failure 500 {string} string "Cluster Not Found"
+// @Router /api/clusters/{clusterName}/topology/crashes [get]
 func (repman *ReplicationManager) handlerMuxCrashes(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -2336,6 +2742,20 @@ func (repman *ReplicationManager) handlerMuxCrashes(w http.ResponseWriter, r *ht
 	}
 }
 
+// handlerMuxOneTest handles the execution of a specific test for a given cluster.
+// @Summary Run a specific test for a given cluster
+// @Description This endpoint runs a specific test for the specified cluster.
+// @Tags clusters
+// @Accept json
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param testName path string true "Test Name"
+// @Param provision formData string false "Provision the cluster before running the test"
+// @Param unprovision formData string false "Unprovision the cluster after running the test"
+// @Success 200 {object} cluster.Test "Test result"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found"
+// @Router /api/clusters/{clusterName}/tests/actions/run/{testName} [post]
 func (repman *ReplicationManager) handlerMuxOneTest(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -2391,6 +2811,17 @@ func (repman *ReplicationManager) handlerMuxOneTest(w http.ResponseWriter, r *ht
 	return
 }
 
+// handlerMuxTests handles the execution of all tests for a given cluster.
+// @Summary Run all tests for a given cluster
+// @Description This endpoint runs all tests for the specified cluster.
+// @Tags clusters
+// @Accept json
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Success 200 {array} cluster.Test "List of test results"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found"
+// @Router /api/clusters/{clusterName}/tests/actions/run/all [post]
 func (repman *ReplicationManager) handlerMuxTests(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -2417,6 +2848,16 @@ func (repman *ReplicationManager) handlerMuxTests(w http.ResponseWriter, r *http
 	return
 }
 
+// handlerMuxSettingsReload handles the reloading of cluster settings.
+// @Summary Reload cluster settings
+// @Description This endpoint reloads the settings for the specified cluster.
+// @Tags clusters
+// @Accept json
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Success 200 {string} string "Successfully reloaded settings"
+// @Failure 500 {string} string "Cluster Not Found"
+// @Router /api/clusters/{clusterName}/settings/actions/reload [post]
 func (repman *ReplicationManager) handlerMuxSettingsReload(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -2432,6 +2873,22 @@ func (repman *ReplicationManager) handlerMuxSettingsReload(w http.ResponseWriter
 
 }
 
+// handlerMuxServerAdd handles the addition of a server to a given cluster.
+// @Summary Add a server to a specific cluster
+// @Description This endpoint adds a server to the specified cluster.
+// @Tags clusters
+// @Accept json
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param host path string true "Host"
+// @Param port path string true "Port"
+// @Param type path string false "Type"
+// @Success 200 {string} string "Monitor added"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 409 {string} string "Error adding new monitor"
+// @Failure 500 {string} string "Cluster Not Found"
+// @Router /api/clusters/{clusterName}/actions/addserver/{host}/{port}/{type} [post]
+// @Router /api/clusters/{clusterName}/actions/addserver/{host}/{port} [post]
 func (repman *ReplicationManager) handlerMuxServerAdd(w http.ResponseWriter, r *http.Request) {
 	var err error
 	w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -2483,6 +2940,22 @@ func (repman *ReplicationManager) handlerMuxServerAdd(w http.ResponseWriter, r *
 
 }
 
+// handlerMuxServerDrop handles the HTTP request to drop a server monitor from a cluster.
+//
+// @Summary Drop a server monitor from a cluster
+// @Description This endpoint allows dropping a server monitor or proxy monitor from a specified cluster.
+// @Tags cluster
+// @Accept json
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param type path string false "Monitor Type (proxy or database)"
+// @Param host path string true "Host"
+// @Param port path string true "Port"
+// @Success 200 {string} string "Monitor dropped successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found"
+// @Router /cluster/{clusterName}/actions/dropserver/{host}/{port}/{type} [post]
+// @Router /cluster/{clusterName}/actions/dropserver/{host}/{port} [post]
 func (repman *ReplicationManager) handlerMuxServerDrop(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -2509,21 +2982,15 @@ func (repman *ReplicationManager) handlerMuxServerDrop(w http.ResponseWriter, r 
 
 }
 
-// swagger:operation GET /api/clusters/{clusterName}/status clusterStatus
-// Shows the status for that specific named cluster
-//
-// ---
-// parameters:
-//   - name: clusterName
-//     in: path
-//     description: cluster to filter by
-//     required: true
-//     type: string
-//
-// responses:
-//
-//	'200':
-//	  "$ref": "#/responses/status"
+// handlerMuxClusterStatus handles the HTTP request to retrieve the status of a specified cluster.
+// @Summary Retrieve status of a cluster
+// @Description This endpoint retrieves the status of a specified cluster and returns it in JSON format.
+// @Tags clusters
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Success 200 {object} map[string]string "Cluster status"
+// @Failure 400 {string} string "No cluster found"
+// @Router /api/clusters/{clusterName}/status [get]
 func (repman *ReplicationManager) handlerMuxClusterStatus(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -2542,43 +3009,17 @@ func (repman *ReplicationManager) handlerMuxClusterStatus(w http.ResponseWriter,
 	}
 }
 
-// swagger:operation GET /api/clusters/{clusterName}/actions/master-physical-backup master-physical-backup
-//
-//
-// ---
-// parameters:
-// - name: clusterName
-//   in: path
-//   description: cluster to filter by
-//   required: true
-//   type: string
-// produces:
-//  - text/plain
-// responses:
-//   '200':
-//     description: OK
-//     headers:
-//       Access-Control-Allow-Origin:
-//         type: string
-//   '400':
-//     description: No cluster found
-//     schema:
-//       type: string
-//     examples:
-//       text/plain: No cluster found:cluster_1
-//     headers:
-//       Access-Control-Allow-Origin:
-//         type: string
-//   '403':
-//     description: No valid ACL
-//     schema:
-//       type: string
-//     examples:
-//       text/plain: No valid ACL
-//     headers:
-//       Access-Control-Allow-Origin:
-//         type: string
-
+// handlerMuxClusterMasterPhysicalBackup handles the physical backup process for the master of a given cluster.
+// @Summary Perform a physical backup for the master of a specific cluster
+// @Description This endpoint triggers a physical backup for the master of the specified cluster.
+// @Tags clusters
+// @Accept json
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Success 200 {string} string "Successfully triggered physical backup"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 400 {string} string "No cluster found"
+// @Router /api/clusters/{clusterName}/actions/master-physical-backup [post]
 func (repman *ReplicationManager) handlerMuxClusterMasterPhysicalBackup(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -2596,6 +3037,17 @@ func (repman *ReplicationManager) handlerMuxClusterMasterPhysicalBackup(w http.R
 	}
 }
 
+// handlerMuxClusterOptimize handles the optimization process for a given cluster.
+// @Summary Optimize a specific cluster
+// @Description This endpoint triggers the optimization process for the specified cluster.
+// @Tags clusters
+// @Accept json
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Success 200 {string} string "Successfully triggered optimization"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 400 {string} string "No cluster found"
+// @Router /api/clusters/{clusterName}/actions/optimize [post]
 func (repman *ReplicationManager) handlerMuxClusterOptimize(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -2635,6 +3087,18 @@ func (repman *ReplicationManager) handlerMuxClusterSSTStop(w http.ResponseWriter
 	}
 }
 
+// handlerMuxClusterSysbench handles the execution of sysbench for a given cluster.
+// @Summary Run sysbench for a specific cluster
+// @Description This endpoint runs sysbench for the specified cluster.
+// @Tags clusters
+// @Accept json
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param threads query string false "Number of threads"
+// @Success 200 {string} string "Successfully triggered sysbench"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "No cluster"
+// @Router /api/clusters/{clusterName}/actions/sysbench [post]
 func (repman *ReplicationManager) handlerMuxClusterSysbench(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -2653,6 +3117,17 @@ func (repman *ReplicationManager) handlerMuxClusterSysbench(w http.ResponseWrite
 	return
 }
 
+// handlerMuxClusterApplyDynamicConfig handles the application of dynamic configuration for a given cluster.
+// @Summary Apply dynamic configuration for a specific cluster
+// @Description This endpoint applies dynamic configuration for the specified cluster.
+// @Tags clusters
+// @Accept json
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Success 200 {string} string "Successfully applied dynamic configuration"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "No cluster"
+// @Router /api/clusters/{clusterName}/settings/actions/apply-dynamic-config [post]
 func (repman *ReplicationManager) handlerMuxClusterApplyDynamicConfig(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -2667,6 +3142,17 @@ func (repman *ReplicationManager) handlerMuxClusterApplyDynamicConfig(w http.Res
 	return
 }
 
+// handlerMuxClusterReloadCertificates handles the reloading of client certificates for a given cluster.
+// @Summary Reload client certificates for a specific cluster
+// @Description This endpoint reloads the client certificates for the specified cluster.
+// @Tags clusters
+// @Accept json
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Success 200 {string} string "Successfully reloaded client certificates"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "No cluster"
+// @Router /api/clusters/{clusterName}/settings/actions/certificates-reload [post]
 func (repman *ReplicationManager) handlerMuxClusterReloadCertificates(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -2681,6 +3167,17 @@ func (repman *ReplicationManager) handlerMuxClusterReloadCertificates(w http.Res
 	return
 }
 
+// handlerMuxClusterWaitDatabases handles the waiting for databases to be ready for a given cluster.
+// @Summary Wait for databases to be ready for a specific cluster
+// @Description This endpoint waits for the databases to be ready for the specified cluster.
+// @Tags clusters
+// @Accept json
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Success 200 {string} string "Databases are ready"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "No cluster"
+// @Router /api/clusters/{clusterName}/actions/waitdatabases [post]
 func (repman *ReplicationManager) handlerMuxClusterWaitDatabases(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -2699,6 +3196,16 @@ func (repman *ReplicationManager) handlerMuxClusterWaitDatabases(w http.Response
 	return
 }
 
+// handlerMuxCluster handles the HTTP request to retrieve the details of a specified cluster.
+// @Summary Retrieve details of a cluster
+// @Description This endpoint retrieves the details of a specified cluster and returns it in JSON format.
+// @Tags clusters
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Success 200 {object} cluster.Cluster "Cluster details"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "No cluster"
+// @Router /api/clusters/{clusterName} [get]
 func (repman *ReplicationManager) handlerMuxCluster(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
@@ -2743,6 +3250,16 @@ func (repman *ReplicationManager) handlerMuxCluster(w http.ResponseWriter, r *ht
 
 }
 
+// handlerMuxClusterSettings handles the retrieval of settings for a given cluster.
+// @Summary Retrieve settings for a specific cluster
+// @Description This endpoint retrieves the settings for the specified cluster.
+// @Tags clusters
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Success 200 {object} config.Config "Cluster settings"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "No cluster"
+// @Router /api/clusters/{clusterName}/settings [get]
 func (repman *ReplicationManager) handlerMuxClusterSettings(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
@@ -2769,6 +3286,17 @@ func (repman *ReplicationManager) handlerMuxClusterSettings(w http.ResponseWrite
 
 }
 
+// handlerMuxClusterSendVaultToken sends the Vault token to the specified cluster via email.
+// @Summary Send Vault token to a specific cluster
+// @Description This endpoint sends the Vault token to the specified cluster via email.
+// @Tags clusters
+// @Accept json
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Success 200 {string} string "Vault token sent successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "No cluster"
+// @Router /api/clusters/{clusterName}/send-vault-token [post]
 func (repman *ReplicationManager) handlerMuxClusterSendVaultToken(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
@@ -2787,6 +3315,17 @@ func (repman *ReplicationManager) handlerMuxClusterSendVaultToken(w http.Respons
 	return
 }
 
+// handlerMuxClusterSchemaChecksumAllTable handles the checksum calculation for all tables in a given cluster.
+// @Summary Calculate checksum for all tables in a specific cluster
+// @Description This endpoint triggers the checksum calculation for all tables in the specified cluster.
+// @Tags clusters
+// @Accept json
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Success 200 {string} string "Successfully triggered checksum calculation for all tables"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "No cluster"
+// @Router /api/clusters/{clusterName}/actions/checksum-all-tables [post]
 func (repman *ReplicationManager) handlerMuxClusterSchemaChecksumAllTable(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
@@ -2806,6 +3345,19 @@ func (repman *ReplicationManager) handlerMuxClusterSchemaChecksumAllTable(w http
 
 }
 
+// handlerMuxClusterSchemaChecksumTable handles the checksum calculation for a specific table in a given cluster.
+// @Summary Calculate checksum for a specific table in a specific cluster
+// @Description This endpoint triggers the checksum calculation for a specific table in the specified cluster.
+// @Tags clusters
+// @Accept json
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param schemaName path string true "Schema Name"
+// @Param tableName path string true "Table Name"
+// @Success 200 {string} string "Successfully triggered checksum calculation for the table"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "No cluster"
+// @Router /api/clusters/{clusterName}/schema/{schemaName}/{tableName}/actions/checksum-table [post]
 func (repman *ReplicationManager) handlerMuxClusterSchemaChecksumTable(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
@@ -2825,6 +3377,19 @@ func (repman *ReplicationManager) handlerMuxClusterSchemaChecksumTable(w http.Re
 
 }
 
+// handlerMuxClusterSchemaUniversalTable handles the setting of a universal table for a given cluster.
+// @Summary Set a universal table for a specific cluster
+// @Description This endpoint sets a universal table for the specified cluster.
+// @Tags clusters
+// @Accept json
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param schemaName path string true "Schema Name"
+// @Param tableName path string true "Table Name"
+// @Success 200 {string} string "Successfully set universal table"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "No cluster"
+// @Router /api/clusters/{clusterName}/schema/{schemaName}/{tableName}/actions/universal-table [post]
 func (repman *ReplicationManager) handlerMuxClusterSchemaUniversalTable(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
@@ -2848,6 +3413,21 @@ func (repman *ReplicationManager) handlerMuxClusterSchemaUniversalTable(w http.R
 
 }
 
+// handlerMuxClusterSchemaReshardTable handles the resharding of a table for a given cluster.
+// @Summary Reshard a table for a specific cluster
+// @Description This endpoint triggers the resharding of a table for the specified cluster.
+// @Tags clusters
+// @Accept json
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param schemaName path string true "Schema Name"
+// @Param tableName path string true "Table Name"
+// @Param clusterList path string false "Cluster List"
+// @Success 200 {string} string "Successfully triggered resharding of the table"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "No cluster"
+// @Router /api/clusters/{clusterName}/schema/{schemaName}/{tableName}/actions/reshard-table/{clusterList} [post]
+// @Router /api/clusters/{clusterName}/schema/{schemaName}/{tableName}/actions/reshard-table [post]
 func (repman *ReplicationManager) handlerMuxClusterSchemaReshardTable(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
@@ -2882,6 +3462,20 @@ func (repman *ReplicationManager) handlerMuxClusterSchemaReshardTable(w http.Res
 
 }
 
+// handlerMuxClusterSchemaMoveTable handles the movement of a table to a different shard cluster.
+// @Summary Move a table to a different shard cluster
+// @Description This endpoint moves a table to a different shard cluster for the specified cluster.
+// @Tags clusters
+// @Accept json
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param schemaName path string true "Schema Name"
+// @Param tableName path string true "Table Name"
+// @Param clusterShard path string true "Cluster Shard"
+// @Success 200 {string} string "Successfully moved table"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "No cluster"
+// @Router /api/clusters/{clusterName}/schema/{schemaName}/{tableName}/actions/move-table/{clusterShard} [post]
 func (repman *ReplicationManager) handlerMuxClusterSchemaMoveTable(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
@@ -2913,6 +3507,16 @@ func (repman *ReplicationManager) handlerMuxClusterSchemaMoveTable(w http.Respon
 
 }
 
+// handlerMuxClusterSchema handles the retrieval of schema information for a given cluster.
+// @Summary Retrieve schema information for a specific cluster
+// @Description This endpoint retrieves the schema information for the specified cluster.
+// @Tags clusters
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Success 200 {object} map[string]interface{} "Schema information"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "No cluster"
+// @Router /api/clusters/{clusterName}/schema [get]
 func (repman *ReplicationManager) handlerMuxClusterSchema(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
@@ -2940,6 +3544,16 @@ func (repman *ReplicationManager) handlerMuxClusterSchema(w http.ResponseWriter,
 
 }
 
+// handlerDiffVariables handles the retrieval of variable differences for a given cluster.
+// @Summary Retrieve variable differences for a specific cluster
+// @Description This endpoint retrieves the variable differences for the specified cluster.
+// @Tags clusters
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Success 200 {array} cluster.VariableDiff "List of variable differences"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "No cluster"
+// @Router /api/clusters/{clusterName}/diffvariables [get]
 func (repman *ReplicationManager) handlerDiffVariables(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -2967,6 +3581,17 @@ func (repman *ReplicationManager) handlerDiffVariables(w http.ResponseWriter, r 
 	return
 }
 
+// handlerRotatePasswords rotates the passwords for a given cluster.
+// @Summary Rotate passwords for a specific cluster
+// @Description This endpoint rotates the passwords for the specified cluster.
+// @Tags clusters
+// @Accept json
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Success 200 {string} string "Successfully rotated passwords"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "No cluster"
+// @Router /api/clusters/{clusterName}/actions/rotate-passwords [post]
 func (repman *ReplicationManager) handlerRotatePasswords(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
@@ -2985,6 +3610,15 @@ func (repman *ReplicationManager) handlerRotatePasswords(w http.ResponseWriter, 
 	return
 }
 
+// handlerMuxClusterGraphiteFilterList handles the retrieval of Graphite filter list for a given cluster.
+// @Summary Retrieve Graphite filter list for a specific cluster
+// @Description This endpoint retrieves the Graphite filter list for the specified cluster.
+// @Tags clusters
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Success 200 {array} string "List of Graphite filters"
+// @Failure 500 {string} string "Internal Server Error"
+// @Router /api/clusters/{clusterName}/graphite-filterlist [get]
 func (repman *ReplicationManager) handlerMuxClusterGraphiteFilterList(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -3007,6 +3641,19 @@ func (repman *ReplicationManager) handlerMuxClusterGraphiteFilterList(w http.Res
 	}
 }
 
+// handlerMuxClusterSetGraphiteFilterList sets the Graphite filter list for a given cluster.
+// @Summary Set Graphite filter list for a specific cluster
+// @Description This endpoint sets the Graphite filter list for the specified cluster.
+// @Tags clusters
+// @Accept json
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param filterType path string true "Filter Type"
+// @Param body body cluster.GraphiteFilterList true "Graphite Filter List"
+// @Success 200 {string} string "Filterlist updated"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "No cluster"
+// @Router /api/clusters/{clusterName}/settings/actions/set-graphite-filterlist/{filterType} [post]
 func (repman *ReplicationManager) handlerMuxClusterSetGraphiteFilterList(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	var gfilter cluster.GraphiteFilterList
@@ -3038,6 +3685,17 @@ func (repman *ReplicationManager) handlerMuxClusterSetGraphiteFilterList(w http.
 	}
 }
 
+// handlerMuxClusterReloadGraphiteFilterList handles the reloading of Graphite filter list for a given cluster.
+// @Summary Reload Graphite filter list for a specific cluster
+// @Description This endpoint reloads the Graphite filter list for the specified cluster.
+// @Tags clusters
+// @Accept json
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Success 200 {string} string "Successfully reloaded Graphite filter list"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "No cluster"
+// @Router /api/clusters/{clusterName}/settings/actions/reload-graphite-filterlist [post]
 func (repman *ReplicationManager) handlerMuxClusterReloadGraphiteFilterList(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
@@ -3056,6 +3714,18 @@ func (repman *ReplicationManager) handlerMuxClusterReloadGraphiteFilterList(w ht
 	return
 }
 
+// handlerMuxClusterResetGraphiteFilterList handles the reset of Graphite filter list for a given cluster.
+// @Summary Reset Graphite filter list for a specific cluster
+// @Description This endpoint resets the Graphite filter list for the specified cluster.
+// @Tags clusters
+// @Accept json
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param template path string true "Template"
+// @Success 200 {string} string "Successfully reset Graphite filter list"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "No cluster"
+// @Router /api/clusters/{clusterName}/settings/actions/reset-graphite-filterlist/{template} [post]
 func (repman *ReplicationManager) handlerMuxClusterResetGraphiteFilterList(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
@@ -3078,6 +3748,16 @@ func (repman *ReplicationManager) handlerMuxClusterResetGraphiteFilterList(w htt
 	return
 }
 
+// handlerMuxClusterGetJobEntries retrieves job entries for a specific cluster.
+// @Summary Retrieve job entries for a specific cluster
+// @Description This endpoint retrieves the job entries for the specified cluster.
+// @Tags clusters
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Success 200 {array} map[string]interface{} "List of job entries"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found"
+// @Router /api/clusters/{clusterName}/jobs [get]
 func (repman *ReplicationManager) handlerMuxClusterGetJobEntries(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -3096,6 +3776,18 @@ func (repman *ReplicationManager) handlerMuxClusterGetJobEntries(w http.Response
 	}
 }
 
+// handlerMuxAcceptSubscription handles the acceptance of a subscription for a given cluster.
+// @Summary Accept a subscription for a specific cluster
+// @Description This endpoint accepts a subscription for the specified cluster.
+// @Tags clusters
+// @Accept json
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param body body cluster.UserForm true "User Form"
+// @Success 200 {string} string "Email sent to sponsor!"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Error accepting subscription"
+// @Router /api/clusters/{clusterName}/sales/accept-subscription [post]
 func (repman *ReplicationManager) handlerMuxAcceptSubscription(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -3196,6 +3888,18 @@ func (repman *ReplicationManager) handlerMuxAcceptSubscription(w http.ResponseWr
 	w.Write([]byte("Email sent to sponsor!"))
 }
 
+// handlerMuxRejectSubscription handles the rejection of a subscription for a given cluster.
+// @Summary Reject a subscription for a specific cluster
+// @Description This endpoint rejects a subscription for the specified cluster.
+// @Tags clusters
+// @Accept json
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param body body cluster.UserForm true "User Form"
+// @Success 200 {string} string "Subscription removed!"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Error removing subscription"
+// @Router /api/clusters/{clusterName}/sales/refuse-subscription [post]
 func (repman *ReplicationManager) handlerMuxRejectSubscription(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -3248,6 +3952,18 @@ func (repman *ReplicationManager) handlerMuxRejectSubscription(w http.ResponseWr
 	w.Write([]byte("Subscription removed!"))
 }
 
+// handlerMuxRemoveSponsor handles the removal of a sponsor from a given cluster.
+// @Summary Remove a sponsor from a specific cluster
+// @Description This endpoint removes a sponsor from the specified cluster.
+// @Tags clusters
+// @Accept json
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param body body cluster.UserForm true "User Form"
+// @Success 200 {string} string "Sponsor subscription removed!"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Error removing sponsor subscription"
+// @Router /api/clusters/{clusterName}/sales/end-subscription [post]
 func (repman *ReplicationManager) handlerMuxRemoveSponsor(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -3306,6 +4022,18 @@ type CredentialMailForm struct {
 	CredentialType string `json:"type"`
 }
 
+// handlerMuxSendCredentials sends the credentials to the specified user via email.
+// @Summary Send credentials to a specific user
+// @Description This endpoint sends the credentials to the specified user via email.
+// @Tags clusters
+// @Accept json
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param body body CredentialMailForm true "Credential Mail Form"
+// @Success 200 {string} string "Credentials sent to user!"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Error sending email"
+// @Router /api/clusters/{clusterName}/users/send-credentials [post]
 func (repman *ReplicationManager) handlerMuxSendCredentials(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)

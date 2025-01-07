@@ -69,7 +69,7 @@ import (
 
 var RepMan *ReplicationManager
 
-// Global variables
+
 type ReplicationManager struct {
 	OpenSVC          opensvc.Collector                 `json:"-"`
 	Version          string                            `json:"version"`
