@@ -226,10 +226,12 @@ func (repman *ReplicationManager) apiserver() {
 		router.PathPrefix("/grafana/").Handler(http.StripPrefix("/grafana/", repman.SharedirHandler("grafana")))
 	}
 
-	// Serve Swagger documentation
-	router.PathPrefix("/api-docs/").Handler(httpSwagger.Handler(
-		httpSwagger.URL("/api-docs/doc.json"), // URL for the generated Swagger JSON
-	))
+	if repman.Conf.ApiSwaggerEnabled {
+		// Serve Swagger documentation
+		router.PathPrefix("/api-docs/").Handler(httpSwagger.Handler(
+			httpSwagger.URL("/api-docs/doc.json"), // URL for the generated Swagger JSON
+		))
+	}
 
 	router.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Check if the path starts with "/api"
