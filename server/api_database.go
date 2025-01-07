@@ -267,7 +267,7 @@ func (repman *ReplicationManager) apiDatabaseProtectedHandler(router *mux.Router
 
 	router.Handle("/api/clusters/{clusterName}/servers/{serverName}/actions/set-long-query-time/{queryTime}", negroni.New(
 		negroni.HandlerFunc(repman.validateTokenMiddleware),
-		negroni.Wrap(http.HandlerFunc(repman.handlerMuxSwitchSetLongQueryTime)),
+		negroni.Wrap(http.HandlerFunc(repman.handlerMuxSetLongQueryTime)),
 	))
 
 	router.Handle("/api/clusters/{clusterName}/servers/{serverName}/actions/toogle-read-only", negroni.New(
@@ -351,13 +351,25 @@ func (repman *ReplicationManager) apiDatabaseProtectedHandler(router *mux.Router
 	))
 	router.Handle("/api/clusters/{clusterName}/servers/{serverName}/queries/{queryDigest}/actions/analyze-slowlog", negroni.New(
 		negroni.HandlerFunc(repman.validateTokenMiddleware),
-		negroni.Wrap(http.HandlerFunc(repman.handlerMuxQueryAnalyzePFS)),
+		negroni.Wrap(http.HandlerFunc(repman.handlerMuxQueryAnalyzeSlowLog)),
 	))
 	router.Handle("/api/clusters/{clusterName}/servers/{serverName}/{serverPort}/write-log/{task}", negroni.New(
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxServersWriteLog)),
 	))
 }
 
+// handlerMuxQueryKillQuery handles the HTTP request to kill a query on a specific server within a cluster.
+// @Summary Kill a query on a server
+// @Description Kills a query identified by its digest on a specified server within a cluster.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Param queryDigest path string true "Query Digest"
+// @Success 200 {string} string "Query killed successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/queries/{queryDigest}/actions/kill-query [get]
 func (repman *ReplicationManager) handlerMuxQueryKillQuery(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -380,6 +392,18 @@ func (repman *ReplicationManager) handlerMuxQueryKillQuery(w http.ResponseWriter
 	}
 }
 
+// handlerMuxQueryKillThread handles the HTTP request to kill a thread on a specific server within a cluster.
+// @Summary Kill a thread on a server
+// @Description Kills a thread identified by its digest on a specified server within a cluster.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Param queryDigest path string true "Query Digest"
+// @Success 200 {string} string "Query killed successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/queries/{queryDigest}/actions/kill-thread [get]
 func (repman *ReplicationManager) handlerMuxQueryKillThread(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -402,6 +426,18 @@ func (repman *ReplicationManager) handlerMuxQueryKillThread(w http.ResponseWrite
 	}
 }
 
+// handlerMuxQueryExplainPFS handles the HTTP request to explain a query using PFS on a specific server within a cluster.
+// @Summary Explain a query using PFS on a server
+// @Description Explains a query identified by its digest on a specified server within a cluster using PFS.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Param queryDigest path string true "Query Digest"
+// @Success 200 {object} map[string]interface{} "Query explained successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found" or "Encoding error"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/queries/{queryDigest}/actions/explain-pfs [get]
 func (repman *ReplicationManager) handlerMuxQueryExplainPFS(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -432,6 +468,18 @@ func (repman *ReplicationManager) handlerMuxQueryExplainPFS(w http.ResponseWrite
 	}
 }
 
+// handlerMuxQueryExplainSlowLog handles the HTTP request to explain a query using the slow log on a specific server within a cluster.
+// @Summary Explain a query using the slow log on a server
+// @Description Explains a query identified by its digest on a specified server within a cluster using the slow log.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Param queryDigest path string true "Query Digest"
+// @Success 200 {object} map[string]interface{} "Query explained successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found" or "Encoding error"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/queries/{queryDigest}/actions/explain-slowlog [get]
 func (repman *ReplicationManager) handlerMuxQueryExplainSlowLog(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -461,6 +509,18 @@ func (repman *ReplicationManager) handlerMuxQueryExplainSlowLog(w http.ResponseW
 	}
 }
 
+// handlerMuxQueryAnalyzePFS handles the HTTP request to analyze a query using PFS on a specific server within a cluster.
+// @Summary Analyze a query using PFS on a server
+// @Description Analyzes a query identified by its digest on a specified server within a cluster using PFS.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Param queryDigest path string true "Query Digest"
+// @Success 200 {string} string "Query analyzed successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/queries/{queryDigest}/actions/analyze-pfs [get]
 func (repman *ReplicationManager) handlerMuxQueryAnalyzePFS(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -483,6 +543,51 @@ func (repman *ReplicationManager) handlerMuxQueryAnalyzePFS(w http.ResponseWrite
 	}
 }
 
+// handlerMuxQueryAnalyzeSlowLog handles the HTTP request to analyze a query using the slow log on a specific server within a cluster.
+// @Summary Analyze a query using the slow log on a server
+// @Description Analyzes a query identified by its digest on a specified server within a cluster using the slow log.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Param queryDigest path string true "Query Digest"
+// @Success 200 {string} string "Query analyzed successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/queries/{queryDigest}/actions/analyze-slowlog [get]
+func (repman *ReplicationManager) handlerMuxQueryAnalyzeSlowLog(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	vars := mux.Vars(r)
+	mycluster := repman.getClusterByName(vars["clusterName"])
+	if mycluster != nil {
+		if valid, _ := repman.IsValidClusterACL(r, mycluster); !valid {
+			http.Error(w, "No valid ACL", 403)
+			return
+		}
+		node := mycluster.GetServerFromName(vars["serverName"])
+		if node != nil {
+			node.GetQueryAnalyzeSlowLog(vars["queryDigest"])
+		} else {
+			http.Error(w, "Server Not Found", 500)
+			return
+		}
+	} else {
+		http.Error(w, "Cluster Not Found", 500)
+		return
+	}
+}
+
+// handlerMuxServerStop handles the HTTP request to stop a server within a cluster.
+// @Summary Stop a server
+// @Description Stops a specified server within a cluster.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Success 200 {string} string "Server stopped successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/actions/stop [get]
 func (repman *ReplicationManager) handlerMuxServerStop(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -505,6 +610,17 @@ func (repman *ReplicationManager) handlerMuxServerStop(w http.ResponseWriter, r 
 	}
 }
 
+// handlerMuxServerBackupPhysical handles the HTTP request to perform a physical backup on a specific server within a cluster.
+// @Summary Perform a physical backup on a server
+// @Description Initiates a physical backup on a specified server within a cluster.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Success 200 {string} string "Backup initiated successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/actions/backup-physical [get]
 func (repman *ReplicationManager) handlerMuxServerBackupPhysical(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -527,6 +643,17 @@ func (repman *ReplicationManager) handlerMuxServerBackupPhysical(w http.Response
 	}
 }
 
+// handlerMuxServerBackupLogical handles the HTTP request to perform a logical backup on a specific server within a cluster.
+// @Summary Perform a logical backup on a server
+// @Description Initiates a logical backup on a specified server within a cluster.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Success 200 {string} string "Backup initiated successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/actions/backup-logical [get]
 func (repman *ReplicationManager) handlerMuxServerBackupLogical(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -549,6 +676,17 @@ func (repman *ReplicationManager) handlerMuxServerBackupLogical(w http.ResponseW
 	}
 }
 
+// handlerMuxServerOptimize handles the HTTP request to optimize a server within a cluster.
+// @Summary Optimize a server
+// @Description Optimizes a specified server within a cluster.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Success 200 {string} string "Server optimized successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/actions/optimize [get]
 func (repman *ReplicationManager) handlerMuxServerOptimize(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -571,6 +709,18 @@ func (repman *ReplicationManager) handlerMuxServerOptimize(w http.ResponseWriter
 	}
 }
 
+// handlerMuxServerReseed handles the HTTP request to reseed a server within a cluster.
+// @Summary Reseed a server
+// @Description Reseeds a specified server within a cluster using the specified backup method.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Param backupMethod path string true "Backup Method"
+// @Success 200 {string} string "Reseed initiated successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found" or "Error reseed logical backup" or "Error reseed physical backup"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/actions/reseed/{backupMethod} [get]
 func (repman *ReplicationManager) handlerMuxServerReseed(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -613,6 +763,17 @@ func (repman *ReplicationManager) handlerMuxServerReseed(w http.ResponseWriter, 
 	}
 }
 
+// handlerMuxServerPITR handles the HTTP request to perform a point-in-time recovery (PITR) on a specific server within a cluster.
+// @Summary Perform a point-in-time recovery on a server
+// @Description Initiates a point-in-time recovery on a specified server within a cluster.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Success 200 {object} ApiResponse "PITR initiated successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found" or "Decode error" or "PITR error"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/actions/pitr [post]
 func (repman *ReplicationManager) handlerMuxServerPITR(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -663,6 +824,18 @@ func (repman *ReplicationManager) handlerMuxServerPITR(w http.ResponseWriter, r 
 	}
 }
 
+// handlerMuxServerReseedCancel handles the HTTP request to cancel a reseed task on a specific server within a cluster.
+// @Summary Cancel a reseed task on a server
+// @Description Cancels a reseed task identified by its name on a specified server within a cluster.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Param task path string true "Task Name"
+// @Success 200 {string} string "Task canceled successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found" or "Error canceling task"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/actions/reseed-cancel/{task} [get]
 func (repman *ReplicationManager) handlerMuxServerReseedCancel(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -689,6 +862,17 @@ func (repman *ReplicationManager) handlerMuxServerReseedCancel(w http.ResponseWr
 	}
 }
 
+// handlerMuxServerBackupErrorLog handles the HTTP request to perform a backup of the error log on a specific server within a cluster.
+// @Summary Perform a backup of the error log on a server
+// @Description Initiates a backup of the error log on a specified server within a cluster.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Success 200 {string} string "Backup initiated successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/actions/backup-error-log [get]
 func (repman *ReplicationManager) handlerMuxServerBackupErrorLog(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -711,6 +895,17 @@ func (repman *ReplicationManager) handlerMuxServerBackupErrorLog(w http.Response
 	}
 }
 
+// handlerMuxServerBackupSlowQueryLog handles the HTTP request to perform a backup of the slow query log on a specific server within a cluster.
+// @Summary Perform a backup of the slow query log on a server
+// @Description Initiates a backup of the slow query log on a specified server within a cluster.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Success 200 {string} string "Backup initiated successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/actions/backup-slowquery-log [get]
 func (repman *ReplicationManager) handlerMuxServerBackupSlowQueryLog(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -733,6 +928,17 @@ func (repman *ReplicationManager) handlerMuxServerBackupSlowQueryLog(w http.Resp
 	}
 }
 
+// handlerMuxServerMaintenance handles the HTTP request to toggle maintenance mode on a specific server within a cluster.
+// @Summary Toggle maintenance mode on a server
+// @Description Toggles the maintenance mode on a specified server within a cluster.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Success 200 {string} string "Maintenance mode toggled successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/actions/maintenance [get]
 func (repman *ReplicationManager) handlerMuxServerMaintenance(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -755,6 +961,17 @@ func (repman *ReplicationManager) handlerMuxServerMaintenance(w http.ResponseWri
 	}
 }
 
+// handlerMuxServerSetMaintenance handles the HTTP request to set a server to maintenance mode.
+// @Summary Set a server to maintenance mode
+// @Description Sets a specified server within a cluster to maintenance mode.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Success 200 {string} string "Server set to maintenance mode successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/actions/set-maintenance [get]
 func (repman *ReplicationManager) handlerMuxServerSetMaintenance(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -777,6 +994,17 @@ func (repman *ReplicationManager) handlerMuxServerSetMaintenance(w http.Response
 	}
 }
 
+// handlerMuxServerDelMaintenance handles the HTTP request to delete maintenance mode on a specific server within a cluster.
+// @Summary Delete maintenance mode on a server
+// @Description Deletes the maintenance mode on a specified server within a cluster.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Success 200 {string} string "Maintenance mode deleted successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/actions/del-maintenance [get]
 func (repman *ReplicationManager) handlerMuxServerDelMaintenance(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -799,6 +1027,17 @@ func (repman *ReplicationManager) handlerMuxServerDelMaintenance(w http.Response
 	}
 }
 
+// handlerMuxServerSwitchover handles the HTTP request to perform a switchover on a specific server within a cluster.
+// @Summary Perform a switchover on a server
+// @Description Initiates a switchover on a specified server within a cluster.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Success 200 {string} string "Switchover initiated successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found" or "Master failed, cannot initiate switchover"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/actions/switchover [get]
 func (repman *ReplicationManager) handlerMuxServerSwitchover(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -831,6 +1070,17 @@ func (repman *ReplicationManager) handlerMuxServerSwitchover(w http.ResponseWrit
 	}
 }
 
+// handlerMuxServerSetPrefered handles the HTTP request to set a server as preferred within a cluster.
+// @Summary Set a server as preferred
+// @Description Sets a specified server within a cluster as preferred.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Success 200 {string} string "Server set as preferred successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/actions/set-prefered [get]
 func (repman *ReplicationManager) handlerMuxServerSetPrefered(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -854,6 +1104,17 @@ func (repman *ReplicationManager) handlerMuxServerSetPrefered(w http.ResponseWri
 	}
 }
 
+// handlerMuxServerSetUnrated handles the HTTP request to set a server as unrated within a cluster.
+// @Summary Set a server as unrated
+// @Description Sets a specified server within a cluster as unrated.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Success 200 {string} string "Server set as unrated successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/actions/set-unrated [get]
 func (repman *ReplicationManager) handlerMuxServerSetUnrated(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -878,6 +1139,17 @@ func (repman *ReplicationManager) handlerMuxServerSetUnrated(w http.ResponseWrit
 	}
 }
 
+// handlerMuxServerSetIgnored handles the HTTP request to set a server as ignored within a cluster.
+// @Summary Set a server as ignored
+// @Description Sets a specified server within a cluster as ignored.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Success 200 {string} string "Server set as ignored successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/actions/set-ignored [get]
 func (repman *ReplicationManager) handlerMuxServerSetIgnored(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -901,6 +1173,17 @@ func (repman *ReplicationManager) handlerMuxServerSetIgnored(w http.ResponseWrit
 	}
 }
 
+// handlerWaitInnoDBPurge handles the HTTP request to wait for InnoDB purge on a specific server within a cluster.
+// @Summary Wait for InnoDB purge on a server
+// @Description Waits for InnoDB purge on a specified server within a cluster.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Success 200 {string} string "InnoDB purge completed successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found" or "Error waiting for InnoDB purge"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/actions/wait-innodb-purge [get]
 func (repman *ReplicationManager) handlerWaitInnoDBPurge(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -927,8 +1210,18 @@ func (repman *ReplicationManager) handlerWaitInnoDBPurge(w http.ResponseWriter, 
 
 }
 
+// handlerMuxServerSwitchReadOnly handles the HTTP request to toggle read-only mode on a specific server within a cluster.
+// @Summary Toggle read-only mode on a server
+// @Description Toggles the read-only mode on a specified server within a cluster.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Success 200 {string} string "Read-only mode toggled successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/actions/toogle-read-only [get]
 func (repman *ReplicationManager) handlerMuxServerSwitchReadOnly(w http.ResponseWriter, r *http.Request) {
-
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
 	mycluster := repman.getClusterByName(vars["clusterName"])
@@ -950,8 +1243,18 @@ func (repman *ReplicationManager) handlerMuxServerSwitchReadOnly(w http.Response
 	}
 }
 
+// handlerMuxServerSwitchMetaDataLocks handles the HTTP request to toggle metadata locks on a specific server within a cluster.
+// @Summary Toggle metadata locks on a server
+// @Description Toggles the metadata locks on a specified server within a cluster.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Success 200 {string} string "Metadata locks toggled successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/actions/toogle-meta-data-locks [get]
 func (repman *ReplicationManager) handlerMuxServerSwitchMetaDataLocks(w http.ResponseWriter, r *http.Request) {
-
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
 	mycluster := repman.getClusterByName(vars["clusterName"])
@@ -973,6 +1276,17 @@ func (repman *ReplicationManager) handlerMuxServerSwitchMetaDataLocks(w http.Res
 	}
 }
 
+// handlerMuxServerSwitchQueryResponseTime handles the HTTP request to toggle query response time on a specific server within a cluster.
+// @Summary Toggle query response time on a server
+// @Description Toggles the query response time on a specified server within a cluster.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Success 200 {string} string "Query response time toggled successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/actions/toogle-query-response-time [get]
 func (repman *ReplicationManager) handlerMuxServerSwitchQueryResponseTime(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -996,6 +1310,17 @@ func (repman *ReplicationManager) handlerMuxServerSwitchQueryResponseTime(w http
 	}
 }
 
+// handlerMuxServerSwitchSqlErrorLog handles the HTTP request to toggle SQL error log on a specific server within a cluster.
+// @Summary Toggle SQL error log on a server
+// @Description Toggles the SQL error log on a specified server within a cluster.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Success 200 {string} string "SQL error log toggled successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/actions/toogle-sql-error-log [get]
 func (repman *ReplicationManager) handlerMuxServerSwitchSqlErrorLog(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -1019,8 +1344,18 @@ func (repman *ReplicationManager) handlerMuxServerSwitchSqlErrorLog(w http.Respo
 	}
 }
 
+// handlerMuxServerStartSlave handles the HTTP request to start the slave on a specific server within a cluster.
+// @Summary Start the slave on a server
+// @Description Starts the slave on a specified server within a cluster.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Success 200 {string} string "Slave started successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/actions/start-slave [get]
 func (repman *ReplicationManager) handlerMuxServerStartSlave(w http.ResponseWriter, r *http.Request) {
-
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
 	mycluster := repman.getClusterByName(vars["clusterName"])
@@ -1042,8 +1377,18 @@ func (repman *ReplicationManager) handlerMuxServerStartSlave(w http.ResponseWrit
 	}
 }
 
+// handlerMuxServerStopSlave handles the HTTP request to stop the slave on a specific server within a cluster.
+// @Summary Stop the slave on a server
+// @Description Stops the slave on a specified server within a cluster.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Success 200 {string} string "Slave stopped successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/actions/stop-slave [get]
 func (repman *ReplicationManager) handlerMuxServerStopSlave(w http.ResponseWriter, r *http.Request) {
-
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
 	mycluster := repman.getClusterByName(vars["clusterName"])
@@ -1065,6 +1410,17 @@ func (repman *ReplicationManager) handlerMuxServerStopSlave(w http.ResponseWrite
 	}
 }
 
+// handlerMuxServerResetSlaveAll handles the HTTP request to reset all slaves on a specific server within a cluster.
+// @Summary Reset all slaves on a server
+// @Description Resets all slaves on a specified server within a cluster.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Success 200 {string} string "Slaves reset successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/actions/reset-slave-all [get]
 func (repman *ReplicationManager) handlerMuxServerResetSlaveAll(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -1088,8 +1444,19 @@ func (repman *ReplicationManager) handlerMuxServerResetSlaveAll(w http.ResponseW
 		return
 	}
 }
-func (repman *ReplicationManager) handlerMuxServerFlushLogs(w http.ResponseWriter, r *http.Request) {
 
+// handlerMuxServerFlushLogs handles the HTTP request to flush logs on a specific server within a cluster.
+// @Summary Flush logs on a server
+// @Description Flushes the logs on a specified server within a cluster.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Success 200 {string} string "Logs flushed successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/actions/flush-logs [get]
+func (repman *ReplicationManager) handlerMuxServerFlushLogs(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
 	mycluster := repman.getClusterByName(vars["clusterName"])
@@ -1111,8 +1478,18 @@ func (repman *ReplicationManager) handlerMuxServerFlushLogs(w http.ResponseWrite
 	}
 }
 
+// handlerMuxServerResetMaster handles the HTTP request to reset the master on a specific server within a cluster.
+// @Summary Reset the master on a server
+// @Description Resets the master on a specified server within a cluster.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Success 200 {string} string "Master reset successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/actions/reset-master [get]
 func (repman *ReplicationManager) handlerMuxServerResetMaster(w http.ResponseWriter, r *http.Request) {
-
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
 	mycluster := repman.getClusterByName(vars["clusterName"])
@@ -1134,8 +1511,18 @@ func (repman *ReplicationManager) handlerMuxServerResetMaster(w http.ResponseWri
 	}
 }
 
+// handlerMuxServerResetPFSQueries handles the HTTP request to reset PFS queries on a specific server within a cluster.
+// @Summary Reset PFS queries on a server
+// @Description Resets PFS queries on a specified server within a cluster.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Success 200 {string} string "PFS queries reset successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/actions/reset-pfs-queries [get]
 func (repman *ReplicationManager) handlerMuxServerResetPFSQueries(w http.ResponseWriter, r *http.Request) {
-
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
 	mycluster := repman.getClusterByName(vars["clusterName"])
@@ -1157,6 +1544,17 @@ func (repman *ReplicationManager) handlerMuxServerResetPFSQueries(w http.Respons
 	}
 }
 
+// handlerMuxSwitchSlowQueryCapture handles the HTTP request to toggle slow query capture on a specific server within a cluster.
+// @Summary Toggle slow query capture on a server
+// @Description Toggles the slow query capture on a specified server within a cluster.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Success 200 {string} string "Slow query capture toggled successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/actions/toogle-slow-query-capture [get]
 func (repman *ReplicationManager) handlerMuxSwitchSlowQueryCapture(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -1178,6 +1576,18 @@ func (repman *ReplicationManager) handlerMuxSwitchSlowQueryCapture(w http.Respon
 		return
 	}
 }
+
+// handlerMuxSwitchPFSSlowQuery handles the HTTP request to toggle PFS slow query capture on a specific server within a cluster.
+// @Summary Toggle PFS slow query capture on a server
+// @Description Toggles the PFS slow query capture on a specified server within a cluster.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Success 200 {string} string "PFS slow query capture toggled successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/actions/toogle-pfs-slow-query [get]
 func (repman *ReplicationManager) handlerMuxSwitchPFSSlowQuery(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -1200,6 +1610,17 @@ func (repman *ReplicationManager) handlerMuxSwitchPFSSlowQuery(w http.ResponseWr
 	}
 }
 
+// handlerMuxSwitchSlowQuery handles the HTTP request to toggle slow query on a specific server within a cluster.
+// @Summary Toggle slow query on a server
+// @Description Toggles the slow query on a specified server within a cluster.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Success 200 {string} string "Slow query toggled successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/actions/toogle-slow-query [get]
 func (repman *ReplicationManager) handlerMuxSwitchSlowQuery(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -1222,6 +1643,17 @@ func (repman *ReplicationManager) handlerMuxSwitchSlowQuery(w http.ResponseWrite
 	}
 }
 
+// handlerMuxSwitchSlowQueryTable handles the HTTP request to toggle slow query table mode on a specific server within a cluster.
+// @Summary Toggle slow query table mode on a server
+// @Description Toggles the slow query table mode on a specified server within a cluster.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Success 200 {string} string "Slow query table mode toggled successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/actions/toogle-slow-query-table [get]
 func (repman *ReplicationManager) handlerMuxSwitchSlowQueryTable(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -1244,7 +1676,19 @@ func (repman *ReplicationManager) handlerMuxSwitchSlowQueryTable(w http.Response
 	}
 }
 
-func (repman *ReplicationManager) handlerMuxSwitchSetLongQueryTime(w http.ResponseWriter, r *http.Request) {
+// handlerMuxSetLongQueryTime handles the HTTP request to set the long query time on a specific server within a cluster.
+// @Summary Set long query time on a server
+// @Description Sets the long query time on a specified server within a cluster.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Param queryTime path string true "Query Time"
+// @Success 200 {string} string "Long query time set successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/actions/set-long-query-time/{queryTime} [get]
+func (repman *ReplicationManager) handlerMuxSetLongQueryTime(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
 	mycluster := repman.getClusterByName(vars["clusterName"])
@@ -1266,6 +1710,17 @@ func (repman *ReplicationManager) handlerMuxSwitchSetLongQueryTime(w http.Respon
 	}
 }
 
+// handlerMuxServerStart handles the HTTP request to start a server within a cluster.
+// @Summary Start a server
+// @Description Starts a specified server within a cluster.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Success 200 {string} string "Server started successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/actions/start [get]
 func (repman *ReplicationManager) handlerMuxServerStart(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -1288,6 +1743,17 @@ func (repman *ReplicationManager) handlerMuxServerStart(w http.ResponseWriter, r
 	}
 }
 
+// handlerMuxServerProvision handles the HTTP request to provision a server within a cluster.
+// @Summary Provision a server
+// @Description Provisions a specified server within a cluster.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Success 200 {string} string "Server provisioned successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/actions/provision [get]
 func (repman *ReplicationManager) handlerMuxServerProvision(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -1310,6 +1776,17 @@ func (repman *ReplicationManager) handlerMuxServerProvision(w http.ResponseWrite
 	}
 }
 
+// handlerMuxServerUnprovision handles the HTTP request to unprovision a server within a cluster.
+// @Summary Unprovision a server
+// @Description Unprovisions a specified server within a cluster.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Success 200 {string} string "Server unprovisioned successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/actions/unprovision [get]
 func (repman *ReplicationManager) handlerMuxServerUnprovision(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -1332,52 +1809,17 @@ func (repman *ReplicationManager) handlerMuxServerUnprovision(w http.ResponseWri
 	}
 }
 
-// swagger:operation GET /api/clusters/{clusterName}/servers/{serverName}/is-master serverName-is-master
-//
-//
-// ---
-// parameters:
-// - name: clusterName
-//   in: path
-//   description: cluster to filter by
-//   required: true
-//   type: string
-// - name: serverName
-//   in: path
-//   description: server to filter by
-//   required: true
-//   type: string
-// produces:
-//  - text/plain
-// responses:
-//   '200':
-//     description: OK
-//     schema:
-//       type: string
-//     examples:
-//       text/plain: 200 -Valid Master!
-//     headers:
-//       Access-Control-Allow-Origin:
-//         type: string
-//   '500':
-//     description: No cluster
-//     schema:
-//       type: string
-//     examples:
-//       text/plain: No cluster
-//     headers:
-//       Access-Control-Allow-Origin:
-//         type: string
-//   '503':
-//     description: Not a Valid Master
-//     schema:
-//       type: string
-//     examples:
-//       text/plain: 503 -Not a Valid Master!
-//     headers:
-//       Access-Control-Allow-Origin:
-//         type: string
-
+// handlerMuxServersIsMasterStatus handles the HTTP request to check if a server is a master within a cluster.
+// @Summary Check if a server is a master
+// @Description Checks if a specified server within a cluster is a master.
+// @Tags ReplicationManager
+// @Produce text/plain
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Success 200 {string} string "200 -Valid Master!"
+// @Failure 500 {string} string "No cluster"
+// @Failure 503 {string} string "503 -Not a Valid Master!"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/is-master [get]
 func (repman *ReplicationManager) handlerMuxServersIsMasterStatus(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -1401,6 +1843,18 @@ func (repman *ReplicationManager) handlerMuxServersIsMasterStatus(w http.Respons
 	}
 }
 
+// handlerMuxServerNeedRestart handles the HTTP request to check if a server needs a restart.
+// @Summary Check if a server needs a restart
+// @Description Checks if a specified server within a cluster needs a restart.
+// @Tags ReplicationManager
+// @Produce text/plain
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Param serverPort path string true "Server Port"
+// @Success 200 {string} string "200 -Need restart!"
+// @Failure 500 {string} string "503 -Not a Valid Server!"
+// @Failure 503 {string} string "503 -No restart needed!"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/{serverPort}/need-restart [get]
 func (repman *ReplicationManager) handlerMuxServerNeedRestart(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -1434,6 +1888,18 @@ func (repman *ReplicationManager) handlerMuxServerNeedRestart(w http.ResponseWri
 	}
 }
 
+// handlerMuxServerNeedReprov handles the HTTP request to check if a server needs re-provisioning.
+// @Summary Check if a server needs re-provisioning
+// @Description Checks if a specified server within a cluster needs re-provisioning.
+// @Tags ReplicationManager
+// @Produce text/plain
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Param serverPort path string true "Server Port"
+// @Success 200 {string} string "200 -Need reprov!"
+// @Failure 500 {string} string "503 -Not a Valid Server!"
+// @Failure 503 {string} string "503 -No reprov needed!"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/{serverPort}/need-reprov [get]
 func (repman *ReplicationManager) handlerMuxServerNeedReprov(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -1466,6 +1932,18 @@ func (repman *ReplicationManager) handlerMuxServerNeedReprov(w http.ResponseWrit
 	}
 }
 
+// handlerMuxServerNeedProv handles the HTTP request to check if a server needs provisioning.
+// @Summary Check if a server needs provisioning
+// @Description Checks if a specified server within a cluster needs provisioning.
+// @Tags ReplicationManager
+// @Produce text/plain
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Param serverPort path string true "Server Port"
+// @Success 200 {string} string "200 -Need provisioning!"
+// @Failure 500 {string} string "503 -Not a Valid Server!"
+// @Failure 503 {string} string "503 -No provisioning needed!"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/{serverPort}/need-prov [get]
 func (repman *ReplicationManager) handlerMuxServerNeedProv(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -1498,6 +1976,18 @@ func (repman *ReplicationManager) handlerMuxServerNeedProv(w http.ResponseWriter
 	}
 }
 
+// handlerMuxServerNeedUnprov handles the HTTP request to check if a server needs unprovisioning.
+// @Summary Check if a server needs unprovisioning
+// @Description Checks if a specified server within a cluster needs unprovisioning.
+// @Tags ReplicationManager
+// @Produce text/plain
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Param serverPort path string true "Server Port"
+// @Success 200 {string} string "200 -Need unprov!"
+// @Failure 500 {string} string "503 -Not a Valid Server!"
+// @Failure 503 {string} string "503 -No unprov needed!"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/{serverPort}/need-unprov [get]
 func (repman *ReplicationManager) handlerMuxServerNeedUnprov(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -1530,6 +2020,17 @@ func (repman *ReplicationManager) handlerMuxServerNeedUnprov(w http.ResponseWrit
 	}
 }
 
+// handlerMuxServerNeedStart handles the HTTP request to check if a server needs to start.
+// @Summary Check if a server needs to start
+// @Description Checks if a specified server within a cluster needs to start.
+// @Tags ReplicationManager
+// @Produce text/plain
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Param serverPort path string true "Server Port"
+// @Success 200 {string} string "200 -Need start!"
+// @Failure 500 {string} string "500 -No start needed!" or "500 -No valid server!" or "500 -No cluster!"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/{serverPort}/need-start [get]
 func (repman *ReplicationManager) handlerMuxServerNeedStart(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -1567,6 +2068,17 @@ func (repman *ReplicationManager) handlerMuxServerNeedStart(w http.ResponseWrite
 	}
 }
 
+// handlerMuxServerNeedStop handles the HTTP request to check if a server needs to stop.
+// @Summary Check if a server needs to stop
+// @Description Checks if a specified server within a cluster needs to stop.
+// @Tags ReplicationManager
+// @Produce text/plain
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Param serverPort path string true "Server Port"
+// @Success 200 {string} string "200 -Need stop!"
+// @Failure 500 {string} string "500 -No stop needed!" or "500 -No valid server!" or "500 -No cluster!"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/{serverPort}/need-stop [get]
 func (repman *ReplicationManager) handlerMuxServerNeedStop(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -1603,6 +2115,17 @@ func (repman *ReplicationManager) handlerMuxServerNeedStop(w http.ResponseWriter
 	}
 }
 
+// handlerMuxServerNeedConfigChange handles the HTTP request to check if a server needs a config change.
+// @Summary Check if a server needs a config change
+// @Description Checks if a specified server within a cluster needs a config change.
+// @Tags ReplicationManager
+// @Produce text/plain
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Param serverPort path string true "Server Port"
+// @Success 200 {string} string "200 -Need config change!"
+// @Failure 500 {string} string "500 -No config change needed!" or "500 -No valid server!" or "500 -No cluster!"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/{serverPort}/need-config-change [get]
 func (repman *ReplicationManager) handlerMuxServerNeedConfigChange(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -1640,6 +2163,15 @@ func (repman *ReplicationManager) handlerMuxServerNeedConfigChange(w http.Respon
 	}
 }
 
+// handlerMuxServerNeedRollingReprov handles the HTTP request to check if a cluster needs a rolling reprovision.
+// @Summary Check if a cluster needs a rolling reprovision
+// @Description Checks if a specified cluster needs a rolling reprovision.
+// @Tags ReplicationManager
+// @Produce text/plain
+// @Param clusterName path string true "Cluster Name"
+// @Success 200 {string} string "200 -Need rolling reprov!"
+// @Failure 500 {string} string "503 -No rolling reprov needed!" or "500 -No cluster"
+// @Router /api/clusters/{clusterName}/need-rolling-reprov [get]
 func (repman *ReplicationManager) handlerMuxServerNeedRollingReprov(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -1659,6 +2191,15 @@ func (repman *ReplicationManager) handlerMuxServerNeedRollingReprov(w http.Respo
 	}
 }
 
+// handlerMuxServerNeedRollingRestart handles the HTTP request to check if a cluster needs a rolling restart.
+// @Summary Check if a cluster needs a rolling restart
+// @Description Checks if a specified cluster needs a rolling restart.
+// @Tags ReplicationManager
+// @Produce text/plain
+// @Param clusterName path string true "Cluster Name"
+// @Success 200 {string} string "200 -Need rolling restart!"
+// @Failure 500 {string} string "503 -No rolling restart needed!" or "500 -No cluster"
+// @Router /api/clusters/{clusterName}/need-rolling-restart [get]
 func (repman *ReplicationManager) handlerMuxServerNeedRollingRestart(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -1678,6 +2219,18 @@ func (repman *ReplicationManager) handlerMuxServerNeedRollingRestart(w http.Resp
 	}
 }
 
+// handlerMuxServersPortIsMasterStatus handles the HTTP request to check if a server port is a master within a cluster.
+// @Summary Check if a server port is a master
+// @Description Checks if a specified server port within a cluster is a master.
+// @Tags ReplicationManager
+// @Produce text/plain
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Param serverPort path string true "Server Port"
+// @Success 200 {string} string "200 -Valid Master!"
+// @Failure 500 {string} string "No cluster"
+// @Failure 503 {string} string "503 -Not a Valid Master!"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/{serverPort}/is-master [get]
 func (repman *ReplicationManager) handlerMuxServersPortIsMasterStatus(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -1708,52 +2261,17 @@ func (repman *ReplicationManager) handlerMuxServersPortIsMasterStatus(w http.Res
 	}
 }
 
-// swagger:operation GET /api/clusters/{clusterName}/servers/{serverName}/is-slave serverName-is-slave
-//
-//
-// ---
-// parameters:
-// - name: clusterName
-//   in: path
-//   description: cluster to filter by
-//   required: true
-//   type: string
-// - name: serverName
-//   in: path
-//   description: server to filter by
-//   required: true
-//   type: string
-// produces:
-//  - text/plain
-// responses:
-//   '200':
-//     description: OK
-//     schema:
-//       type: string
-//     examples:
-//       text/plain: 200 -Valid Slave!
-//     headers:
-//       Access-Control-Allow-Origin:
-//         type: string
-//   '500':
-//     description: No cluster
-//     schema:
-//       type: string
-//     examples:
-//       text/plain: No cluster
-//     headers:
-//       Access-Control-Allow-Origin:
-//         type: string
-//   '503':
-//     description: Not a Valid Slave!
-//     schema:
-//       type: string
-//     examples:
-//       text/plain: 503 -Not a Valid Slave!
-//     headers:
-//       Access-Control-Allow-Origin:
-//         type: string
-
+// handlerMuxServersIsSlaveStatus handles the HTTP request to check if a server is a slave within a cluster.
+// @Summary Check if a server is a slave
+// @Description Checks if a specified server within a cluster is a slave.
+// @Tags ReplicationManager
+// @Produce text/plain
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Success 200 {string} string "200 -Valid Slave!"
+// @Failure 500 {string} string "No cluster"
+// @Failure 503 {string} string "503 -Not a Valid Slave!"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/is-slave [get]
 func (repman *ReplicationManager) handlerMuxServersIsSlaveStatus(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -1779,6 +2297,18 @@ func (repman *ReplicationManager) handlerMuxServersIsSlaveStatus(w http.Response
 	}
 }
 
+// handlerMuxServersPortIsSlaveStatus handles the HTTP request to check if a server port is a slave within a cluster.
+// @Summary Check if a server port is a slave
+// @Description Checks if a specified server port within a cluster is a slave.
+// @Tags ReplicationManager
+// @Produce text/plain
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Param serverPort path string true "Server Port"
+// @Success 200 {string} string "200 -Valid Slave!"
+// @Failure 500 {string} string "No cluster"
+// @Failure 503 {string} string "503 -Not a Valid Slave!"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/{serverPort}/is-slave [get]
 func (repman *ReplicationManager) handlerMuxServersPortIsSlaveStatus(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -1806,6 +2336,18 @@ func (repman *ReplicationManager) handlerMuxServersPortIsSlaveStatus(w http.Resp
 	}
 }
 
+// handlerMuxServersPortBackup handles the HTTP request to perform a physical backup on a specific server port within a cluster.
+// @Summary Perform a physical backup on a server port
+// @Description Initiates a physical backup on a specified server port within a cluster.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Param serverPort path string true "Server Port"
+// @Success 200 {string} string "Backup initiated successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/{serverPort}/backup [get]
 func (repman *ReplicationManager) handlerMuxServersPortBackup(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -1829,6 +2371,19 @@ func (repman *ReplicationManager) handlerMuxServersPortBackup(w http.ResponseWri
 	}
 }
 
+// handlerMuxServersPortConfig handles the HTTP request to get the configuration of a specific server port within a cluster.
+// @Summary Get server port configuration
+// @Description Retrieves the configuration of a specified server port within a cluster.
+// @Tags ReplicationManager
+// @Produce application/octet-stream
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Param serverPort path string true "Server Port"
+// @Success 200 {file} file "Configuration file"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 404 {string} string "File not found"
+// @Failure 500 {string} string "No cluster" or "No server"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/{serverPort}/config [get]
 func (repman *ReplicationManager) handlerMuxServersPortConfig(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -1872,6 +2427,24 @@ func (repman *ReplicationManager) handlerMuxServersPortConfig(w http.ResponseWri
 	}
 }
 
+type DecodedData struct {
+	Data string `json:"data"`
+}
+
+// handlerMuxServersWriteLog handles the HTTP request to write logs for a specific server within a cluster.
+// @Summary Write logs for a server
+// @Description Writes logs for a specified server within a cluster.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Param serverPort path string true "Server Port"
+// @Param task path string true "Task"
+// @Param data body DecodedData true "Log Data"
+// @Success 200 {object} ApiResponse "Message logged"
+// @Failure 400 {string} string "Bad request: Task is not registered" or "Decode reading body" or "Decode body"
+// @Failure 500 {string} string "No cluster" or "No server" or "Error decrypting data"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/{serverPort}/write-log/{task} [post]
 func (repman *ReplicationManager) handlerMuxServersWriteLog(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -1888,9 +2461,7 @@ func (repman *ReplicationManager) handlerMuxServersWriteLog(w http.ResponseWrite
 			return
 		}
 
-		var decodedData struct {
-			Data string `json:"data"`
-		}
+		var decodedData DecodedData
 
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
@@ -1927,6 +2498,17 @@ func (repman *ReplicationManager) handlerMuxServersWriteLog(w http.ResponseWrite
 	}
 }
 
+// handlerMuxServerProcesslist handles the HTTP request to get the process list of a specific server within a cluster.
+// @Summary Get process list of a server
+// @Description Retrieves the process list of a specified server within a cluster.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Success 200 {object} map[string]interface{} "Process list retrieved successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found" or "Encoding error"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/processlist [get]
 func (repman *ReplicationManager) handlerMuxServerProcesslist(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -1959,6 +2541,17 @@ func (repman *ReplicationManager) handlerMuxServerProcesslist(w http.ResponseWri
 	}
 }
 
+// handlerMuxServerMetaDataLocks handles the HTTP request to get metadata locks of a specific server within a cluster.
+// @Summary Get metadata locks of a server
+// @Description Retrieves the metadata locks of a specified server within a cluster.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Success 200 {object} map[string]interface{} "Metadata locks retrieved successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found" or "Encoding error"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/meta-data-locks [get]
 func (repman *ReplicationManager) handlerMuxServerMetaDataLocks(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -1989,6 +2582,17 @@ func (repman *ReplicationManager) handlerMuxServerMetaDataLocks(w http.ResponseW
 	}
 }
 
+// handlerMuxServerQueryResponseTime handles the HTTP request to get query response time of a specific server within a cluster.
+// @Summary Get query response time of a server
+// @Description Retrieves the query response time of a specified server within a cluster.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Success 200 {object} map[string]interface{} "Query response time retrieved successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found" or "Encoding error"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/query-response-time [get]
 func (repman *ReplicationManager) handlerMuxServerQueryResponseTime(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -2019,6 +2623,17 @@ func (repman *ReplicationManager) handlerMuxServerQueryResponseTime(w http.Respo
 	}
 }
 
+// handlerMuxServerErrorLog handles the HTTP request to get the error log of a specific server within a cluster.
+// @Summary Get error log of a server
+// @Description Retrieves the error log of a specified server within a cluster.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Success 200 {object} map[string]interface{} "Error log retrieved successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found" or "Encoding error"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/errorlog [get]
 func (repman *ReplicationManager) handlerMuxServerErrorLog(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -2050,6 +2665,17 @@ func (repman *ReplicationManager) handlerMuxServerErrorLog(w http.ResponseWriter
 	}
 }
 
+// handlerMuxServerSlowLog handles the HTTP request to get the slow log of a specific server within a cluster.
+// @Summary Get slow log of a server
+// @Description Retrieves the slow log of a specified server within a cluster.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Success 200 {object} map[string]interface{} "Slow log retrieved successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found" or "Encoding error"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/slow-queries [get]
 func (repman *ReplicationManager) handlerMuxServerSlowLog(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -2081,6 +2707,17 @@ func (repman *ReplicationManager) handlerMuxServerSlowLog(w http.ResponseWriter,
 	}
 }
 
+// handlerMuxServerPFSStatements handles the HTTP request to get PFS statements of a specific server within a cluster.
+// @Summary Get PFS statements of a server
+// @Description Retrieves the PFS statements of a specified server within a cluster.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Success 200 {object} map[string]interface{} "PFS statements retrieved successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found" or "Encoding error"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/digest-statements-pfs [get]
 func (repman *ReplicationManager) handlerMuxServerPFSStatements(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -2111,6 +2748,17 @@ func (repman *ReplicationManager) handlerMuxServerPFSStatements(w http.ResponseW
 	}
 }
 
+// handlerMuxServerPFSStatementsSlowLog handles the HTTP request to get PFS statements from the slow log of a specific server within a cluster.
+// @Summary Get PFS statements from the slow log of a server
+// @Description Retrieves the PFS statements from the slow log of a specified server within a cluster.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Success 200 {object} map[string]interface{} "PFS statements from slow log retrieved successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found" or "Encoding error"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/digest-statements-slow [get]
 func (repman *ReplicationManager) handlerMuxServerPFSStatementsSlowLog(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -2142,6 +2790,17 @@ func (repman *ReplicationManager) handlerMuxServerPFSStatementsSlowLog(w http.Re
 	}
 }
 
+// handlerMuxServerVariables handles the HTTP request to get the variables of a specific server within a cluster.
+// @Summary Get variables of a server
+// @Description Retrieves the variables of a specified server within a cluster.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Success 200 {object} map[string]interface{} "Variables retrieved successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found" or "Encoding error"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/variables [get]
 func (repman *ReplicationManager) handlerMuxServerVariables(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -2173,6 +2832,17 @@ func (repman *ReplicationManager) handlerMuxServerVariables(w http.ResponseWrite
 	}
 }
 
+// handlerMuxServerStatus handles the HTTP request to get the status of a specific server within a cluster.
+// @Summary Get status of a server
+// @Description Retrieves the status of a specified server within a cluster.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Success 200 {object} map[string]interface{} "Status retrieved successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found" or "Encoding error"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/status [get]
 func (repman *ReplicationManager) handlerMuxServerStatus(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -2204,6 +2874,17 @@ func (repman *ReplicationManager) handlerMuxServerStatus(w http.ResponseWriter, 
 	}
 }
 
+// handlerMuxServerStatusDelta handles the HTTP request to get the status delta of a specific server within a cluster.
+// @Summary Get status delta of a server
+// @Description Retrieves the status delta of a specified server within a cluster.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Success 200 {object} map[string]interface{} "Status delta retrieved successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found" or "Encoding error"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/status-delta [get]
 func (repman *ReplicationManager) handlerMuxServerStatusDelta(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -2235,6 +2916,17 @@ func (repman *ReplicationManager) handlerMuxServerStatusDelta(w http.ResponseWri
 	}
 }
 
+// handlerMuxServerTables handles the HTTP request to get the tables of a specific server within a cluster.
+// @Summary Get tables of a server
+// @Description Retrieves the tables of a specified server within a cluster.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Success 200 {object} map[string]interface{} "Tables retrieved successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found" or "Encoding error"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/tables [get]
 func (repman *ReplicationManager) handlerMuxServerTables(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -2266,6 +2958,17 @@ func (repman *ReplicationManager) handlerMuxServerTables(w http.ResponseWriter, 
 	}
 }
 
+// handlerMuxServerVTables handles the HTTP request to get the virtual tables of a specific server within a cluster.
+// @Summary Get virtual tables of a server
+// @Description Retrieves the virtual tables of a specified server within a cluster.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Success 200 {object} map[string]interface{} "Virtual tables retrieved successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found" or "Encoding error"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/vtables [get]
 func (repman *ReplicationManager) handlerMuxServerVTables(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -2297,6 +3000,17 @@ func (repman *ReplicationManager) handlerMuxServerVTables(w http.ResponseWriter,
 	}
 }
 
+// handlerMuxRunJobs handles the HTTP request to run jobs on a specific server within a cluster.
+// @Summary Run jobs on a server
+// @Description Runs jobs on a specified server within a cluster.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Success 200 {string} string "Jobs run successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found" or "Error running job"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/actions/run-jobs [get]
 func (repman *ReplicationManager) handlerMuxRunJobs(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -2324,6 +3038,17 @@ func (repman *ReplicationManager) handlerMuxRunJobs(w http.ResponseWriter, r *ht
 	}
 }
 
+// handlerMuxServerSchemas handles the HTTP request to get the schemas of a specific server within a cluster.
+// @Summary Get schemas of a server
+// @Description Retrieves the schemas of a specified server within a cluster.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Success 200 {object} map[string]interface{} "Schemas retrieved successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found" or "Encoding error"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/schemas [get]
 func (repman *ReplicationManager) handlerMuxServerSchemas(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -2355,6 +3080,17 @@ func (repman *ReplicationManager) handlerMuxServerSchemas(w http.ResponseWriter,
 	}
 }
 
+// handlerMuxServerInnoDBStatus handles the HTTP request to get the InnoDB status of a specific server within a cluster.
+// @Summary Get InnoDB status of a server
+// @Description Retrieves the InnoDB status of a specified server within a cluster.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Success 200 {object} map[string]interface{} "InnoDB status retrieved successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found" or "Encoding error"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/status-innodb [get]
 func (repman *ReplicationManager) handlerMuxServerInnoDBStatus(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -2386,6 +3122,17 @@ func (repman *ReplicationManager) handlerMuxServerInnoDBStatus(w http.ResponseWr
 	}
 }
 
+// handlerMuxServerAllSlavesStatus handles the HTTP request to get the status of all slaves of a specific server within a cluster.
+// @Summary Get status of all slaves of a server
+// @Description Retrieves the status of all slaves of a specified server within a cluster.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Success 200 {object} map[string]interface{} "Status of all slaves retrieved successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found" or "Encoding error"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/all-slaves-status [get]
 func (repman *ReplicationManager) handlerMuxServerAllSlavesStatus(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -2417,63 +3164,17 @@ func (repman *ReplicationManager) handlerMuxServerAllSlavesStatus(w http.Respons
 	}
 }
 
-// swagger:operation GET /api/clusters/{clusterName}/servers/{serverName}/master-status serverName-master-status
-//
-//
-// ---
-// parameters:
-// - name: clusterName
-//   in: path
-//   description: cluster to filter by
-//   required: true
-//   type: string
-// - name: serverName
-//   in: path
-//   description: server to filter by
-//   required: true
-//   type: string
-// produces:
-//  - text/plain
-// responses:
-//   '200':
-//     description: OK
-//   '403':
-//     description: No valid ACL
-//     schema:
-//       type: string
-//     examples:
-//       text/plain: No valid ACL
-//     headers:
-//       Access-Control-Allow-Origin:
-//         type: string
-//   '500':
-//     description: Encoding error
-//     schema:
-//       type: string
-//     examples:
-//       text/plain: Encoding error
-//     headers:
-//       Access-Control-Allow-Origin:
-//         type: string
-//   '500':
-//     description: No cluster
-//     schema:
-//       type: string
-//     examples:
-//       text/plain: No cluster
-//     headers:
-//       Access-Control-Allow-Origin:
-//         type: string
-//   '503':
-//     description: Not a Valid Server!
-//     schema:
-//       type: string
-//     examples:
-//       text/plain: 503 -Not a Valid Server!
-//     headers:
-//       Access-Control-Allow-Origin:
-//         type: string
-
+// handlerMuxServerMasterStatus handles the HTTP request to get the master status of a specific server within a cluster.
+// @Summary Get master status of a server
+// @Description Retrieves the master status of a specified server within a cluster.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Success 200 {object} map[string]interface{} "Master status retrieved successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found" or "Encoding error"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/master-status [get]
 func (repman *ReplicationManager) handlerMuxServerMasterStatus(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -2505,6 +3206,17 @@ func (repman *ReplicationManager) handlerMuxServerMasterStatus(w http.ResponseWr
 	}
 }
 
+// handlerMuxSkipReplicationEvent handles the HTTP request to skip a replication event on a specific server within a cluster.
+// @Summary Skip a replication event on a server
+// @Description Skips a replication event on a specified server within a cluster.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Success 200 {string} string "Replication event skipped successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/actions/skip-replication-event [get]
 func (repman *ReplicationManager) handlerMuxSkipReplicationEvent(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -2527,6 +3239,17 @@ func (repman *ReplicationManager) handlerMuxSkipReplicationEvent(w http.Response
 	}
 }
 
+// handlerMuxSetInnoDBMonitor handles the HTTP request to toggle InnoDB monitor on a specific server within a cluster.
+// @Summary Toggle InnoDB monitor on a server
+// @Description Toggles the InnoDB monitor on a specified server within a cluster.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Success 200 {string} string "InnoDB monitor toggled successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/actions/toogle-innodb-monitor [get]
 func (repman *ReplicationManager) handlerMuxSetInnoDBMonitor(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -2549,6 +3272,17 @@ func (repman *ReplicationManager) handlerMuxSetInnoDBMonitor(w http.ResponseWrit
 	}
 }
 
+// handlerMuxGetDatabaseServiceConfig handles the HTTP request to get the database service configuration of a specific server within a cluster.
+// @Summary Get database service configuration of a server
+// @Description Retrieves the database service configuration of a specified server within a cluster.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Success 200 {string} string "Database service configuration retrieved successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/service-opensvc [get]
 func (repman *ReplicationManager) handlerMuxGetDatabaseServiceConfig(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -2572,6 +3306,18 @@ func (repman *ReplicationManager) handlerMuxGetDatabaseServiceConfig(w http.Resp
 	}
 }
 
+// handlerMuxServersTaskCancel handles the HTTP request to cancel a task on a specific server within a cluster.
+// @Summary Cancel a task on a server
+// @Description Cancels a task identified by its name on a specified server within a cluster.
+// @Tags ReplicationManager
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Param task path string true "Task Name"
+// @Success 200 {string} string "Task canceled successfully"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" or "Server Not Found" or "Error canceling task"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/actions/job-cancel/{task} [get]
 func (repman *ReplicationManager) handlerMuxServersTaskCancel(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)

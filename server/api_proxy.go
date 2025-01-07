@@ -33,9 +33,27 @@ func (repman *ReplicationManager) apiProxyProtectedHandler(router *mux.Router) {
 		negroni.HandlerFunc(repman.validateTokenMiddleware),
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxProxyStart)),
 	))
-
+	router.Handle("/api/clusters/{clusterName}/proxies/{proxyName}/actions/need-restart", negroni.New(
+		negroni.HandlerFunc(repman.validateTokenMiddleware),
+		negroni.Wrap(http.HandlerFunc(repman.handlerMuxProxyNeedRestart)),
+	))
+	router.Handle("/api/clusters/{clusterName}/proxies/{proxyName}/actions/need-reprov", negroni.New(
+		negroni.HandlerFunc(repman.validateTokenMiddleware),
+		negroni.Wrap(http.HandlerFunc(repman.handlerMuxProxyNeedReprov)),
+	))
 }
 
+// @Summary Start Proxy Service
+// @Description Start the proxy service for a given cluster and proxy
+// @Tags proxies
+// @Accept json
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param proxyName path string true "Proxy Name"
+// @Success 200 {string} string "Proxy Service Started"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" "Server Not Found"
+// @Router /api/clusters/{clusterName}/proxies/{proxyName}/actions/start [post]
 func (repman *ReplicationManager) handlerMuxProxyStart(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -58,6 +76,17 @@ func (repman *ReplicationManager) handlerMuxProxyStart(w http.ResponseWriter, r 
 	}
 }
 
+// @Summary Stop Proxy Service
+// @Description Stop the proxy service for a given cluster and proxy
+// @Tags proxies
+// @Accept json
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param proxyName path string true "Proxy Name"
+// @Success 200 {string} string "Proxy Service Stopped"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" "Server Not Found"
+// @Router /api/clusters/{clusterName}/proxies/{proxyName}/actions/stop [post]
 func (repman *ReplicationManager) handlerMuxProxyStop(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -79,6 +108,18 @@ func (repman *ReplicationManager) handlerMuxProxyStop(w http.ResponseWriter, r *
 		return
 	}
 }
+
+// @Summary Provision Proxy Service
+// @Description Provision the proxy service for a given cluster and proxy
+// @Tags proxies
+// @Accept json
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param proxyName path string true "Proxy Name"
+// @Success 200 {string} string "Proxy Service Provisioned"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" "Server Not Found"
+// @Router /api/clusters/{clusterName}/proxies/{proxyName}/actions/provision [post]
 func (repman *ReplicationManager) handlerMuxProxyProvision(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -101,6 +142,17 @@ func (repman *ReplicationManager) handlerMuxProxyProvision(w http.ResponseWriter
 	}
 }
 
+// @Summary Unprovision Proxy Service
+// @Description Unprovision the proxy service for a given cluster and proxy
+// @Tags proxies
+// @Accept json
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param proxyName path string true "Proxy Name"
+// @Success 200 {string} string "Proxy Service Unprovisioned"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 500 {string} string "Cluster Not Found" "Server Not Found"
+// @Router /api/clusters/{clusterName}/proxies/{proxyName}/actions/unprovision [post]
 func (repman *ReplicationManager) handlerMuxProxyUnprovision(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -123,6 +175,17 @@ func (repman *ReplicationManager) handlerMuxProxyUnprovision(w http.ResponseWrit
 	}
 }
 
+// @Summary Get Sphinx Indexes
+// @Description Get the Sphinx indexes for a given cluster
+// @Tags proxies
+// @Accept json
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Success 200 {string} string "Sphinx Indexes"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 404 {string} string "Something went wrong"
+// @Failure 500 {string} string "Cluster Not Found"
+// @Router /api/clusters/{clusterName}/sphinx/indexes [get]
 func (repman *ReplicationManager) handlerMuxSphinxIndexes(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -145,6 +208,18 @@ func (repman *ReplicationManager) handlerMuxSphinxIndexes(w http.ResponseWriter,
 	}
 }
 
+// @Summary Check if Proxy Needs Restart
+// @Description Check if the proxy service for a given cluster and proxy needs a restart
+// @Tags proxies
+// @Accept json
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param proxyName path string true "Proxy Name"
+// @Success 200 {string} string "Need restart!"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 503 {string} string "No restart needed!" "Not a Valid Server!"
+// @Failure 500 {string} string "No cluster"
+// @Router /api/clusters/{clusterName}/proxies/{proxyName}/actions/need-restart [get]
 func (repman *ReplicationManager) handlerMuxProxyNeedRestart(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -173,6 +248,18 @@ func (repman *ReplicationManager) handlerMuxProxyNeedRestart(w http.ResponseWrit
 	}
 }
 
+// @Summary Check if Proxy Needs Reprovision
+// @Description Check if the proxy service for a given cluster and proxy needs reprovisioning
+// @Tags proxies
+// @Accept json
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param proxyName path string true "Proxy Name"
+// @Success 200 {string} string "Need reprov!"
+// @Failure 403 {string} string "No valid ACL"
+// @Failure 503 {string} string "No reprov needed!" "Not a Valid Server!"
+// @Failure 500 {string} string "No cluster"
+// @Router /api/clusters/{clusterName}/proxies/{proxyName}/actions/need-reprov [get]
 func (repman *ReplicationManager) handlerMuxProxyNeedReprov(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)

@@ -45,7 +45,9 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/iu0v1/gelada"
 	"github.com/iu0v1/gelada/authguard"
+	_ "github.com/signal18/replication-manager/docs"
 	log "github.com/sirupsen/logrus"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 type HandlerManager struct {
@@ -114,6 +116,13 @@ func (repman *ReplicationManager) httpserver() {
 		router.PathPrefix("/static/").Handler(repman.DashboardFSHandler())
 		router.PathPrefix("/app/").Handler(repman.DashboardFSHandler())
 		router.PathPrefix("/grafana/").Handler(http.StripPrefix("/grafana/", repman.SharedirHandler("grafana")))
+	}
+
+	if repman.Conf.ApiSwaggerEnabled {
+		// Serve Swagger documentation
+		router.PathPrefix("/api-docs/").Handler(httpSwagger.Handler(
+			httpSwagger.URL("/api-docs/doc.json"), // URL for the generated Swagger JSON
+		))
 	}
 
 	router.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -257,6 +266,14 @@ func (repman *ReplicationManager) handlerApp(w http.ResponseWriter, r *http.Requ
 	}
 }
 
+// handlerRepoComp handles the HTTP request for retrieving the current repository component.
+// @Summary Retrieve current repository component
+// @Description Reads the current repository component from the specified directory and returns its content.
+// @Tags repository
+// @Produce plain
+// @Success 200 {string} string "Current repository component content"
+// @Failure 404 {string} string "404 Something went wrong - Not Found"
+// @Router /api/repocomp/current [get]
 func (repman *ReplicationManager) handlerRepoComp(w http.ResponseWriter, r *http.Request) {
 
 	data, err := os.ReadFile(string(repman.Conf.ShareDir + "/opensvc/current"))

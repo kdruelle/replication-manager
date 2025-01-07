@@ -45,10 +45,12 @@ import (
 	"github.com/signal18/replication-manager/cert"
 	"github.com/signal18/replication-manager/cluster"
 	"github.com/signal18/replication-manager/config"
+	_ "github.com/signal18/replication-manager/docs"
 	"github.com/signal18/replication-manager/regtest"
 	"github.com/signal18/replication-manager/share"
 	"github.com/signal18/replication-manager/utils/githelper"
 	"github.com/signal18/replication-manager/utils/misc"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 //RSA KEYS AND INITIALISATION
@@ -224,6 +226,13 @@ func (repman *ReplicationManager) apiserver() {
 		router.PathPrefix("/grafana/").Handler(http.StripPrefix("/grafana/", repman.SharedirHandler("grafana")))
 	}
 
+	if repman.Conf.ApiSwaggerEnabled {
+		// Serve Swagger documentation
+		router.PathPrefix("/api-docs/").Handler(httpSwagger.Handler(
+			httpSwagger.URL("/api-docs/doc.json"), // URL for the generated Swagger JSON
+		))
+	}
+
 	router.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Check if the path starts with "/api"
 		if len(r.URL.Path) >= 4 && r.URL.Path[:4] == "/api" {
@@ -236,8 +245,6 @@ func (repman *ReplicationManager) apiserver() {
 	})
 
 	router.HandleFunc("/api/login", repman.loginHandler)
-	//router.Handle("/api", v3.NewHandler("My API", "/swagger.json", "/api"))
-
 	router.Handle("/api/terms", negroni.New(
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxTerms)),
 	))
@@ -477,6 +484,19 @@ func (repman *ReplicationManager) GetUserFromRequest(r *http.Request) string {
 	return ""
 }
 
+// loginHandler handles user login requests.
+// @Summary User login
+// @Description Authenticates a user and returns a JWT token upon successful login.
+// @Tags authentication
+// @Accept  json
+// @Produce  json
+// @Param userCredentials body userCredentials true "User credentials"
+// @Success 200 {object} token "JWT token"
+// @Failure 403 {string} string "Error in request"
+// @Failure 429 {string} string "Too many requests"
+// @Failure 401 {string} string "Invalid credentials"
+// @Failure 500 {string} string "Error signing token"
+// @Router /api/login [post]
 func (repman *ReplicationManager) loginHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	var user userCredentials
@@ -706,6 +726,15 @@ func (repman *ReplicationManager) handlerMuxAuthCallback(w http.ResponseWriter, 
 
 //AUTH TOKEN VALIDATION
 
+// handlerMuxReplicationManager handles the HTTP request for the replication manager.
+// @Summary Handles replication manager requests
+// @Description This endpoint processes the replication manager requests, validates cluster ACLs, and returns the cluster list in JSON format.
+// @Tags replication-manager
+// @Accept  json
+// @Produce  json
+// @Success 200 {object} ReplicationManager "Successful response with replication manager details"
+// @Failure 500 {string} string "Internal Server Error"
+// @Router /api/monitor [get]
 func (repman *ReplicationManager) handlerMuxReplicationManager(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
@@ -740,11 +769,28 @@ func (repman *ReplicationManager) handlerMuxReplicationManager(w http.ResponseWr
 	w.Write(res)
 }
 
+// handlerMuxTerms handles HTTP requests for retrieving terms.
+// @Summary Retrieves terms
+// @Description This endpoint returns the terms managed by the replication manager.
+// @Produce text/plain
+// @Success 200 {string} string "Terms"
+// @Router /api/terms [get]
 func (repman *ReplicationManager) handlerMuxTerms(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Write(repman.Terms)
 }
 
+// handlerMuxAddUser handles the addition of a new user to the replication manager.
+//
+// @Summary Add a new user
+// @Description Adds a new user to the replication manager by decoding the request body into a UserForm struct and adding the user to each cluster if the request is valid.
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param user body cluster.UserForm true "User Form"
+// @Success 200 {string} string "User added successfully"
+// @Failure 400 {string} string "Error in request"
+// @Router /api/monitor/actions/adduser/{userName} [post]
 func (repman *ReplicationManager) handlerMuxAddUser(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
@@ -765,6 +811,20 @@ func (repman *ReplicationManager) handlerMuxAddUser(w http.ResponseWriter, r *ht
 
 }
 
+// handlerMuxAddClusterUser handles the addition of a new user to a cluster.
+//
+// @Summary Add a new user to a cluster
+// @Description Adds a new user to the specified cluster if the request is valid and the user has the necessary permissions.
+// @Tags clusters
+// @Accept json
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param userform body cluster.UserForm true "User Form"
+// @Success 200 {string} string "User added successfully"
+// @Failure 400 {string} string "Error in request"
+// @Failure 403 {string} string "No Valid ACL"
+// @Failure 500 {string} string "Error adding new user" or "No valid cluster"
+// @Router /api/clusters/{clusterName}/users/add [post]
 func (repman *ReplicationManager) handlerMuxAddClusterUser(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -796,6 +856,20 @@ func (repman *ReplicationManager) handlerMuxAddClusterUser(w http.ResponseWriter
 	}
 }
 
+// handlerMuxUpdateClusterUser handles the HTTP request to update a user in a cluster.
+//
+// @Summary Update a cluster user
+// @Description Updates the user information for a specified cluster.
+// @Tags clusters
+// @Accept json
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param userform body cluster.UserForm true "User Form"
+// @Success 200 {string} string "User updated successfully"
+// @Failure 400 {string} string "Error in request"
+// @Failure 403 {string} string "No Valid ACL"
+// @Failure 500 {string} string "Error updating user" or "No valid cluster"
+// @Router /api/clusters/{clusterName}/users/update [post]
 func (repman *ReplicationManager) handlerMuxUpdateClusterUser(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -827,6 +901,20 @@ func (repman *ReplicationManager) handlerMuxUpdateClusterUser(w http.ResponseWri
 	}
 }
 
+// handlerMuxDropClusterUser handles the HTTP request to drop a user from a cluster.
+//
+// @Summary Drop a cluster user
+// @Description Drops a user from the specified cluster.
+// @Tags clusters
+// @Accept json
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param userform body cluster.UserForm true "User Form"
+// @Success 200 {string} string "User dropped successfully"
+// @Failure 400 {string} string "Error in request"
+// @Failure 403 {string} string "No Valid ACL"
+// @Failure 500 {string} string "Error dropping user" or "No valid cluster"
+// @Router /api/clusters/{clusterName}/users/drop [post]
 func (repman *ReplicationManager) handlerMuxDropClusterUser(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -858,12 +946,15 @@ func (repman *ReplicationManager) handlerMuxDropClusterUser(w http.ResponseWrite
 	}
 }
 
-// swagger:route GET /api/clusters clusters
-//
-// This will show all the available clusters
-//
-//	Responses:
-//	  200: clusters
+// handlerMuxClusters handles the HTTP request for fetching clusters.
+// @Summary Fetch clusters
+// @Description Fetches the list of clusters that the user has access to based on ACL.
+// @Tags clusters
+// @Produce application/json
+// @Success 200 {array} cluster.Cluster "List of clusters"
+// @Failure 401 {string} string "Unauthenticated resource"
+// @Failure 500 {string} string "Internal server error"
+// @Router /api/clusters [get]
 func (repman *ReplicationManager) handlerMuxClusters(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	if ok, err := repman.isValidRequest(r); ok {
@@ -902,6 +993,16 @@ func (repman *ReplicationManager) handlerMuxClusters(w http.ResponseWriter, r *h
 	}
 }
 
+// handlerMuxPeerClusters handles the request to retrieve peer clusters for a user.
+// @Summary Retrieve peer clusters for a user
+// @Description This endpoint retrieves the peer clusters that a user has access to.
+// @Tags PeerClusters
+// @Produce application/json
+// @Param Authorization header string true "Bearer token"
+// @Success 200 {array} config.PeerCluster "List of peer clusters"
+// @Failure 401 {string} string "Unauthenticated resource"
+// @Failure 500 {string} string "Failed to get token claims or Error Marshal"
+// @Router /api/clusters/peers [get]
 func (repman *ReplicationManager) handlerMuxPeerClusters(w http.ResponseWriter, r *http.Request) {
 	ok, err := repman.isValidRequest(r)
 	if !ok {
@@ -941,6 +1042,16 @@ func (repman *ReplicationManager) handlerMuxPeerClusters(w http.ResponseWriter, 
 	w.Write(cl)
 }
 
+// handlerMuxPeerClustersForSale handles the HTTP request to retrieve the list of peer clusters available for sale.
+// @Summary Retrieve peer clusters for sale
+// @Description This endpoint returns a list of peer clusters that are available for sale, excluding those that are booked by the requesting user.
+// @Tags PeerClusters
+// @Produce application/json
+// @Success 200 {array} config.PeerCluster "List of peer clusters available for sale"
+// @Failure 401 {string} string "Unauthenticated resource"
+// @Failure 500 {string} string "Failed to get token claims or Error Marshal"
+// @Router /api/clusters/for-sale [get]
+// @Param Authorization header string true "JWT token"
 func (repman *ReplicationManager) handlerMuxPeerClustersForSale(w http.ResponseWriter, r *http.Request) {
 	ok, err := repman.isValidRequest(r)
 	if !ok {
@@ -979,6 +1090,21 @@ func (repman *ReplicationManager) handlerMuxPeerClustersForSale(w http.ResponseW
 	w.Write(cl)
 }
 
+// handlerMuxClusterSubscribe handles the subscription of a user to a cluster.
+// @Summary Subscribe a user to a cluster
+// @Description This endpoint allows a user to subscribe to a specified cluster.
+// @Tags cluster
+// @Accept json
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param userform body cluster.UserForm true "User Form"
+// @Success 200 {string} string "Email sent to admin!"
+// @Failure 400 {string} string "Error in request"
+// @Failure 403 {string} string "Error parsing JWT" / "Current user is not logged in via Gitlab!"
+// @Failure 409 {string} string "User already subscribed on peer cluster!" / "Another user already subscribed on peer cluster!"
+// @Failure 500 {string} string "No valid cluster" / "Peer does not have cloud18 setup!" / "Error sending email"
+// @Failure 401 {string} string "Error logging in to gitlab: Token credentials is not valid"
+// @Router /api/clusters/{clusterName}/subscribe [post]
 func (repman *ReplicationManager) handlerMuxClusterSubscribe(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -1113,6 +1239,19 @@ func (repman *ReplicationManager) jsonResponse(apiresponse interface{}, w http.R
 	w.Write(json)
 }
 
+// handlerMuxClusterAdd handles the addition of a new cluster.
+//
+// @Summary Add a new cluster
+// @Description Adds a new cluster to the replication manager. If the cluster already exists, it returns an error.
+// @Tags clusters
+// @Accept json
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Param cluster body cluster.ClusterForm true "Cluster Form"
+// @Success 200 {object} cluster.Cluster "Cluster added successfully"
+// @Failure 400 {string} string "Error in request or Cluster already exists"
+// @Failure 500 {string} string "User is not valid"
+// @Router /api/clusters/actions/add/{clusterName} [post]
 func (repman *ReplicationManager) handlerMuxClusterAdd(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -1174,6 +1313,16 @@ func (repman *ReplicationManager) handlerMuxClusterAdd(w http.ResponseWriter, r 
 	}
 }
 
+// handlerMuxClusterDelete handles the deletion of a cluster.
+// @Summary Delete a cluster
+// @Description Deletes a cluster identified by its name.
+// @Tags clusters
+// @Produce json
+// @Param clusterName path string true "Cluster Name"
+// @Success 200 {string} string "Cluster deleted successfully"
+// @Failure 400 {string} string "Invalid cluster name"
+// @Failure 500 {string} string "Internal server error"
+// @Router /api/clusters/actions/delete/{clusterName} [delete]
 func (repman *ReplicationManager) handlerMuxClusterDelete(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	vars := mux.Vars(r)
@@ -1181,23 +1330,14 @@ func (repman *ReplicationManager) handlerMuxClusterDelete(w http.ResponseWriter,
 
 }
 
-// swagger:operation GET /api/prometheus prometheus
-// Returns the Prometheus metrics for all database instances on the server
-// in the Prometheus text format
-//
-// ---
-// produces:
-//   - text/plain; version=0.0.4
-//
-// responses:
-//
-//	'200':
-//	  description: Prometheus file format
-//	  schema:
-//	    type: string
-//	  headers:
-//	    Access-Control-Allow-Origin:
-//	      type: string
+// handlerMuxPrometheus handles HTTP requests to fetch Prometheus metrics for all servers in all clusters.
+// @Summary Fetch Prometheus metrics
+// @Description Fetches Prometheus metrics for all servers in all clusters managed by the replication manager.
+// @Tags metrics
+// @Produce plain
+// @Success 200 {string} string "Prometheus metrics"
+// @Failure 500 {string} string "Internal Server Error"
+// @Router /api/prometheus [get]
 func (repman *ReplicationManager) handlerMuxPrometheus(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -1224,30 +1364,13 @@ func (repman *ReplicationManager) handlerMuxClustersOld(w http.ResponseWriter, r
 	}
 }
 
-// The Status contains string value for the alive status.
-// Possible values are: running, starting, errors
-//
-// swagger:response status
-type StatusResponse struct {
-	// Example: *
-	AccessControlAllowOrigin string `json:"Access-Control-Allow-Origin"`
-	// The status message
-	// in: body
-	Body struct {
-		// Example: running
-		// Example: starting
-		// Example: errors
-		Alive string `json:"alive"`
-	}
-}
-
-// swagger:route GET /api/status status
-//
-// This will show the status of the cluster
-//
-//     Responses:
-//       200: status
-
+// handlerMuxStatus handles the HTTP request to check the status of the replication manager.
+// @Summary Get Replication Manager Status
+// @Description Returns the status of the replication manager indicating whether it is running or starting.
+// @Tags status
+// @Produce json
+// @Success 200 {object} map[string]string "{"alive": "running"} or {"alive": "starting"}"
+// @Router /api/status [get]
 func (repman *ReplicationManager) handlerMuxStatus(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.WriteHeader(http.StatusOK)
@@ -1259,11 +1382,14 @@ func (repman *ReplicationManager) handlerMuxStatus(w http.ResponseWriter, r *htt
 	}
 }
 
-// swagger:route GET /api/timeout timeout
+// handlerMuxTimeout handles HTTP requests and responds with a JSON indicating the service is running.
 //
-//     Responses:
-//       200: status
-
+// @Summary Check if the replication manager is running
+// @Description This endpoint is used to check if the replication manager is running. It will respond with a JSON object after a delay of 1200 seconds.
+// @Tags status
+// @Produce application/json
+// @Success 200 {object} map[string]string
+// @Router /api/timeout [get]
 func (repman *ReplicationManager) handlerMuxTimeout(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.WriteHeader(http.StatusOK)
@@ -1272,11 +1398,15 @@ func (repman *ReplicationManager) handlerMuxTimeout(w http.ResponseWriter, r *ht
 	io.WriteString(w, `{"alive": "running"}`)
 }
 
-// swagger:route GET /api/heartbeat heartbeat
-//
-//     Responses:
-//       200: heartbeat
-
+// handlerMuxMonitorHeartbeat handles the HTTP request for monitoring the heartbeat of the replication manager.
+// @Summary Monitor Heartbeat
+// @Description Returns the heartbeat status of the replication manager.
+// @Tags Heartbeat
+// @Accept json
+// @Produce json
+// @Success 200 {object} Heartbeat
+// @Failure 500 {object} map[string]string
+// @Router /api/heartbeat [get]
 func (repman *ReplicationManager) handlerMuxMonitorHeartbeat(w http.ResponseWriter, r *http.Request) {
 	var send Heartbeat
 	send.UUID = repman.UUID
@@ -1299,6 +1429,14 @@ func (repman *ReplicationManager) handlerStatic(h http.Handler) http.Handler {
 	})
 }
 
+// handlerMuxGrafana handles HTTP requests to list Grafana files.
+// @Summary List Grafana files
+// @Description Returns a list of Grafana files from the specified directory.
+// @Tags grafana
+// @Produce json
+// @Success 200 {array} string "List of Grafana files"
+// @Failure 500 {string} string "Internal Server Error"
+// @Router /api/configs/grafana [get]
 func (repman *ReplicationManager) handlerMuxGrafana(w http.ResponseWriter, r *http.Request) {
 	var entries []fs.DirEntry
 	var list []string = make([]string, 0)
