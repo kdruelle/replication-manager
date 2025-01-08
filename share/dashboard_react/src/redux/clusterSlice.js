@@ -789,10 +789,10 @@ export const resetMaster = createAsyncThunk('cluster/resetMaster', async ({ clus
   }
 })
 
-export const resetSlave = createAsyncThunk('cluster/resetSlave', async ({ clusterName, serverId }, thunkAPI) => {
+export const resetSlaveAll = createAsyncThunk('cluster/resetSlaveAll', async ({ clusterName, serverId }, thunkAPI) => {
   try {
     const baseURL = thunkAPI.getState()?.auth?.baseURL || ''
-    const { data, status } = await clusterService.resetSlave(clusterName, serverId, baseURL)
+    const { data, status } = await clusterService.resetSlaveAll(clusterName, serverId, baseURL)
     showSuccessBanner('Reset Slave successful!', status, thunkAPI)
     return { data, status }
   } catch (error) {
@@ -1231,7 +1231,7 @@ export const clusterSlice = createSlice({
         stopSlave.pending,
         toggleReadOnly.pending,
         resetMaster.pending,
-        resetSlave.pending,
+        resetSlaveAll.pending,
         provisionProxy.pending,
         unprovisionProxy.pending,
         startProxy.pending,
@@ -1297,7 +1297,7 @@ export const clusterSlice = createSlice({
         stopSlave.fulfilled,
         toggleReadOnly.fulfilled,
         resetMaster.fulfilled,
-        resetSlave.fulfilled,
+        resetSlaveAll.fulfilled,
         provisionProxy.fulfilled,
         unprovisionProxy.fulfilled,
         startProxy.fulfilled,
@@ -1363,7 +1363,7 @@ export const clusterSlice = createSlice({
         stopSlave.rejected,
         toggleReadOnly.rejected,
         resetMaster.rejected,
-        resetSlave.rejected,
+        resetSlaveAll.rejected,
         provisionProxy.rejected,
         unprovisionProxy.rejected,
         startProxy.rejected,

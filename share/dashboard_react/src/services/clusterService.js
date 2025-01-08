@@ -66,7 +66,7 @@ export const clusterService = {
   stopSlave,
   toggleReadOnly,
   resetMaster,
-  resetSlave,
+  resetSlaveAll,
   cancelServerJob,
 
   // Proxy management APIs
@@ -342,8 +342,8 @@ function resetMaster(clusterName, serverId, baseURL) {
   return getApi(baseURL).get(`clusters/${clusterName}/servers/${serverId}/actions/reset-master`)
 }
 
-function resetSlave(clusterName, serverId, baseURL) {
-  return getApi(baseURL).get(`clusters/${clusterName}/servers/${serverId}/actions/reset-slave`)
+function resetSlaveAll(clusterName, serverId, baseURL) {
+  return getApi(baseURL).get(`clusters/${clusterName}/servers/${serverId}/actions/reset-slave-all`)
 }
 
 function cancelServerJob(clusterName, serverId, baseURL) {
