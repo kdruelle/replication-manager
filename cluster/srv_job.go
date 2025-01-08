@@ -1180,7 +1180,7 @@ func (server *ServerMonitor) JobReseedBackupScript() {
 	cluster := server.ClusterGroup
 	defer server.SetInReseedBackup("")
 
-	cmd := exec.Command(cluster.Conf.BackupLoadScript, misc.Unbracket(server.Host), misc.Unbracket(cluster.master.Host), cluster.GetDbUser(), cluster.GetDbPass(), cluster.Name)
+	cmd := exec.Command(cluster.Conf.BackupLoadScript, misc.Unbracket(server.Host), misc.Unbracket(cluster.master.Host), server.Port, server.GetCluster().GetMaster().Port, cluster.GetDbUser(), cluster.GetDbPass(), cluster.Name)
 
 	cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTask, config.LvlInfo, "Command backup load script: %s", strings.Replace(cmd.String(), cluster.GetDbPass(), "XXXX", 1))
 
