@@ -38,6 +38,14 @@ func (server *ServerMonitor) DelWaitStopCookie() error {
 	return server.delCookie("cookie_waitstop")
 }
 
+func (server *ServerMonitor) DelWaitDBACredCookie() error {
+	return server.delCookie("cookie_waitdbacred")
+}
+
+func (server *ServerMonitor) DelWaitSponsorCredCookie() error {
+	return server.delCookie("cookie_waitsponsorcred")
+}
+
 func (server *ServerMonitor) DelReprovisionCookie() error {
 	return server.delCookie("cookie_reprov")
 }

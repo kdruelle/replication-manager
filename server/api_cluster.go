@@ -1694,7 +1694,7 @@ func (repman *ReplicationManager) handlerMuxSetSettings(w http.ResponseWriter, r
 
 	mycluster := repman.getClusterByName(cName)
 	if mycluster != nil {
-		valid, _ := repman.IsValidClusterACL(r, mycluster)
+		valid, delegator := repman.IsValidClusterACL(r, mycluster)
 		if valid {
 			err := repman.setClusterSetting(mycluster, setting, value)
 			if err != nil {
@@ -1705,6 +1705,14 @@ func (repman *ReplicationManager) handlerMuxSetSettings(w http.ResponseWriter, r
 
 				http.Error(w, "Failed to set cluster setting: "+err.Error(), errCode)
 				return
+			}
+
+			if setting == "cloud18-dba-user-credentials" {
+				err = repman.SendDBACredentialsMail(mycluster, "dbops", delegator)
+				if err != nil {
+					http.Error(w, "Error sending email :"+err.Error(), 500)
+					return
+				}
 			}
 		} else {
 			http.Error(w, fmt.Sprintf("User doesn't have required ACL for %s in cluster %s", setting, vars["clusterName"]), 403)
@@ -2188,8 +2196,9 @@ func (repman *ReplicationManager) setClusterSetting(mycluster *cluster.Cluster, 
 
 		dbauser := mycluster.GetDbaUser()
 		if dbauser != "" {
-			err = mycluster.SetDBAUserCredentials(new_secret.Value)
+			err = mycluster.SetDBAUserCredentials()
 			if err != nil {
+				mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, "ERROR", "Error setting dba user credentials: %s", err.Error())
 				return err
 			}
 		}
@@ -2206,8 +2215,10 @@ func (repman *ReplicationManager) setClusterSetting(mycluster *cluster.Cluster, 
 
 		sponsoruser := mycluster.GetSponsorUser()
 		if sponsoruser != "" {
-			err = mycluster.SetSponsorUserCredentials(new_secret.Value)
+			err = mycluster.SetSponsorUserCredentials()
 			if err != nil {
+				mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, "ERROR", "Error setting sponsor user credentials: %s", err.Error())
+				mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlInfo, "Created wait dba cred cookie. Will retry when master is ready", err.Error())
 				return err
 			}
 		}
@@ -3891,6 +3902,11 @@ func (repman *ReplicationManager) handlerMuxAcceptSubscription(w http.ResponseWr
 		mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlErr, "Failed to send sponsor db credentials to %s: %v", userform.Username, err)
 		http.Error(w, "Error sending email :"+err.Error(), 500)
 		return
+	}
+
+	err = repman.SendDBACredentialsMail(mycluster, "dbops", "admin")
+	if err != nil {
+		mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlErr, "Failed to send dba db credentials to dbops: %v", err)
 	}
 
 	mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlInfo, "Sponsor DB credentials sent!")

@@ -385,6 +385,14 @@ func (server *ServerMonitor) SetReprovCookie() error {
 	return server.createCookie("cookie_reprov")
 }
 
+func (server *ServerMonitor) SetWaitDBACredCookie() error {
+	return server.createCookie("cookie_waitdbacred")
+}
+
+func (server *ServerMonitor) SetWaitSponsorCredCookie() error {
+	return server.createCookie("cookie_waitsponsorcred")
+}
+
 func (server *ServerMonitor) SetConfigCookie() error {
 	return server.createCookie("cookie_config")
 }

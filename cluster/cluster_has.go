@@ -528,3 +528,21 @@ func (cluster *Cluster) IsVariableServerLevel(v string) bool {
 func (cluster *Cluster) IsInBackup() bool {
 	return cluster.InPhysicalBackup || cluster.InLogicalBackup || cluster.InBinlogBackup || cluster.InResticBackup
 }
+
+func (cluster *Cluster) HasWaitDBACredCookie() bool {
+	for _, srv := range cluster.Servers {
+		if srv.HasWaitDBACredCookie() {
+			return true
+		}
+	}
+	return false
+}
+
+func (cluster *Cluster) HasWaitSponsorCredCookie() bool {
+	for _, srv := range cluster.Servers {
+		if srv.HasWaitSponsorCredCookie() {
+			return true
+		}
+	}
+	return false
+}

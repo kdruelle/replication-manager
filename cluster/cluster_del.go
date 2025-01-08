@@ -145,3 +145,15 @@ func (cluster *Cluster) RemoveProxyMonitor(prx string, host string, port string)
 
 	return nil
 }
+
+func (cluster *Cluster) DelWaitDBACredCookie() {
+	for _, srv := range cluster.Servers {
+		srv.DelWaitDBACredCookie()
+	}
+}
+
+func (cluster *Cluster) DelWaitSponsorCredCookie() {
+	for _, srv := range cluster.Servers {
+		srv.DelWaitSponsorCredCookie()
+	}
+}

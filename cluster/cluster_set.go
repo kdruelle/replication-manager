@@ -1170,6 +1170,18 @@ func (cluster *Cluster) SetDBReprovCookie() {
 	}
 }
 
+func (cluster *Cluster) SetWaitDBACredCookie() {
+	for _, srv := range cluster.Servers {
+		srv.SetWaitDBACredCookie()
+	}
+}
+
+func (cluster *Cluster) SetWaitSponsorCredCookie() {
+	for _, srv := range cluster.Servers {
+		srv.SetWaitSponsorCredCookie()
+	}
+}
+
 func (cluster *Cluster) SetDBDynamicConfig() {
 	for _, srv := range cluster.Servers {
 		//conf:=

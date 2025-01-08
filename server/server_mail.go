@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/signal18/replication-manager/cluster"
@@ -180,9 +181,28 @@ Best regards,
 	return repman.Mailer.SendEmailMessage(msg, subj, repman.Conf.MailFrom, to, "", repman.Conf.MailSMTPTLSSkipVerify)
 }
 
-func (repman *ReplicationManager) SendDBACredentialsMail(cl *cluster.Cluster, to, delegator string) error {
+func (repman *ReplicationManager) SendDBACredentialsMail(cl *cluster.Cluster, dest, delegator string) error {
 	if repman.Partner.Name == "" {
 		repman.Partner.Name = "Signal 18"
+	}
+	to := make([]string, 0)
+	if dest == "dbops" {
+		for _, u := range cl.APIUsers {
+			if u.Roles[config.RoleDBOps] {
+				if u.User == "admin" {
+					continue
+				}
+				to = append(to, u.User)
+			}
+		}
+
+		if len(to) == 0 {
+			if repman.Conf.MailTo != "" {
+				to = append(to, repman.Conf.MailTo)
+			} else {
+				return fmt.Errorf("No valid email destination for cluster %s", cl.Name)
+			}
+		}
 	}
 	subj := fmt.Sprintf("DB Credentials for Cluster %s", cl.Name)
 	msg := fmt.Sprintf(`Dear DBA,
@@ -206,7 +226,7 @@ Best regards,
 %s
 `, delegator, cl.Conf.Cloud18DatabaseReadWriteSplitSrvRecord, cl.Conf.Cloud18DatabaseReadWriteSrvRecord, cl.Conf.Cloud18DatabaseReadSrvRecord, cl.GetDbaUser(), cl.GetDbaPass(), repman.Partner.Name)
 
-	return repman.Mailer.SendEmailMessage(msg, subj, repman.Conf.MailFrom, to, "", repman.Conf.MailSMTPTLSSkipVerify)
+	return repman.Mailer.SendEmailMessage(msg, subj, repman.Conf.MailFrom, strings.Join(to, ","), "", repman.Conf.MailSMTPTLSSkipVerify)
 }
 
 func (repman *ReplicationManager) SendSysAdmCredentialsMail(cl *cluster.Cluster, to, delegator string) error {
