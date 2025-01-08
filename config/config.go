@@ -803,6 +803,7 @@ type PeerCluster struct {
 type Partner struct {
 	Id          int
 	Name        string
+	Domains     string
 	IsDbops     int
 	IsSysops    int
 	DbopsEmail  string

@@ -82,6 +82,7 @@ type ReplicationManager struct {
 	PeerClusters     []config.PeerCluster              `json:"-"`
 	PeerBooked       map[string]string                 `json:"-"`
 	Partners         []config.Partner                  `json:"partners"`
+	Partner          config.Partner                    `json:"partner"`
 	Agents           []opensvc.Host                    `json:"agents"`
 	UUID             string                            `json:"uuid"`
 	Hostname         string                            `json:"hostname"`

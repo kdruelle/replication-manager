@@ -25,11 +25,6 @@ function CloudSettings({ selectedCluster, user }) {
 
   const getPlanOptions = (plist = []) => [{ name: "No Plan", value: '' }, ...plist?.map((obj) => ({ name: obj.plan, value: obj.plan }))]
 
-  const onPlanChange = (option) => {
-    setPlan(option.value)
-    //setPlanDetails(planOptions.find((obj) => obj.plan === option.value))
-    //console.log(plans,option)
-  }
   useEffect(() => {
     if (monitor?.servicePlans) {
       setPlanOptions(getPlanOptions(monitor.servicePlans))

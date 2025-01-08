@@ -25,6 +25,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/signal18/replication-manager/cluster"
 	"github.com/signal18/replication-manager/config"
+	"github.com/signal18/replication-manager/utils/misc"
 	"github.com/signal18/replication-manager/utils/s18log"
 )
 
@@ -2185,10 +2186,12 @@ func (repman *ReplicationManager) setClusterSetting(mycluster *cluster.Cluster, 
 		new_secret.OldValue = mycluster.Conf.GetDecryptedValue("cloud18-dba-user-credentials")
 		mycluster.Conf.Secrets["cloud18-dba-user-credentials"] = new_secret
 
-		// Create dba user if not exists for first time
-		err = mycluster.SetDBAUserCredentials(mycluster.Conf.Cloud18DbaUserCredentials, true)
-		if err != nil {
-			return err
+		dbauser := mycluster.GetDbaUser()
+		if dbauser != "" {
+			err = mycluster.SetDBAUserCredentials(new_secret.Value)
+			if err != nil {
+				return err
+			}
 		}
 	case "cloud18-sponsor-user-credentials":
 		val, err := base64.StdEncoding.DecodeString(value)
@@ -2201,11 +2204,13 @@ func (repman *ReplicationManager) setClusterSetting(mycluster *cluster.Cluster, 
 		new_secret.OldValue = mycluster.Conf.GetDecryptedValue("cloud18-sponsor-user-credentials")
 		mycluster.Conf.Secrets["cloud18-sponsor-user-credentials"] = new_secret
 
-		err = mycluster.SetSponsorUserCredentials(mycluster.Conf.Cloud18SponsorUserCredentials, true)
-		if err != nil {
-			return err
+		sponsoruser := mycluster.GetSponsorUser()
+		if sponsoruser != "" {
+			err = mycluster.SetSponsorUserCredentials(new_secret.Value)
+			if err != nil {
+				return err
+			}
 		}
-
 	case "cloud18-cloud18-dbops":
 		if value != "" && value != mycluster.Conf.Cloud18GitUser {
 			dbops := repman.CreateDBOpsForm(value)
@@ -3846,21 +3851,27 @@ func (repman *ReplicationManager) handlerMuxAcceptSubscription(w http.ResponseWr
 		repman.BashScriptSalesSubscriptionValidate(mycluster, userform.Username, uinfomap["User"])
 	}
 
-	if mycluster.Conf.Cloud18SponsorUserCredentials == "" {
+	suser, spass := misc.SplitPair(mycluster.Conf.GetDecryptedValue("cloud18-sponsor-user-credentials"))
+	if suser == "" {
 		mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlInfo, "No sponsor db credentials found. Generating sponsor db credentials")
-		pass, _ := mycluster.GeneratePassword()
-		mycluster.Conf.Cloud18SponsorUserCredentials = "sponsor:" + pass
+		suser = "sponsor"
+	}
+	if spass == "" {
+		spass, _ = mycluster.GeneratePassword()
 	}
 
-	repman.setClusterSetting(mycluster, "cloud18-sponsor-user-credentials", base64.StdEncoding.EncodeToString([]byte(mycluster.Conf.Cloud18SponsorUserCredentials)))
+	repman.setClusterSetting(mycluster, "cloud18-sponsor-user-credentials", base64.StdEncoding.EncodeToString([]byte(suser+":"+spass)))
 
-	if mycluster.Conf.Cloud18DbaUserCredentials == "" {
+	duser, dpass := misc.SplitPair(mycluster.Conf.GetDecryptedValue("cloud18-dba-user-credentials"))
+	if duser == "" {
 		mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlInfo, "No dba database credentials found. Generating dba credentials")
-		pass, _ := mycluster.GeneratePassword()
-		mycluster.Conf.Cloud18DbaUserCredentials = "dba:" + pass
+		duser = "dba"
+	}
+	if dpass == "" {
+		dpass, _ = mycluster.GeneratePassword()
 	}
 
-	repman.setClusterSetting(mycluster, "cloud18-sponsor-user-credentials", base64.StdEncoding.EncodeToString([]byte(mycluster.Conf.Cloud18DbaUserCredentials)))
+	repman.setClusterSetting(mycluster, "cloud18-dba-user-credentials", base64.StdEncoding.EncodeToString([]byte(duser+":"+dpass)))
 
 	mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlInfo, "Sending sponsor activation email to user %s", userform.Username)
 
@@ -4009,10 +4020,25 @@ func (repman *ReplicationManager) handlerMuxRemoveSponsor(w http.ResponseWriter,
 		return
 	}
 
+	mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlInfo, "Revoking db privileges from sponsor %s for cluster %s", userform.Username, mycluster.Name)
+	mycluster.RevokeUserDBGrants(mycluster.Conf.GetDecryptedValue("cloud18-sponsor-user-credentials"), "%")
+
+	mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlInfo, "Removing sponsor db credentials for cluster %s", mycluster.Name)
+	repman.setClusterSetting(mycluster, "cloud18-sponsor-user-credentials", base64.StdEncoding.EncodeToString([]byte("")))
+
+	mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlInfo, "Changing dba credentials for cluster %s", mycluster.Name)
+	dpass, _ := mycluster.GeneratePassword()
+	repman.setClusterSetting(mycluster, "cloud18-dba-user-credentials", base64.StdEncoding.EncodeToString([]byte("dba:"+dpass)))
+
 	if repman.Conf.Cloud18SalesUnsubscribeScript != "" {
 		repman.BashScriptSalesUnsubscribe(mycluster, userform.Username, uinfomap["User"])
 	}
 
+	err = repman.SendSponsorUnsubscribeMail(mycluster, userform)
+	if err != nil {
+		http.Error(w, "Error sending rejection mail :"+err.Error(), 500)
+		return
+	}
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Sponsor subscription removed!"))
 }
@@ -4102,6 +4128,19 @@ func (repman *ReplicationManager) handlerMuxSendCredentials(w http.ResponseWrite
 		}
 
 		mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlInfo, "SysAdm Credentials sent to %s. Delegator: %s", to, delegator)
+	case "sponsor":
+		if !duser.Roles[config.RoleSysOps] && !(duser.Roles[config.RoleSponsor] && duser.User == u.User) {
+			http.Error(w, "Delegator has no ACL to send DBA Credentials", http.StatusForbidden)
+			return
+		}
+
+		err = repman.SendSponsorCredentialsMail(mycluster)
+		if err != nil {
+			http.Error(w, "Error sending email :"+err.Error(), 500)
+			return
+		}
+
+		mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlInfo, "Sponsor Credentials sent to %s. Delegator: %s", to, delegator)
 	default:
 		http.Error(w, "Invalid credential type :"+credForm.CredentialType, 500)
 		return

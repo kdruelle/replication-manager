@@ -93,7 +93,7 @@ function GlobalSettings({ config }) {
       value: (
         <RMSwitch
           confirmTitle={'Confirm switch global settings for Mail SMTP TLS?'}
-          onChange={(_v, setRefresh) => dispatch(switchGlobalSetting({ setting: 'mail-smtp-tls-skip-verify', errMessage: errInvalidGrant, setRefresh }))}
+          onChange={(_v, setRefresh) => dispatch(switchGlobalSetting({ setting: 'mail-smtp-tls-skip-verify', setRefresh }))}
           isChecked={config?.mailSmtpTlsSkipVerify}
         />
       )
