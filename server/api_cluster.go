@@ -2272,6 +2272,18 @@ func (repman *ReplicationManager) setClusterSetting(mycluster *cluster.Cluster, 
 			}
 			mycluster.Conf.Cloud18ExternalDbOps = value
 		}
+	case "backup-save-script":
+		val, err := base64.StdEncoding.DecodeString(value)
+		if err != nil {
+			return errors.New("Unable to decode")
+		}
+		mycluster.Conf.BackupSaveScript = string(val)
+	case "backup-load-script":
+		val, err := base64.StdEncoding.DecodeString(value)
+		if err != nil {
+			return errors.New("Unable to decode")
+		}
+		mycluster.Conf.BackupSaveScript = string(val)
 	default:
 		return errors.New("Setting not found")
 	}

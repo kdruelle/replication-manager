@@ -3056,6 +3056,10 @@ func GetLabelsAsMap(v any) map[string]bool {
 		field := t.Field(i)
 		jsonTag := field.Tag.Get("json")
 		if jsonTag != "" {
+			parts := strings.Split(jsonTag, ",")
+			if len(parts) > 1 {
+				jsonTag = parts[0]
+			}
 			labels[jsonTag] = true
 		} else {
 			labels[field.Name] = true
