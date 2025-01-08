@@ -648,6 +648,8 @@ func (server *ServerMonitor) Ping(wg *sync.WaitGroup) {
 				//if active-passive topo and no replication, put the state at standalone
 				server.SetState(stateMaster)
 			}
+		} else if server.State != stateMaster {
+			server.SetState(stateUnconn)
 		}
 	} else if cluster.IsActive() && errss == nil && (server.PrevState == stateFailed) {
 		// Is Slave
