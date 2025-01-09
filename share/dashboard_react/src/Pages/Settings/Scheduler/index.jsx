@@ -197,7 +197,7 @@ function Scheduler({
         const month =
           selectedToMonth && selectedFromMonth !== selectedToMonth
             ? `${selectedFromMonth}-${selectedToMonth}`
-            : selectedToDay
+            : selectedFromMonth
         finalStr = `0 ${min} ${hr} ${day} ${month} *`
       } else if (recurrentType === 'weekly') {
         const day =
