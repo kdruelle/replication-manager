@@ -395,12 +395,23 @@ func (repman *ReplicationManager) apiClusterProtectedHandler(router *mux.Router)
 		negroni.HandlerFunc(repman.validateTokenMiddleware),
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxRemoveSponsor)),
 	))
+
+	router.Handle("/api/clusters/{clusterName}/subscribe", negroni.New(
+		negroni.HandlerFunc(repman.validateTokenMiddleware),
+		negroni.Wrap(http.HandlerFunc(repman.handlerMuxClusterSubscribe)),
+	))
+
+	router.Handle("/api/clusters/{clusterName}/unsubscribe", negroni.New(
+		negroni.HandlerFunc(repman.validateTokenMiddleware),
+		negroni.Wrap(http.HandlerFunc(repman.handlerMuxRejectSubscription)),
+	))
 }
 
 // @Summary Retrieve servers for a specific cluster
 // @Description This endpoint retrieves the servers for the specified cluster.
 // @Tags ClusterTopology
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {array} map[string]interface{} "List of servers"
 // @Failure 500 {string} string "Internal Server Error"
@@ -456,6 +467,7 @@ func (repman *ReplicationManager) handlerMuxServers(w http.ResponseWriter, r *ht
 // @Summary Shows the slaves for that specific named cluster
 // @Description Shows the slaves for that specific named cluster
 // @Tags ClusterTopology
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {array} map[string]interface{} "A list of slaves"
 // @Failure 500 {string} string "Internal Server Error"
@@ -496,6 +508,7 @@ func (repman *ReplicationManager) handlerMuxSlaves(w http.ResponseWriter, r *htt
 // @Summary Shows the proxies for that specific named cluster
 // @Description Shows the proxies for that specific named cluster
 // @Tags ClusterTopology
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {array} map[string]interface{} "A list of proxies"
 // @Failure 500 {string} string "Internal Server Error"
@@ -532,6 +545,7 @@ func (repman *ReplicationManager) handlerMuxProxies(w http.ResponseWriter, r *ht
 // @Summary Shows the alerts for that specific named cluster
 // @Description Shows the alerts for that specific named cluster
 // @Tags ClusterTopology
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {object} cluster.Alerts "A list of alerts"
 // @Failure 500 {string} string "Internal Server Error"
@@ -562,6 +576,7 @@ func (repman *ReplicationManager) handlerMuxAlerts(w http.ResponseWriter, r *htt
 // @Summary Rotate keys for a specific cluster
 // @Description Rotate the keys for the specified cluster
 // @Tags ClusterCertificates
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {string} string "Keys rotated successfully"
 // @Failure 403 {string} string "No valid ACL"
@@ -587,6 +602,7 @@ func (repman *ReplicationManager) handlerMuxRotateKeys(w http.ResponseWriter, r 
 // @Summary Reset SLA for a specific cluster
 // @Description Reset the SLA for the specified cluster
 // @Tags ClusterActions
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {string} string "SLA reset successfully"
 // @Failure 403 {string} string "No valid ACL"
@@ -615,6 +631,7 @@ func (repman *ReplicationManager) handlerMuxResetSla(w http.ResponseWriter, r *h
 // @Tags ClusterActions
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {string} string "Successfully triggered failover"
 // @Failure 403 {string} string "No valid ACL"
@@ -644,6 +661,7 @@ func (repman *ReplicationManager) handlerMuxFailover(w http.ResponseWriter, r *h
 // @Tags ClusterTopology
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param clusterShardingName path string true "Cluster Sharding Name"
 // @Success 200 {string} string "Sharding cluster added successfully"
@@ -674,6 +692,7 @@ func (repman *ReplicationManager) handlerMuxClusterShardingAdd(w http.ResponseWr
 // @Tags ClusterMaintenance
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {string} string "Successfully triggered rolling restart"
 // @Failure 403 {string} string "No valid ACL"
@@ -702,6 +721,7 @@ func (repman *ReplicationManager) handlerMuxRolling(w http.ResponseWriter, r *ht
 // @Tags ClusterTraffics
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {string} string "Successfully started traffic"
 // @Failure 403 {string} string "No valid ACL"
@@ -731,6 +751,7 @@ func (repman *ReplicationManager) handlerMuxStartTraffic(w http.ResponseWriter, 
 // @Tags ClusterTraffics
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {string} string "Successfully stopped traffic"
 // @Failure 403 {string} string "No valid ACL"
@@ -760,6 +781,7 @@ func (repman *ReplicationManager) handlerMuxStopTraffic(w http.ResponseWriter, r
 // @Tags ClusterReplication
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {string} string "Successfully cleaned up replication bootstrap"
 // @Failure 403 {string} string "No valid ACL"
@@ -795,6 +817,7 @@ func (repman *ReplicationManager) handlerMuxBootstrapReplicationCleanup(w http.R
 // @Tags ClusterReplication
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param topology path string true "Topology"
 // @Success 200 {string} string "Successfully bootstrapped replication"
@@ -853,6 +876,7 @@ func (repman *ReplicationManager) handlerMuxServicesBootstrap(w http.ResponseWri
 // @Tags ClusterProvision
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {string} string "Successfully provisioned services"
 // @Failure 403 {string} string "No valid ACL"
@@ -886,6 +910,7 @@ func (repman *ReplicationManager) handlerMuxServicesProvision(w http.ResponseWri
 // @Tags ClusterProvision
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {string} string "Successfully unprovisioned services"
 // @Failure 403 {string} string "No valid ACL"
@@ -914,6 +939,7 @@ func (repman *ReplicationManager) handlerMuxServicesUnprovision(w http.ResponseW
 // @Tags ClusterMaintenance
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {string} string "Successfully cancelled rolling restart"
 // @Failure 403 {string} string "No valid ACL"
@@ -942,6 +968,7 @@ func (repman *ReplicationManager) handlerMuxServicesCancelRollingRestart(w http.
 // @Tags ClusterProvision
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {string} string "Successfully cancelled rolling reprovision"
 // @Failure 403 {string} string "No valid ACL"
@@ -970,6 +997,7 @@ func (repman *ReplicationManager) handlerMuxServicesCancelRollingReprov(w http.R
 // @Tags ClusterSettings
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {string} string "Successfully discovered settings"
 // @Failure 403 {string} string "No valid ACL"
@@ -1002,6 +1030,7 @@ func (repman *ReplicationManager) handlerMuxSetSettingsDiscover(w http.ResponseW
 // @Tags ClusterActions
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {string} string "Successfully reset failover control"
 // @Failure 403 {string} string "No valid ACL"
@@ -1031,6 +1060,7 @@ func (repman *ReplicationManager) handlerMuxClusterResetFailoverControl(w http.R
 // @Tags ClusterActions
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param prefmaster formData string false "Preferred Master"
 // @Success 200 {string} string "Successfully triggered switchover"
@@ -1078,6 +1108,7 @@ func (repman *ReplicationManager) handlerMuxSwitchover(w http.ResponseWriter, r 
 // @Description This endpoint retrieves the master of a specified cluster and returns it in JSON format.
 // @Tags ClusterTopology
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {object} cluster.ServerMonitor "Master server"
 // @Failure 500 {string} string "Internal Server Error"
@@ -1119,6 +1150,7 @@ func (repman *ReplicationManager) handlerMuxMaster(w http.ResponseWriter, r *htt
 // @Description This endpoint retrieves the client certificates for the specified cluster.
 // @Tags ClusterCertificates
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {array} map[string]interface{} "List of client certificates"
 // @Failure 500 {string} string "Internal Server Error"
@@ -1154,6 +1186,7 @@ func (repman *ReplicationManager) handlerMuxClusterCertificates(w http.ResponseW
 // @Description This endpoint retrieves the tags for the specified cluster.
 // @Tags ClusterTags
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {array} string "List of tags"
 // @Failure 500 {string} string "Internal Server Error"
@@ -1182,6 +1215,7 @@ func (repman *ReplicationManager) handlerMuxClusterTags(w http.ResponseWriter, r
 // @Description This endpoint retrieves the backups for the specified cluster.
 // @Tags ClusterBackups
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {array} map[string]interface{} "List of backups"
 // @Failure 403 {string} string "No valid ACL"
@@ -1214,6 +1248,7 @@ func (repman *ReplicationManager) handlerMuxClusterBackups(w http.ResponseWriter
 // @Description This endpoint retrieves the shard clusters for the specified cluster.
 // @Tags ClusterTopology
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {array} map[string]interface{} "List of shard clusters"
 // @Failure 403 {string} string "No valid ACL"
@@ -1246,6 +1281,7 @@ func (repman *ReplicationManager) handlerMuxClusterShardClusters(w http.Response
 // @Description This endpoint retrieves the query rules for the specified cluster.
 // @Tags Cluster
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {array} map[string]interface{} "List of query rules"
 // @Failure 403 {string} string "No valid ACL"
@@ -1278,6 +1314,7 @@ func (repman *ReplicationManager) handlerMuxClusterQueryRules(w http.ResponseWri
 // @Description This endpoint retrieves the top metrics for the specified cluster.
 // @Tags Cluster
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName query string false "Server Name"
 // @Success 200 {object} map[string]interface{} "Top metrics"
@@ -1323,6 +1360,7 @@ func (repman *ReplicationManager) handlerMuxClusterTop(w http.ResponseWriter, r 
 // @Tags ClusterSettings
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param settingName path string true "Setting Name"
 // @Success 200 {string} string "Successfully switched setting"
@@ -1374,6 +1412,7 @@ func (repman *ReplicationManager) handlerMuxSwitchSettings(w http.ResponseWriter
 // @Accept json
 // @Produce json
 // @Param settingName path string true "Setting Name"
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string false "Cluster Name"
 // @Success 200 {string} string "Successfully switched setting"
 // @Failure 403 {string} string "No valid ACL"
@@ -1668,6 +1707,7 @@ func (repman *ReplicationManager) switchClusterSettings(mycluster *cluster.Clust
 // @Tags ClusterSettings
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param settingName path string true "Setting Name"
 // @Param settingValue path string true "Setting Value"
@@ -1731,6 +1771,7 @@ func (repman *ReplicationManager) handlerMuxSetSettings(w http.ResponseWriter, r
 // @Accept json
 // @Produce json
 // @Param settingName path string true "Setting Name"
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string false "Cluster Name"
 // @Param settingValue path string true "Setting Value"
 // @Success 200 {string} string "Successfully set setting"
@@ -1792,6 +1833,7 @@ func (repman *ReplicationManager) handlerMuxSetGlobalSettings(w http.ResponseWri
 // @Tags ClusterSettings
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param settingName path string true "Setting Name"
 // @Param settingValue path string true "Setting Value"
@@ -2480,6 +2522,8 @@ func (repman *ReplicationManager) switchRepmanSetting(name string) error {
 		repman.Conf.APIHttpsBind = !repman.Conf.APIHttpsBind
 	case "api-server":
 		repman.Conf.ApiServ = !repman.Conf.ApiServ
+	case "api-swagger-enabled":
+		repman.Conf.ApiSwaggerEnabled = !repman.Conf.ApiSwaggerEnabled
 	case "arbitration-external ":
 		repman.Conf.Arbitration = !repman.Conf.Arbitration
 	case "graphite-embedded":
@@ -2584,6 +2628,7 @@ func (repman *ReplicationManager) handlerMuxReloadPlans(w http.ResponseWriter, r
 // @Tags ClusterTags
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param tagValue path string true "Tag Value"
 // @Success 200 {string} string "Tag added successfully"
@@ -2613,6 +2658,7 @@ func (repman *ReplicationManager) handlerMuxAddTag(w http.ResponseWriter, r *htt
 // @Tags ClusterTags
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param tagValue path string true "Tag Value"
 // @Success 200 {string} string "Tag added successfully"
@@ -2647,6 +2693,7 @@ func (repman *ReplicationManager) handlerMuxAddProxyTag(w http.ResponseWriter, r
 // @Tags ClusterTags
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param tagValue path string true "Tag Value"
 // @Success 200 {string} string "Tag removed successfully"
@@ -2676,6 +2723,7 @@ func (repman *ReplicationManager) handlerMuxDropTag(w http.ResponseWriter, r *ht
 // @Tags ClusterTags
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param tagValue path string true "Tag Value"
 // @Success 200 {string} string "Tag removed successfully"
@@ -2721,6 +2769,7 @@ func (repman *ReplicationManager) handlerMuxSwitchReadOnly(w http.ResponseWriter
 // @Description This endpoint retrieves the logs for the specified cluster.
 // @Tags ClusterTopology
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {array} string "List of logs"
 // @Failure 500 {string} string "Internal Server Error"
@@ -2747,6 +2796,7 @@ func (repman *ReplicationManager) handlerMuxLog(w http.ResponseWriter, r *http.R
 // @Description This endpoint retrieves the crashes for the specified cluster.
 // @Tags Cluster
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {array} string "List of crashes"
 // @Failure 500 {string} string "Cluster Not Found"
@@ -2776,6 +2826,7 @@ func (repman *ReplicationManager) handlerMuxCrashes(w http.ResponseWriter, r *ht
 // @Tags ClusterTest
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param testName path string true "Test Name"
 // @Param provision formData string false "Provision the cluster before running the test"
@@ -2845,6 +2896,7 @@ func (repman *ReplicationManager) handlerMuxOneTest(w http.ResponseWriter, r *ht
 // @Tags ClusterTest
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {array} cluster.Test "List of test results"
 // @Failure 403 {string} string "No valid ACL"
@@ -2882,6 +2934,7 @@ func (repman *ReplicationManager) handlerMuxTests(w http.ResponseWriter, r *http
 // @Tags ClusterSettings
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {string} string "Successfully reloaded settings"
 // @Failure 500 {string} string "Cluster Not Found"
@@ -2907,6 +2960,7 @@ func (repman *ReplicationManager) handlerMuxSettingsReload(w http.ResponseWriter
 // @Tags ClusterMonitor
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param host path string true "Host"
 // @Param port path string true "Port"
@@ -2975,6 +3029,7 @@ func (repman *ReplicationManager) handlerMuxServerAdd(w http.ResponseWriter, r *
 // @Tags ClusterMonitor
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param type path string false "Monitor Type (proxy or database)"
 // @Param host path string true "Host"
@@ -3071,6 +3126,7 @@ func (repman *ReplicationManager) handlerMuxClusterMasterPhysicalBackup(w http.R
 // @Tags ClusterActions
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {string} string "Successfully triggered optimization"
 // @Failure 403 {string} string "No valid ACL"
@@ -3121,6 +3177,7 @@ func (repman *ReplicationManager) handlerMuxClusterSSTStop(w http.ResponseWriter
 // @Tags ClusterTest
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param threads query string false "Number of threads"
 // @Success 200 {string} string "Successfully triggered sysbench"
@@ -3151,6 +3208,7 @@ func (repman *ReplicationManager) handlerMuxClusterSysbench(w http.ResponseWrite
 // @Tags ClusterTags
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {string} string "Successfully applied dynamic configuration"
 // @Failure 403 {string} string "No valid ACL"
@@ -3176,6 +3234,7 @@ func (repman *ReplicationManager) handlerMuxClusterApplyDynamicConfig(w http.Res
 // @Tags ClusterSettings
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {string} string "Successfully reloaded client certificates"
 // @Failure 403 {string} string "No valid ACL"
@@ -3201,6 +3260,7 @@ func (repman *ReplicationManager) handlerMuxClusterReloadCertificates(w http.Res
 // @Tags Cluster
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {string} string "Databases are ready"
 // @Failure 403 {string} string "No valid ACL"
@@ -3229,6 +3289,7 @@ func (repman *ReplicationManager) handlerMuxClusterWaitDatabases(w http.Response
 // @Description This endpoint retrieves the details of a specified cluster and returns it in JSON format.
 // @Tags Cluster
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {object} cluster.Cluster "Cluster details"
 // @Failure 403 {string} string "No valid ACL"
@@ -3283,6 +3344,7 @@ func (repman *ReplicationManager) handlerMuxCluster(w http.ResponseWriter, r *ht
 // @Description This endpoint retrieves the settings for the specified cluster.
 // @Tags ClusterSettings
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {object} config.Config "Cluster settings"
 // @Failure 403 {string} string "No valid ACL"
@@ -3320,6 +3382,7 @@ func (repman *ReplicationManager) handlerMuxClusterSettings(w http.ResponseWrite
 // @Tags ClusterVault
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {string} string "Vault token sent successfully"
 // @Failure 403 {string} string "No valid ACL"
@@ -3349,6 +3412,7 @@ func (repman *ReplicationManager) handlerMuxClusterSendVaultToken(w http.Respons
 // @Tags ClusterSchema
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {string} string "Successfully triggered checksum calculation for all tables"
 // @Failure 403 {string} string "No valid ACL"
@@ -3379,6 +3443,7 @@ func (repman *ReplicationManager) handlerMuxClusterSchemaChecksumAllTable(w http
 // @Tags ClusterSchema
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param schemaName path string true "Schema Name"
 // @Param tableName path string true "Table Name"
@@ -3411,6 +3476,7 @@ func (repman *ReplicationManager) handlerMuxClusterSchemaChecksumTable(w http.Re
 // @Tags ClusterSchema
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param schemaName path string true "Schema Name"
 // @Param tableName path string true "Table Name"
@@ -3447,6 +3513,7 @@ func (repman *ReplicationManager) handlerMuxClusterSchemaUniversalTable(w http.R
 // @Tags ClusterSchema
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param schemaName path string true "Schema Name"
 // @Param tableName path string true "Table Name"
@@ -3496,6 +3563,7 @@ func (repman *ReplicationManager) handlerMuxClusterSchemaReshardTable(w http.Res
 // @Tags ClusterSchema
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param schemaName path string true "Schema Name"
 // @Param tableName path string true "Table Name"
@@ -3540,6 +3608,7 @@ func (repman *ReplicationManager) handlerMuxClusterSchemaMoveTable(w http.Respon
 // @Description This endpoint retrieves the schema information for the specified cluster.
 // @Tags ClusterSchema
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {object} map[string]interface{} "Schema information"
 // @Failure 403 {string} string "No valid ACL"
@@ -3577,6 +3646,7 @@ func (repman *ReplicationManager) handlerMuxClusterSchema(w http.ResponseWriter,
 // @Description This endpoint retrieves the variable differences for the specified cluster.
 // @Tags Cluster
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {array} cluster.VariableDiff "List of variable differences"
 // @Failure 403 {string} string "No valid ACL"
@@ -3615,6 +3685,7 @@ func (repman *ReplicationManager) handlerDiffVariables(w http.ResponseWriter, r 
 // @Tags ClusterActions
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {string} string "Successfully rotated passwords"
 // @Failure 403 {string} string "No valid ACL"
@@ -3643,6 +3714,7 @@ func (repman *ReplicationManager) handlerRotatePasswords(w http.ResponseWriter, 
 // @Description This endpoint retrieves the Graphite filter list for the specified cluster.
 // @Tags ClusterGraphite
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {array} string "List of Graphite filters"
 // @Failure 500 {string} string "Internal Server Error"
@@ -3675,6 +3747,7 @@ func (repman *ReplicationManager) handlerMuxClusterGraphiteFilterList(w http.Res
 // @Tags ClusterGraphite
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param filterType path string true "Filter Type"
 // @Param body body cluster.GraphiteFilterList true "Graphite Filter List"
@@ -3719,6 +3792,7 @@ func (repman *ReplicationManager) handlerMuxClusterSetGraphiteFilterList(w http.
 // @Tags ClusterGraphite
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {string} string "Successfully reloaded Graphite filter list"
 // @Failure 403 {string} string "No valid ACL"
@@ -3748,6 +3822,7 @@ func (repman *ReplicationManager) handlerMuxClusterReloadGraphiteFilterList(w ht
 // @Tags ClusterGraphite
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param template path string true "Template"
 // @Success 200 {string} string "Successfully reset Graphite filter list"
@@ -3781,6 +3856,7 @@ func (repman *ReplicationManager) handlerMuxClusterResetGraphiteFilterList(w htt
 // @Description This endpoint retrieves the job entries for the specified cluster.
 // @Tags Cluster
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {array} map[string]interface{} "List of job entries"
 // @Failure 403 {string} string "No valid ACL"
@@ -3810,6 +3886,7 @@ func (repman *ReplicationManager) handlerMuxClusterGetJobEntries(w http.Response
 // @Tags Cloud18
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param body body cluster.UserForm true "User Form"
 // @Success 200 {string} string "Email sent to sponsor!"
@@ -3933,6 +4010,7 @@ func (repman *ReplicationManager) handlerMuxAcceptSubscription(w http.ResponseWr
 // @Tags Cloud18
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param body body cluster.UserForm true "User Form"
 // @Success 200 {string} string "Subscription removed!"
@@ -3997,6 +4075,7 @@ func (repman *ReplicationManager) handlerMuxRejectSubscription(w http.ResponseWr
 // @Tags Cloud18
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param body body cluster.UserForm true "User Form"
 // @Success 200 {string} string "Sponsor subscription removed!"
@@ -4082,6 +4161,7 @@ type CredentialMailForm struct {
 // @Tags User
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param body body CredentialMailForm true "Credential Mail Form"
 // @Success 200 {string} string "Credentials sent to user!"

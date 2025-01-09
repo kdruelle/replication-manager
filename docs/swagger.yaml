@@ -2907,6 +2907,13 @@ paths:
     get:
       description: Fetches the list of clusters that the user has access to based
         on ACL.
+      parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -2932,6 +2939,12 @@ paths:
       description: This endpoint retrieves the details of a specified cluster and
         returns it in JSON format.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -2962,6 +2975,12 @@ paths:
       description: This endpoint adds a sharding cluster to an existing cluster and
         triggers a rolling restart.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -2996,6 +3015,12 @@ paths:
       - application/json
       description: This endpoint adds a server to the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -3039,6 +3064,12 @@ paths:
       - application/json
       description: This endpoint adds a server to the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -3087,6 +3118,12 @@ paths:
       description: This endpoint cancels the rolling reprovision for the specified
         cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -3116,6 +3153,12 @@ paths:
       - application/json
       description: This endpoint cancels the rolling restart for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -3143,6 +3186,12 @@ paths:
     post:
       description: Rotate the keys for the specified cluster
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -3171,6 +3220,12 @@ paths:
       description: This endpoint triggers the checksum calculation for all tables
         in the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -3200,6 +3255,12 @@ paths:
       - application/json
       description: This endpoint triggers a master failover for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -3260,6 +3321,12 @@ paths:
       description: This endpoint triggers the optimization process for the specified
         cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -3290,6 +3357,12 @@ paths:
       description: This endpoint triggers the bootstrap replication process for the
         specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -3325,6 +3398,12 @@ paths:
       description: This endpoint triggers the cleanup process for replication bootstrap
         for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -3354,6 +3433,12 @@ paths:
       - application/json
       description: This endpoint resets the failover control for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -3381,6 +3466,12 @@ paths:
     post:
       description: Reset the SLA for the specified cluster
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -3408,6 +3499,12 @@ paths:
       - application/json
       description: This endpoint triggers a rolling restart for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -3437,6 +3534,12 @@ paths:
       - application/json
       description: This endpoint rotates the passwords for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -3466,6 +3569,12 @@ paths:
       - application/json
       description: This endpoint starts traffic for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -3495,6 +3604,12 @@ paths:
       - application/json
       description: This endpoint stops traffic for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -3524,6 +3639,12 @@ paths:
       - application/json
       description: This endpoint triggers a master switchover for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -3561,6 +3682,12 @@ paths:
       - application/json
       description: This endpoint runs sysbench for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -3595,6 +3722,12 @@ paths:
       description: This endpoint waits for the databases to be ready for the specified
         cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -3622,6 +3755,12 @@ paths:
     get:
       description: This endpoint retrieves the backups for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -3653,6 +3792,12 @@ paths:
       description: This endpoint retrieves the client certificates for the specified
         cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -3680,6 +3825,12 @@ paths:
       description: This endpoint retrieves the variable differences for the specified
         cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -3710,6 +3861,12 @@ paths:
       description: This endpoint retrieves the Graphite filter list for the specified
         cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -3735,6 +3892,12 @@ paths:
     get:
       description: This endpoint retrieves the job entries for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -3814,6 +3977,12 @@ paths:
       description: Check if the proxy service for a given cluster and proxy needs
         reprovisioning
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -3853,6 +4022,12 @@ paths:
       description: Check if the proxy service for a given cluster and proxy needs
         a restart
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -3891,6 +4066,12 @@ paths:
       - application/json
       description: Provision the proxy service for a given cluster and proxy
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -3925,6 +4106,12 @@ paths:
       - application/json
       description: Start the proxy service for a given cluster and proxy
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -3959,6 +4146,12 @@ paths:
       - application/json
       description: Stop the proxy service for a given cluster and proxy
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -3993,6 +4186,12 @@ paths:
       - application/json
       description: Unprovision the proxy service for a given cluster and proxy
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -4025,6 +4224,12 @@ paths:
     get:
       description: This endpoint retrieves the query rules for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -4057,6 +4262,12 @@ paths:
       - application/json
       description: This endpoint accepts a subscription for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -4092,6 +4303,12 @@ paths:
       - application/json
       description: This endpoint removes a sponsor from the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -4127,6 +4344,12 @@ paths:
       - application/json
       description: This endpoint rejects a subscription for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -4161,6 +4384,12 @@ paths:
       description: This endpoint retrieves the schema information for the specified
         cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -4192,6 +4421,12 @@ paths:
       description: This endpoint triggers the checksum calculation for a specific
         table in the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -4232,6 +4467,12 @@ paths:
       description: This endpoint moves a table to a different shard cluster for the
         specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -4277,6 +4518,12 @@ paths:
       description: This endpoint triggers the resharding of a table for the specified
         cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -4317,6 +4564,12 @@ paths:
       description: This endpoint triggers the resharding of a table for the specified
         cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -4360,6 +4613,12 @@ paths:
       - application/json
       description: This endpoint sets a universal table for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -4400,6 +4659,12 @@ paths:
       description: This endpoint sends the Vault token to the specified cluster via
         email.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -4428,6 +4693,12 @@ paths:
       description: Initiates a physical backup on a specified server port within a
         cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -4881,6 +5152,12 @@ paths:
       description: Initiates a backup of the error log on a specified server within
         a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -4913,6 +5190,12 @@ paths:
     get:
       description: Initiates a logical backup on a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -4945,6 +5228,12 @@ paths:
     get:
       description: Initiates a physical backup on a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -4978,6 +5267,12 @@ paths:
       description: Initiates a backup of the slow query log on a specified server
         within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5010,6 +5305,12 @@ paths:
     get:
       description: Deletes the maintenance mode on a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5042,6 +5343,12 @@ paths:
     get:
       description: Flushes the logs on a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5075,6 +5382,12 @@ paths:
       description: Cancels a task identified by its name on a specified server within
         a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5113,6 +5426,12 @@ paths:
     get:
       description: Toggles the maintenance mode on a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5145,6 +5464,12 @@ paths:
     get:
       description: Optimizes a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5178,6 +5503,12 @@ paths:
       description: Initiates a point-in-time recovery on a specified server within
         a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5211,6 +5542,12 @@ paths:
     get:
       description: Provisions a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5244,6 +5581,12 @@ paths:
       description: Cancels a reseed task identified by its name on a specified server
         within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5283,6 +5626,12 @@ paths:
       description: Reseeds a specified server within a cluster using the specified
         backup method.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5321,6 +5670,12 @@ paths:
     get:
       description: Resets the master on a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5353,6 +5708,12 @@ paths:
     get:
       description: Resets PFS queries on a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5385,6 +5746,12 @@ paths:
     get:
       description: Resets all slaves on a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5417,6 +5784,12 @@ paths:
     get:
       description: Runs jobs on a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5450,6 +5823,12 @@ paths:
     get:
       description: Sets a specified server within a cluster as ignored.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5482,6 +5861,12 @@ paths:
     get:
       description: Sets the long query time on a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5519,6 +5904,12 @@ paths:
     get:
       description: Sets a specified server within a cluster to maintenance mode.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5551,6 +5942,12 @@ paths:
     get:
       description: Sets a specified server within a cluster as preferred.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5583,6 +5980,12 @@ paths:
     get:
       description: Sets a specified server within a cluster as unrated.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5615,6 +6018,12 @@ paths:
     get:
       description: Skips a replication event on a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5647,6 +6056,12 @@ paths:
     get:
       description: Starts a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5679,6 +6094,12 @@ paths:
     get:
       description: Starts the slave on a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5711,6 +6132,12 @@ paths:
     get:
       description: Stops a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5743,6 +6170,12 @@ paths:
     get:
       description: Stops the slave on a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5775,6 +6208,12 @@ paths:
     get:
       description: Initiates a switchover on a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5808,6 +6247,12 @@ paths:
     get:
       description: Toggles the InnoDB monitor on a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5840,6 +6285,12 @@ paths:
     get:
       description: Toggles the metadata locks on a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5873,6 +6324,12 @@ paths:
       description: Toggles the PFS slow query capture on a specified server within
         a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5906,6 +6363,12 @@ paths:
       description: Toggles the query response time on a specified server within a
         cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5938,6 +6401,12 @@ paths:
     get:
       description: Toggles the read-only mode on a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5970,6 +6439,12 @@ paths:
     get:
       description: Toggles the slow query on a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -6002,6 +6477,12 @@ paths:
     get:
       description: Toggles the slow query capture on a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -6035,6 +6516,12 @@ paths:
       description: Toggles the slow query table mode on a specified server within
         a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -6067,6 +6554,12 @@ paths:
     get:
       description: Toggles the SQL error log on a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -6099,6 +6592,12 @@ paths:
     get:
       description: Unprovisions a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -6131,6 +6630,12 @@ paths:
     get:
       description: Waits for InnoDB purge on a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -6165,6 +6670,12 @@ paths:
       description: Retrieves the status of all slaves of a specified server within
         a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -6198,6 +6709,12 @@ paths:
     get:
       description: Retrieves the PFS statements of a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -6232,6 +6749,12 @@ paths:
       description: Retrieves the PFS statements from the slow log of a specified server
         within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -6265,6 +6788,12 @@ paths:
     get:
       description: Retrieves the error log of a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -6362,6 +6891,12 @@ paths:
     get:
       description: Retrieves the master status of a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -6395,6 +6930,12 @@ paths:
     get:
       description: Retrieves the metadata locks of a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -6428,6 +6969,12 @@ paths:
     get:
       description: Retrieves the process list of a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -6462,6 +7009,12 @@ paths:
       description: Analyzes a query identified by its digest on a specified server
         within a cluster using PFS.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -6500,6 +7053,12 @@ paths:
       description: Analyzes a query identified by its digest on a specified server
         within a cluster using the slow log.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -6538,6 +7097,12 @@ paths:
       description: Explains a query identified by its digest on a specified server
         within a cluster using PFS.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -6577,6 +7142,12 @@ paths:
       description: Explains a query identified by its digest on a specified server
         within a cluster using the slow log.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -6616,6 +7187,12 @@ paths:
       description: Kills a query identified by its digest on a specified server within
         a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -6654,6 +7231,12 @@ paths:
       description: Kills a thread identified by its digest on a specified server within
         a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -6692,6 +7275,12 @@ paths:
       description: Retrieves the query response time of a specified server within
         a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -6725,6 +7314,12 @@ paths:
     get:
       description: Retrieves the schemas of a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -6759,6 +7354,12 @@ paths:
       description: Retrieves the database service configuration of a specified server
         within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -6791,6 +7392,12 @@ paths:
     get:
       description: Retrieves the slow log of a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -6824,6 +7431,12 @@ paths:
     get:
       description: Retrieves the status of a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -6857,6 +7470,12 @@ paths:
     get:
       description: Retrieves the status delta of a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -6890,6 +7509,12 @@ paths:
     get:
       description: Retrieves the InnoDB status of a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -6923,6 +7548,12 @@ paths:
     get:
       description: Retrieves the tables of a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -6956,6 +7587,12 @@ paths:
     get:
       description: Retrieves the variables of a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -6989,6 +7626,12 @@ paths:
     get:
       description: Retrieves the virtual tables of a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7024,6 +7667,12 @@ paths:
       - application/json
       description: This endpoint provisions services for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7053,6 +7702,12 @@ paths:
       - application/json
       description: This endpoint unprovisions services for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7080,6 +7735,12 @@ paths:
     get:
       description: This endpoint retrieves the settings for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7109,6 +7770,12 @@ paths:
       - application/json
       description: This endpoint adds a tag to the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7143,6 +7810,12 @@ paths:
       - application/json
       description: This endpoint adds a proxy tag to the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7177,6 +7850,12 @@ paths:
       - application/json
       description: This endpoint applies dynamic configuration for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7207,6 +7886,12 @@ paths:
       description: This endpoint reloads the client certificates for the specified
         cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7237,6 +7922,12 @@ paths:
       description: This endpoint triggers the discovery of settings for the specified
         cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7266,6 +7957,12 @@ paths:
       - application/json
       description: This endpoint removes a tag from the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7300,6 +7997,12 @@ paths:
       - application/json
       description: This endpoint removes a proxy tag from the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7334,6 +8037,12 @@ paths:
       - application/json
       description: This endpoint reloads the settings for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7360,6 +8069,12 @@ paths:
       description: This endpoint reloads the Graphite filter list for the specified
         cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7390,6 +8105,12 @@ paths:
       description: This endpoint resets the Graphite filter list for the specified
         cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7424,6 +8145,12 @@ paths:
       - application/json
       description: This endpoint sets the cron jobs for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7463,6 +8190,12 @@ paths:
       - application/json
       description: This endpoint sets the Graphite filter list for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7503,6 +8236,12 @@ paths:
       - application/json
       description: This endpoint sets the settings for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7542,6 +8281,12 @@ paths:
       - application/json
       description: This endpoint switches the settings for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7574,6 +8319,12 @@ paths:
     get:
       description: This endpoint retrieves the shard clusters for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7606,6 +8357,12 @@ paths:
       - application/json
       description: Get the Sphinx indexes for a given cluster
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7665,6 +8422,12 @@ paths:
       - application/json
       description: This endpoint allows a user to subscribe to a specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7712,6 +8475,12 @@ paths:
     get:
       description: This endpoint retrieves the tags for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7739,6 +8508,12 @@ paths:
       - application/json
       description: This endpoint runs a specific test for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7781,6 +8556,12 @@ paths:
       - application/json
       description: This endpoint runs all tests for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7810,6 +8591,12 @@ paths:
     get:
       description: This endpoint retrieves the top metrics for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7842,6 +8629,12 @@ paths:
     get:
       description: Shows the alerts for that specific named cluster
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7863,6 +8656,12 @@ paths:
     get:
       description: This endpoint retrieves the crashes for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7888,6 +8687,12 @@ paths:
     get:
       description: This endpoint retrieves the logs for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7914,6 +8719,12 @@ paths:
       description: This endpoint retrieves the master of a specified cluster and returns
         it in JSON format.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7937,6 +8748,12 @@ paths:
     get:
       description: Shows the proxies for that specific named cluster
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7961,6 +8778,12 @@ paths:
     get:
       description: This endpoint retrieves the servers for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7987,6 +8810,12 @@ paths:
     get:
       description: Shows the slaves for that specific named cluster
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -8014,6 +8843,12 @@ paths:
       description: Adds a new user to the specified cluster if the request is valid
         and the user has the necessary permissions.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -8053,6 +8888,12 @@ paths:
       - application/json
       description: Drops a user from the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -8092,6 +8933,12 @@ paths:
       - application/json
       description: This endpoint sends the credentials to the specified user via email.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -8127,6 +8974,12 @@ paths:
       - application/json
       description: Updates the user information for a specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -8167,6 +9020,12 @@ paths:
       description: Adds a new cluster to the replication manager. If the cluster already
         exists, it returns an error.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -8200,6 +9059,12 @@ paths:
     delete:
       description: Deletes a cluster identified by its name.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -8228,7 +9093,8 @@ paths:
       description: This endpoint returns a list of peer clusters that are available
         for sale, excluding those that are booked by the requesting user.
       parameters:
-      - description: JWT token
+      - default: Bearer <Add access token here>
+        description: Insert your access token
         in: header
         name: Authorization
         required: true
@@ -8258,7 +9124,8 @@ paths:
       description: This endpoint retrieves the peer clusters that a user has access
         to.
       parameters:
-      - description: Bearer token
+      - default: Bearer <Add access token here>
+        description: Insert your access token
         in: header
         name: Authorization
         required: true
@@ -8313,6 +9180,12 @@ paths:
         name: settingName
         required: true
         type: string
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -8349,6 +9222,12 @@ paths:
       - description: Setting Name
         in: path
         name: settingName
+        required: true
+        type: string
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
         required: true
         type: string
       - description: Cluster Name
@@ -8457,6 +9336,12 @@ paths:
       - application/json
       description: This endpoint processes the replication manager requests, validates
         cluster ACLs, and returns the cluster list in JSON format.
+      parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        type: string
       produces:
       - application/json
       responses:
@@ -8559,6 +9444,12 @@ paths:
       description: This endpoint allows dropping a server monitor or proxy monitor
         from a specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -8599,6 +9490,12 @@ paths:
       description: This endpoint allows dropping a server monitor or proxy monitor
         from a specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName

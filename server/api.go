@@ -226,12 +226,10 @@ func (repman *ReplicationManager) apiserver() {
 		router.PathPrefix("/grafana/").Handler(http.StripPrefix("/grafana/", repman.SharedirHandler("grafana")))
 	}
 
-	if repman.Conf.ApiSwaggerEnabled {
-		// Serve Swagger documentation
-		router.PathPrefix("/api-docs/").Handler(httpSwagger.Handler(
-			httpSwagger.URL("/api-docs/doc.json"), // URL for the generated Swagger JSON
-		))
-	}
+	router.PathPrefix("/api-docs/").Handler(negroni.New(
+		negroni.HandlerFunc(repman.validateSwaggerMiddleware),
+		negroni.Wrap(http.HandlerFunc(httpSwagger.Handler(httpSwagger.URL("/api-docs/doc.json")))),
+	))
 
 	router.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Check if the path starts with "/api"
@@ -261,12 +259,6 @@ func (repman *ReplicationManager) apiserver() {
 	))
 	router.Handle("/api/clusters/peers", negroni.New(
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxPeerClusters)),
-	))
-	router.Handle("/api/clusters/{clusterName}/subscribe", negroni.New(
-		negroni.Wrap(http.HandlerFunc(repman.handlerMuxClusterSubscribe)),
-	))
-	router.Handle("/api/clusters/{clusterName}/unsubscribe", negroni.New(
-		negroni.Wrap(http.HandlerFunc(repman.handlerMuxRejectSubscription)),
 	))
 	router.Handle("/api/prometheus", negroni.New(
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxPrometheus)),
@@ -727,6 +719,7 @@ func (repman *ReplicationManager) handlerMuxAuthCallback(w http.ResponseWriter, 
 // @Tags Public
 // @Accept  json
 // @Produce  json
+// @Param Authorization header string false "Insert your access token" default(Bearer <Add access token here>)
 // @Success 200 {object} ReplicationManager "Successful response with replication manager details"
 // @Failure 500 {string} string "Internal Server Error"
 // @Router /api/monitor [get]
@@ -783,6 +776,7 @@ func (repman *ReplicationManager) handlerMuxTerms(w http.ResponseWriter, r *http
 // @Tags User
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param userform body cluster.UserForm true "User Form"
 // @Success 200 {string} string "User added successfully"
@@ -828,6 +822,7 @@ func (repman *ReplicationManager) handlerMuxAddClusterUser(w http.ResponseWriter
 // @Tags User
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param userform body cluster.UserForm true "User Form"
 // @Success 200 {string} string "User updated successfully"
@@ -873,6 +868,7 @@ func (repman *ReplicationManager) handlerMuxUpdateClusterUser(w http.ResponseWri
 // @Tags User
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param userform body cluster.UserForm true "User Form"
 // @Success 200 {string} string "User dropped successfully"
@@ -916,6 +912,7 @@ func (repman *ReplicationManager) handlerMuxDropClusterUser(w http.ResponseWrite
 // @Description Fetches the list of clusters that the user has access to based on ACL.
 // @Tags Cluster
 // @Produce application/json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Success 200 {array} cluster.Cluster "List of clusters"
 // @Failure 401 {string} string "Unauthenticated resource"
 // @Failure 500 {string} string "Internal server error"
@@ -963,7 +960,7 @@ func (repman *ReplicationManager) handlerMuxClusters(w http.ResponseWriter, r *h
 // @Description This endpoint retrieves the peer clusters that a user has access to.
 // @Tags Cloud18
 // @Produce application/json
-// @Param Authorization header string true "Bearer token"
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Success 200 {array} config.PeerCluster "List of peer clusters"
 // @Failure 401 {string} string "Unauthenticated resource"
 // @Failure 500 {string} string "Failed to get token claims or Error Marshal"
@@ -1011,12 +1008,12 @@ func (repman *ReplicationManager) handlerMuxPeerClusters(w http.ResponseWriter, 
 // @Summary Retrieve peer clusters for sale
 // @Description This endpoint returns a list of peer clusters that are available for sale, excluding those that are booked by the requesting user.
 // @Tags Cloud18
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Produce application/json
 // @Success 200 {array} config.PeerCluster "List of peer clusters available for sale"
 // @Failure 401 {string} string "Unauthenticated resource"
 // @Failure 500 {string} string "Failed to get token claims or Error Marshal"
 // @Router /api/clusters/for-sale [get]
-// @Param Authorization header string true "JWT token"
 func (repman *ReplicationManager) handlerMuxPeerClustersForSale(w http.ResponseWriter, r *http.Request) {
 	ok, err := repman.isValidRequest(r)
 	if !ok {
@@ -1061,6 +1058,7 @@ func (repman *ReplicationManager) handlerMuxPeerClustersForSale(w http.ResponseW
 // @Tags Cloud18
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param userform body cluster.UserForm true "User Form"
 // @Success 200 {string} string "Email sent to admin!"
@@ -1189,6 +1187,19 @@ func (repman *ReplicationManager) validateTokenMiddleware(w http.ResponseWriter,
 	}
 }
 
+func (repman *ReplicationManager) validateSwaggerMiddleware(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	//validate token
+
+	if !repman.Conf.ApiSwaggerEnabled {
+		w.WriteHeader(http.StatusForbidden)
+		fmt.Fprint(w, "Swagger is not enabled")
+		return
+	}
+	next(w, r)
+	return
+}
+
 //HELPER FUNCTIONS
 
 func (repman *ReplicationManager) jsonResponse(apiresponse interface{}, w http.ResponseWriter) {
@@ -1211,6 +1222,7 @@ func (repman *ReplicationManager) jsonResponse(apiresponse interface{}, w http.R
 // @Tags Cluster
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param cluster body cluster.ClusterForm true "Cluster Form"
 // @Success 200 {object} cluster.Cluster "Cluster added successfully"
@@ -1283,6 +1295,7 @@ func (repman *ReplicationManager) handlerMuxClusterAdd(w http.ResponseWriter, r 
 // @Description Deletes a cluster identified by its name.
 // @Tags Cluster
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {string} string "Cluster deleted successfully"
 // @Failure 400 {string} string "Invalid cluster name"

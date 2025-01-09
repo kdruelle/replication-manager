@@ -574,7 +574,7 @@ func (repman *ReplicationManager) AddFlags(flags *pflag.FlagSet, conf *config.Co
 
 	flags.BoolVar(&conf.HttpServ, "http-server", true, "Start the HTTP server")
 	flags.BoolVar(&conf.ApiServ, "api-server", true, "Start the API HTTPS server")
-	flags.BoolVar(&conf.ApiSwaggerEnabled, "api-swagger-enabled", false, "Start the API with Swagger")
+	flags.BoolVar(&conf.ApiSwaggerEnabled, "api-swagger-enabled", true, "Start the API with Swagger")
 
 	flags.StringVar(&conf.BindAddr, "http-bind-address", "localhost", "Bind HTTP monitor to this IP address")
 	flags.StringVar(&conf.HttpPort, "http-port", "10001", "HTTP monitor to listen on this port")

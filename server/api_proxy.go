@@ -48,6 +48,7 @@ func (repman *ReplicationManager) apiProxyProtectedHandler(router *mux.Router) {
 // @Tags Proxies
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param proxyName path string true "Proxy Name"
 // @Success 200 {string} string "Proxy Service Started"
@@ -81,6 +82,7 @@ func (repman *ReplicationManager) handlerMuxProxyStart(w http.ResponseWriter, r 
 // @Tags Proxies
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param proxyName path string true "Proxy Name"
 // @Success 200 {string} string "Proxy Service Stopped"
@@ -114,6 +116,7 @@ func (repman *ReplicationManager) handlerMuxProxyStop(w http.ResponseWriter, r *
 // @Tags Proxies
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param proxyName path string true "Proxy Name"
 // @Success 200 {string} string "Proxy Service Provisioned"
@@ -147,6 +150,7 @@ func (repman *ReplicationManager) handlerMuxProxyProvision(w http.ResponseWriter
 // @Tags Proxies
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param proxyName path string true "Proxy Name"
 // @Success 200 {string} string "Proxy Service Unprovisioned"
@@ -180,6 +184,7 @@ func (repman *ReplicationManager) handlerMuxProxyUnprovision(w http.ResponseWrit
 // @Tags Proxies
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {string} string "Sphinx Indexes"
 // @Failure 403 {string} string "No valid ACL"
@@ -213,6 +218,7 @@ func (repman *ReplicationManager) handlerMuxSphinxIndexes(w http.ResponseWriter,
 // @Tags Proxies
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param proxyName path string true "Proxy Name"
 // @Success 200 {string} string "Need restart!"
@@ -253,6 +259,7 @@ func (repman *ReplicationManager) handlerMuxProxyNeedRestart(w http.ResponseWrit
 // @Tags Proxies
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param proxyName path string true "Proxy Name"
 // @Success 200 {string} string "Need reprov!"

@@ -1,4 +1,4 @@
-import { Flex, Link } from '@chakra-ui/react'
+import { Flex, HStack, Link } from '@chakra-ui/react'
 import React, { useEffect } from 'react'
 import styles from './styles.module.scss'
 import { useDispatch } from 'react-redux'
@@ -7,6 +7,8 @@ import { setGlobalSetting, switchGlobalSetting } from '../../redux/globalCluster
 import LogSlider from '../../components/Sliders/LogSlider'
 import RMSwitch from '../../components/RMSwitch'
 import TextForm from '../../components/TextForm'
+import { TbApi } from 'react-icons/tb'
+import RMIconButton from '../../components/RMIconButton'
 
 function GlobalSettings({ config }) {
   const dispatch = useDispatch()
@@ -130,6 +132,19 @@ function GlobalSettings({ config }) {
             )
           }
         />
+      )
+    },
+    {
+      key: 'Enable API Swagger',
+      value: (
+        <HStack>
+          <RMSwitch
+            confirmTitle={'Confirm switch global settings for API Swagger?'}
+            onChange={(_v, setRefresh) => dispatch(switchGlobalSetting({ setting: 'api-swagger-enabled', setRefresh }))}
+            isChecked={config?.apiSwaggerEnabled}
+          />
+          { config?.apiSwaggerEnabled && (<RMIconButton icon={TbApi} onClick={() => { window.open("/api-docs/", "_blank") }} />) }
+        </HStack>
       )
     },
   ]
