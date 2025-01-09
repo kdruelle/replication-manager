@@ -399,7 +399,7 @@ func (repman *ReplicationManager) apiClusterProtectedHandler(router *mux.Router)
 
 // @Summary Retrieve servers for a specific cluster
 // @Description This endpoint retrieves the servers for the specified cluster.
-// @Tags clusters
+// @Tags ClusterTopology
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {array} map[string]interface{} "List of servers"
@@ -455,7 +455,7 @@ func (repman *ReplicationManager) handlerMuxServers(w http.ResponseWriter, r *ht
 
 // @Summary Shows the slaves for that specific named cluster
 // @Description Shows the slaves for that specific named cluster
-// @Tags clusters
+// @Tags ClusterTopology
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {array} map[string]interface{} "A list of slaves"
 // @Failure 500 {string} string "Internal Server Error"
@@ -495,7 +495,7 @@ func (repman *ReplicationManager) handlerMuxSlaves(w http.ResponseWriter, r *htt
 
 // @Summary Shows the proxies for that specific named cluster
 // @Description Shows the proxies for that specific named cluster
-// @Tags clusters
+// @Tags ClusterTopology
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {array} map[string]interface{} "A list of proxies"
 // @Failure 500 {string} string "Internal Server Error"
@@ -531,7 +531,7 @@ func (repman *ReplicationManager) handlerMuxProxies(w http.ResponseWriter, r *ht
 
 // @Summary Shows the alerts for that specific named cluster
 // @Description Shows the alerts for that specific named cluster
-// @Tags clusters
+// @Tags ClusterTopology
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {object} cluster.Alerts "A list of alerts"
 // @Failure 500 {string} string "Internal Server Error"
@@ -561,7 +561,7 @@ func (repman *ReplicationManager) handlerMuxAlerts(w http.ResponseWriter, r *htt
 
 // @Summary Rotate keys for a specific cluster
 // @Description Rotate the keys for the specified cluster
-// @Tags clusters
+// @Tags ClusterCertificates
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {string} string "Keys rotated successfully"
 // @Failure 403 {string} string "No valid ACL"
@@ -586,7 +586,7 @@ func (repman *ReplicationManager) handlerMuxRotateKeys(w http.ResponseWriter, r 
 
 // @Summary Reset SLA for a specific cluster
 // @Description Reset the SLA for the specified cluster
-// @Tags clusters
+// @Tags ClusterActions
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {string} string "SLA reset successfully"
 // @Failure 403 {string} string "No valid ACL"
@@ -612,7 +612,7 @@ func (repman *ReplicationManager) handlerMuxResetSla(w http.ResponseWriter, r *h
 // handlerMuxFailover handles the failover process for a given cluster.
 // @Summary Handles the failover process for a given cluster.
 // @Description This endpoint triggers a master failover for the specified cluster.
-// @Tags cluster
+// @Tags ClusterActions
 // @Accept json
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
@@ -641,7 +641,7 @@ func (repman *ReplicationManager) handlerMuxFailover(w http.ResponseWriter, r *h
 // handlerMuxClusterShardingAdd handles the addition of a sharding cluster to an existing cluster.
 // @Summary Add a sharding cluster to an existing cluster
 // @Description This endpoint adds a sharding cluster to an existing cluster and triggers a rolling restart.
-// @Tags clusters
+// @Tags ClusterTopology
 // @Accept json
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
@@ -671,7 +671,7 @@ func (repman *ReplicationManager) handlerMuxClusterShardingAdd(w http.ResponseWr
 // handlerMuxRolling handles the rolling restart process for a given cluster.
 // @Summary Handles the rolling restart process for a given cluster.
 // @Description This endpoint triggers a rolling restart for the specified cluster.
-// @Tags clusters
+// @Tags ClusterMaintenance
 // @Accept json
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
@@ -699,7 +699,7 @@ func (repman *ReplicationManager) handlerMuxRolling(w http.ResponseWriter, r *ht
 // handlerMuxStartTraffic handles the start traffic process for a given cluster.
 // @Summary Start traffic for a specific cluster
 // @Description This endpoint starts traffic for the specified cluster.
-// @Tags clusters
+// @Tags ClusterTraffics
 // @Accept json
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
@@ -728,7 +728,7 @@ func (repman *ReplicationManager) handlerMuxStartTraffic(w http.ResponseWriter, 
 // handlerMuxStopTraffic handles the stop traffic process for a given cluster.
 // @Summary Stop traffic for a specific cluster
 // @Description This endpoint stops traffic for the specified cluster.
-// @Tags clusters
+// @Tags ClusterTraffics
 // @Accept json
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
@@ -757,7 +757,7 @@ func (repman *ReplicationManager) handlerMuxStopTraffic(w http.ResponseWriter, r
 // handlerMuxBootstrapReplicationCleanup handles the cleanup process for replication bootstrap.
 // @Summary Cleanup replication bootstrap for a specific cluster
 // @Description This endpoint triggers the cleanup process for replication bootstrap for the specified cluster.
-// @Tags clusters
+// @Tags ClusterReplication
 // @Accept json
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
@@ -792,7 +792,7 @@ func (repman *ReplicationManager) handlerMuxBootstrapReplicationCleanup(w http.R
 // handlerMuxBootstrapReplication handles the bootstrap replication process for a given cluster.
 // @Summary Bootstrap replication for a specific cluster
 // @Description This endpoint triggers the bootstrap replication process for the specified cluster.
-// @Tags clusters
+// @Tags ClusterReplication
 // @Accept json
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
@@ -850,7 +850,7 @@ func (repman *ReplicationManager) handlerMuxServicesBootstrap(w http.ResponseWri
 // handlerMuxServicesProvision handles the provisioning of services for a given cluster.
 // @Summary Provision services for a specific cluster
 // @Description This endpoint provisions services for the specified cluster.
-// @Tags clusters
+// @Tags ClusterProvision
 // @Accept json
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
@@ -883,7 +883,7 @@ func (repman *ReplicationManager) handlerMuxServicesProvision(w http.ResponseWri
 // handlerMuxServicesUnprovision handles the unprovisioning of services for a given cluster.
 // @Summary Unprovision services for a specific cluster
 // @Description This endpoint unprovisions services for the specified cluster.
-// @Tags clusters
+// @Tags ClusterProvision
 // @Accept json
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
@@ -911,7 +911,7 @@ func (repman *ReplicationManager) handlerMuxServicesUnprovision(w http.ResponseW
 // handlerMuxServicesCancelRollingRestart handles the cancellation of rolling restart for a given cluster.
 // @Summary Cancel rolling restart for a specific cluster
 // @Description This endpoint cancels the rolling restart for the specified cluster.
-// @Tags clusters
+// @Tags ClusterMaintenance
 // @Accept json
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
@@ -939,7 +939,7 @@ func (repman *ReplicationManager) handlerMuxServicesCancelRollingRestart(w http.
 // handlerMuxServicesCancelRollingReprov handles the cancellation of rolling reprovision for a given cluster.
 // @Summary Cancel rolling reprovision for a specific cluster
 // @Description This endpoint cancels the rolling reprovision for the specified cluster.
-// @Tags clusters
+// @Tags ClusterProvision
 // @Accept json
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
@@ -967,7 +967,7 @@ func (repman *ReplicationManager) handlerMuxServicesCancelRollingReprov(w http.R
 // handlerMuxSetSettingsDiscover handles the discovery of settings for a given cluster.
 // @Summary Discover settings for a specific cluster
 // @Description This endpoint triggers the discovery of settings for the specified cluster.
-// @Tags clusters
+// @Tags ClusterSettings
 // @Accept json
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
@@ -999,7 +999,7 @@ func (repman *ReplicationManager) handlerMuxSetSettingsDiscover(w http.ResponseW
 // handlerMuxClusterResetFailoverControl handles the reset of failover control for a given cluster.
 // @Summary Reset failover control for a specific cluster
 // @Description This endpoint resets the failover control for the specified cluster.
-// @Tags clusters
+// @Tags ClusterActions
 // @Accept json
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
@@ -1028,7 +1028,7 @@ func (repman *ReplicationManager) handlerMuxClusterResetFailoverControl(w http.R
 // handlerMuxSwitchover handles the switchover process for a given cluster.
 // @Summary Handles the switchover process for a given cluster.
 // @Description This endpoint triggers a master switchover for the specified cluster.
-// @Tags clusters
+// @Tags ClusterActions
 // @Accept json
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
@@ -1076,7 +1076,7 @@ func (repman *ReplicationManager) handlerMuxSwitchover(w http.ResponseWriter, r 
 // handlerMuxMaster handles the HTTP request to retrieve the master of a specified cluster.
 // @Summary Retrieve master of a cluster
 // @Description This endpoint retrieves the master of a specified cluster and returns it in JSON format.
-// @Tags clusters
+// @Tags ClusterTopology
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {object} cluster.ServerMonitor "Master server"
@@ -1117,7 +1117,7 @@ func (repman *ReplicationManager) handlerMuxMaster(w http.ResponseWriter, r *htt
 // handlerMuxClusterCertificates handles the retrieval of client certificates for a given cluster.
 // @Summary Retrieve client certificates for a specific cluster
 // @Description This endpoint retrieves the client certificates for the specified cluster.
-// @Tags clusters
+// @Tags ClusterCertificates
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {array} map[string]interface{} "List of client certificates"
@@ -1152,7 +1152,7 @@ func (repman *ReplicationManager) handlerMuxClusterCertificates(w http.ResponseW
 // handlerMuxClusterTags handles the retrieval of tags for a given cluster.
 // @Summary Retrieve tags for a specific cluster
 // @Description This endpoint retrieves the tags for the specified cluster.
-// @Tags clusters
+// @Tags ClusterTags
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {array} string "List of tags"
@@ -1180,7 +1180,7 @@ func (repman *ReplicationManager) handlerMuxClusterTags(w http.ResponseWriter, r
 // handlerMuxClusterBackups handles the retrieval of backups for a given cluster.
 // @Summary Retrieve backups for a specific cluster
 // @Description This endpoint retrieves the backups for the specified cluster.
-// @Tags clusters
+// @Tags ClusterBackups
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {array} map[string]interface{} "List of backups"
@@ -1212,7 +1212,7 @@ func (repman *ReplicationManager) handlerMuxClusterBackups(w http.ResponseWriter
 // handlerMuxClusterShardClusters handles the retrieval of shard clusters for a given cluster.
 // @Summary Retrieve shard clusters for a specific cluster
 // @Description This endpoint retrieves the shard clusters for the specified cluster.
-// @Tags clusters
+// @Tags ClusterTopology
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {array} map[string]interface{} "List of shard clusters"
@@ -1244,7 +1244,7 @@ func (repman *ReplicationManager) handlerMuxClusterShardClusters(w http.Response
 // handlerMuxClusterQueryRules handles the retrieval of query rules for a given cluster.
 // @Summary Retrieve query rules for a specific cluster
 // @Description This endpoint retrieves the query rules for the specified cluster.
-// @Tags clusters
+// @Tags Cluster
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {array} map[string]interface{} "List of query rules"
@@ -1276,7 +1276,7 @@ func (repman *ReplicationManager) handlerMuxClusterQueryRules(w http.ResponseWri
 // handlerMuxClusterTop handles the retrieval of top metrics for a given cluster.
 // @Summary Retrieve top metrics for a specific cluster
 // @Description This endpoint retrieves the top metrics for the specified cluster.
-// @Tags clusters
+// @Tags Cluster
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName query string false "Server Name"
@@ -1320,7 +1320,7 @@ func (repman *ReplicationManager) handlerMuxClusterTop(w http.ResponseWriter, r 
 // handlerMuxSwitchSettings handles the switching of settings for a given cluster.
 // @Summary Switch settings for a specific cluster
 // @Description This endpoint switches the settings for the specified cluster.
-// @Tags clusters
+// @Tags ClusterSettings
 // @Accept json
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
@@ -1370,7 +1370,7 @@ func (repman *ReplicationManager) handlerMuxSwitchSettings(w http.ResponseWriter
 // handlerMuxSwitchGlobalSettings handles the switching of global settings for the server.
 // @Summary Switch global settings for the server
 // @Description This endpoint switches the global settings for the server.
-// @Tags settings
+// @Tags GlobalSetting
 // @Accept json
 // @Produce json
 // @Param settingName path string true "Setting Name"
@@ -1665,7 +1665,7 @@ func (repman *ReplicationManager) switchClusterSettings(mycluster *cluster.Clust
 // handlerMuxSetSettings handles the setting of settings for a given cluster.
 // @Summary Set settings for a specific cluster
 // @Description This endpoint sets the settings for the specified cluster.
-// @Tags clusters
+// @Tags ClusterSettings
 // @Accept json
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
@@ -1727,7 +1727,7 @@ func (repman *ReplicationManager) handlerMuxSetSettings(w http.ResponseWriter, r
 // handlerMuxSetGlobalSettings handles the setting of global settings for the server.
 // @Summary Set global settings for the server
 // @Description This endpoint sets the global settings for the server.
-// @Tags settings
+// @Tags ClusterSettings
 // @Accept json
 // @Produce json
 // @Param settingName path string true "Setting Name"
@@ -1789,7 +1789,7 @@ func (repman *ReplicationManager) handlerMuxSetGlobalSettings(w http.ResponseWri
 // handlerMuxSetCron handles the setting of cron jobs for a given cluster.
 // @Summary Set cron jobs for a specific cluster
 // @Description This endpoint sets the cron jobs for the specified cluster.
-// @Tags clusters
+// @Tags ClusterSettings
 // @Accept json
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
@@ -2542,7 +2542,7 @@ func (repman *ReplicationManager) switchServerSetting(user string, URL string, n
 // handlerMuxReloadPlans handles the reloading of cluster plans.
 // @Summary Reload cluster plans
 // @Description This endpoint reloads the cluster plans for all clusters.
-// @Tags clusters
+// @Tags ClusterActions
 // @Success 200 {string} string "Successfully reloaded plans"
 // @Failure 403 {string} string "No valid ACL"
 // @Failure 500 {string} string "No cluster"
@@ -2581,7 +2581,7 @@ func (repman *ReplicationManager) handlerMuxReloadPlans(w http.ResponseWriter, r
 // handlerMuxAddTag handles the addition of a tag to a given cluster.
 // @Summary Add a tag to a specific cluster
 // @Description This endpoint adds a tag to the specified cluster.
-// @Tags clusters
+// @Tags ClusterTags
 // @Accept json
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
@@ -2610,7 +2610,7 @@ func (repman *ReplicationManager) handlerMuxAddTag(w http.ResponseWriter, r *htt
 // handlerMuxAddProxyTag handles the addition of a proxy tag to a given cluster.
 // @Summary Add a proxy tag to a specific cluster
 // @Description This endpoint adds a proxy tag to the specified cluster.
-// @Tags clusters
+// @Tags ClusterTags
 // @Accept json
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
@@ -2644,7 +2644,7 @@ func (repman *ReplicationManager) handlerMuxAddProxyTag(w http.ResponseWriter, r
 // handlerMuxDropTag handles the removal of a tag from a given cluster.
 // @Summary Remove a tag from a specific cluster
 // @Description This endpoint removes a tag from the specified cluster.
-// @Tags clusters
+// @Tags ClusterTags
 // @Accept json
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
@@ -2673,7 +2673,7 @@ func (repman *ReplicationManager) handlerMuxDropTag(w http.ResponseWriter, r *ht
 // handlerMuxDropProxyTag handles the removal of a proxy tag from a given cluster.
 // @Summary Remove a proxy tag from a specific cluster
 // @Description This endpoint removes a proxy tag from the specified cluster.
-// @Tags clusters
+// @Tags ClusterTags
 // @Accept json
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
@@ -2719,7 +2719,7 @@ func (repman *ReplicationManager) handlerMuxSwitchReadOnly(w http.ResponseWriter
 // handlerMuxLog handles the retrieval of logs for a given cluster.
 // @Summary Retrieve logs for a specific cluster
 // @Description This endpoint retrieves the logs for the specified cluster.
-// @Tags clusters
+// @Tags ClusterTopology
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {array} string "List of logs"
@@ -2745,7 +2745,7 @@ func (repman *ReplicationManager) handlerMuxLog(w http.ResponseWriter, r *http.R
 // handlerMuxCrashes handles the retrieval of crashes for a given cluster.
 // @Summary Retrieve crashes for a specific cluster
 // @Description This endpoint retrieves the crashes for the specified cluster.
-// @Tags clusters
+// @Tags Cluster
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {array} string "List of crashes"
@@ -2773,7 +2773,7 @@ func (repman *ReplicationManager) handlerMuxCrashes(w http.ResponseWriter, r *ht
 // handlerMuxOneTest handles the execution of a specific test for a given cluster.
 // @Summary Run a specific test for a given cluster
 // @Description This endpoint runs a specific test for the specified cluster.
-// @Tags clusters
+// @Tags ClusterTest
 // @Accept json
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
@@ -2842,7 +2842,7 @@ func (repman *ReplicationManager) handlerMuxOneTest(w http.ResponseWriter, r *ht
 // handlerMuxTests handles the execution of all tests for a given cluster.
 // @Summary Run all tests for a given cluster
 // @Description This endpoint runs all tests for the specified cluster.
-// @Tags clusters
+// @Tags ClusterTest
 // @Accept json
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
@@ -2879,7 +2879,7 @@ func (repman *ReplicationManager) handlerMuxTests(w http.ResponseWriter, r *http
 // handlerMuxSettingsReload handles the reloading of cluster settings.
 // @Summary Reload cluster settings
 // @Description This endpoint reloads the settings for the specified cluster.
-// @Tags clusters
+// @Tags ClusterSettings
 // @Accept json
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
@@ -2904,7 +2904,7 @@ func (repman *ReplicationManager) handlerMuxSettingsReload(w http.ResponseWriter
 // handlerMuxServerAdd handles the addition of a server to a given cluster.
 // @Summary Add a server to a specific cluster
 // @Description This endpoint adds a server to the specified cluster.
-// @Tags clusters
+// @Tags ClusterMonitor
 // @Accept json
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
@@ -2972,7 +2972,7 @@ func (repman *ReplicationManager) handlerMuxServerAdd(w http.ResponseWriter, r *
 //
 // @Summary Drop a server monitor from a cluster
 // @Description This endpoint allows dropping a server monitor or proxy monitor from a specified cluster.
-// @Tags cluster
+// @Tags ClusterMonitor
 // @Accept json
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
@@ -3013,7 +3013,7 @@ func (repman *ReplicationManager) handlerMuxServerDrop(w http.ResponseWriter, r 
 // handlerMuxClusterStatus handles the HTTP request to retrieve the status of a specified cluster.
 // @Summary Retrieve status of a cluster
 // @Description This endpoint retrieves the status of a specified cluster and returns it in JSON format.
-// @Tags clusters
+// @Tags Cluster
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {object} map[string]string "Cluster status"
@@ -3040,7 +3040,7 @@ func (repman *ReplicationManager) handlerMuxClusterStatus(w http.ResponseWriter,
 // handlerMuxClusterMasterPhysicalBackup handles the physical backup process for the master of a given cluster.
 // @Summary Perform a physical backup for the master of a specific cluster
 // @Description This endpoint triggers a physical backup for the master of the specified cluster.
-// @Tags clusters
+// @Tags ClusterBackup
 // @Accept json
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
@@ -3068,7 +3068,7 @@ func (repman *ReplicationManager) handlerMuxClusterMasterPhysicalBackup(w http.R
 // handlerMuxClusterOptimize handles the optimization process for a given cluster.
 // @Summary Optimize a specific cluster
 // @Description This endpoint triggers the optimization process for the specified cluster.
-// @Tags clusters
+// @Tags ClusterActions
 // @Accept json
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
@@ -3118,7 +3118,7 @@ func (repman *ReplicationManager) handlerMuxClusterSSTStop(w http.ResponseWriter
 // handlerMuxClusterSysbench handles the execution of sysbench for a given cluster.
 // @Summary Run sysbench for a specific cluster
 // @Description This endpoint runs sysbench for the specified cluster.
-// @Tags clusters
+// @Tags ClusterTest
 // @Accept json
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
@@ -3148,7 +3148,7 @@ func (repman *ReplicationManager) handlerMuxClusterSysbench(w http.ResponseWrite
 // handlerMuxClusterApplyDynamicConfig handles the application of dynamic configuration for a given cluster.
 // @Summary Apply dynamic configuration for a specific cluster
 // @Description This endpoint applies dynamic configuration for the specified cluster.
-// @Tags clusters
+// @Tags ClusterTags
 // @Accept json
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
@@ -3173,7 +3173,7 @@ func (repman *ReplicationManager) handlerMuxClusterApplyDynamicConfig(w http.Res
 // handlerMuxClusterReloadCertificates handles the reloading of client certificates for a given cluster.
 // @Summary Reload client certificates for a specific cluster
 // @Description This endpoint reloads the client certificates for the specified cluster.
-// @Tags clusters
+// @Tags ClusterSettings
 // @Accept json
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
@@ -3198,7 +3198,7 @@ func (repman *ReplicationManager) handlerMuxClusterReloadCertificates(w http.Res
 // handlerMuxClusterWaitDatabases handles the waiting for databases to be ready for a given cluster.
 // @Summary Wait for databases to be ready for a specific cluster
 // @Description This endpoint waits for the databases to be ready for the specified cluster.
-// @Tags clusters
+// @Tags Cluster
 // @Accept json
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
@@ -3227,7 +3227,7 @@ func (repman *ReplicationManager) handlerMuxClusterWaitDatabases(w http.Response
 // handlerMuxCluster handles the HTTP request to retrieve the details of a specified cluster.
 // @Summary Retrieve details of a cluster
 // @Description This endpoint retrieves the details of a specified cluster and returns it in JSON format.
-// @Tags clusters
+// @Tags Cluster
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {object} cluster.Cluster "Cluster details"
@@ -3281,7 +3281,7 @@ func (repman *ReplicationManager) handlerMuxCluster(w http.ResponseWriter, r *ht
 // handlerMuxClusterSettings handles the retrieval of settings for a given cluster.
 // @Summary Retrieve settings for a specific cluster
 // @Description This endpoint retrieves the settings for the specified cluster.
-// @Tags clusters
+// @Tags ClusterSettings
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {object} config.Config "Cluster settings"
@@ -3317,7 +3317,7 @@ func (repman *ReplicationManager) handlerMuxClusterSettings(w http.ResponseWrite
 // handlerMuxClusterSendVaultToken sends the Vault token to the specified cluster via email.
 // @Summary Send Vault token to a specific cluster
 // @Description This endpoint sends the Vault token to the specified cluster via email.
-// @Tags clusters
+// @Tags ClusterVault
 // @Accept json
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
@@ -3346,7 +3346,7 @@ func (repman *ReplicationManager) handlerMuxClusterSendVaultToken(w http.Respons
 // handlerMuxClusterSchemaChecksumAllTable handles the checksum calculation for all tables in a given cluster.
 // @Summary Calculate checksum for all tables in a specific cluster
 // @Description This endpoint triggers the checksum calculation for all tables in the specified cluster.
-// @Tags clusters
+// @Tags ClusterSchema
 // @Accept json
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
@@ -3376,7 +3376,7 @@ func (repman *ReplicationManager) handlerMuxClusterSchemaChecksumAllTable(w http
 // handlerMuxClusterSchemaChecksumTable handles the checksum calculation for a specific table in a given cluster.
 // @Summary Calculate checksum for a specific table in a specific cluster
 // @Description This endpoint triggers the checksum calculation for a specific table in the specified cluster.
-// @Tags clusters
+// @Tags ClusterSchema
 // @Accept json
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
@@ -3408,7 +3408,7 @@ func (repman *ReplicationManager) handlerMuxClusterSchemaChecksumTable(w http.Re
 // handlerMuxClusterSchemaUniversalTable handles the setting of a universal table for a given cluster.
 // @Summary Set a universal table for a specific cluster
 // @Description This endpoint sets a universal table for the specified cluster.
-// @Tags clusters
+// @Tags ClusterSchema
 // @Accept json
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
@@ -3444,7 +3444,7 @@ func (repman *ReplicationManager) handlerMuxClusterSchemaUniversalTable(w http.R
 // handlerMuxClusterSchemaReshardTable handles the resharding of a table for a given cluster.
 // @Summary Reshard a table for a specific cluster
 // @Description This endpoint triggers the resharding of a table for the specified cluster.
-// @Tags clusters
+// @Tags ClusterSchema
 // @Accept json
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
@@ -3493,7 +3493,7 @@ func (repman *ReplicationManager) handlerMuxClusterSchemaReshardTable(w http.Res
 // handlerMuxClusterSchemaMoveTable handles the movement of a table to a different shard cluster.
 // @Summary Move a table to a different shard cluster
 // @Description This endpoint moves a table to a different shard cluster for the specified cluster.
-// @Tags clusters
+// @Tags ClusterSchema
 // @Accept json
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
@@ -3538,7 +3538,7 @@ func (repman *ReplicationManager) handlerMuxClusterSchemaMoveTable(w http.Respon
 // handlerMuxClusterSchema handles the retrieval of schema information for a given cluster.
 // @Summary Retrieve schema information for a specific cluster
 // @Description This endpoint retrieves the schema information for the specified cluster.
-// @Tags clusters
+// @Tags ClusterSchema
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {object} map[string]interface{} "Schema information"
@@ -3575,7 +3575,7 @@ func (repman *ReplicationManager) handlerMuxClusterSchema(w http.ResponseWriter,
 // handlerDiffVariables handles the retrieval of variable differences for a given cluster.
 // @Summary Retrieve variable differences for a specific cluster
 // @Description This endpoint retrieves the variable differences for the specified cluster.
-// @Tags clusters
+// @Tags Cluster
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {array} cluster.VariableDiff "List of variable differences"
@@ -3612,7 +3612,7 @@ func (repman *ReplicationManager) handlerDiffVariables(w http.ResponseWriter, r 
 // handlerRotatePasswords rotates the passwords for a given cluster.
 // @Summary Rotate passwords for a specific cluster
 // @Description This endpoint rotates the passwords for the specified cluster.
-// @Tags clusters
+// @Tags ClusterActions
 // @Accept json
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
@@ -3641,7 +3641,7 @@ func (repman *ReplicationManager) handlerRotatePasswords(w http.ResponseWriter, 
 // handlerMuxClusterGraphiteFilterList handles the retrieval of Graphite filter list for a given cluster.
 // @Summary Retrieve Graphite filter list for a specific cluster
 // @Description This endpoint retrieves the Graphite filter list for the specified cluster.
-// @Tags clusters
+// @Tags ClusterGraphite
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {array} string "List of Graphite filters"
@@ -3672,7 +3672,7 @@ func (repman *ReplicationManager) handlerMuxClusterGraphiteFilterList(w http.Res
 // handlerMuxClusterSetGraphiteFilterList sets the Graphite filter list for a given cluster.
 // @Summary Set Graphite filter list for a specific cluster
 // @Description This endpoint sets the Graphite filter list for the specified cluster.
-// @Tags clusters
+// @Tags ClusterGraphite
 // @Accept json
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
@@ -3716,7 +3716,7 @@ func (repman *ReplicationManager) handlerMuxClusterSetGraphiteFilterList(w http.
 // handlerMuxClusterReloadGraphiteFilterList handles the reloading of Graphite filter list for a given cluster.
 // @Summary Reload Graphite filter list for a specific cluster
 // @Description This endpoint reloads the Graphite filter list for the specified cluster.
-// @Tags clusters
+// @Tags ClusterGraphite
 // @Accept json
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
@@ -3745,7 +3745,7 @@ func (repman *ReplicationManager) handlerMuxClusterReloadGraphiteFilterList(w ht
 // handlerMuxClusterResetGraphiteFilterList handles the reset of Graphite filter list for a given cluster.
 // @Summary Reset Graphite filter list for a specific cluster
 // @Description This endpoint resets the Graphite filter list for the specified cluster.
-// @Tags clusters
+// @Tags ClusterGraphite
 // @Accept json
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
@@ -3779,7 +3779,7 @@ func (repman *ReplicationManager) handlerMuxClusterResetGraphiteFilterList(w htt
 // handlerMuxClusterGetJobEntries retrieves job entries for a specific cluster.
 // @Summary Retrieve job entries for a specific cluster
 // @Description This endpoint retrieves the job entries for the specified cluster.
-// @Tags clusters
+// @Tags Cluster
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {array} map[string]interface{} "List of job entries"
@@ -3807,7 +3807,7 @@ func (repman *ReplicationManager) handlerMuxClusterGetJobEntries(w http.Response
 // handlerMuxAcceptSubscription handles the acceptance of a subscription for a given cluster.
 // @Summary Accept a subscription for a specific cluster
 // @Description This endpoint accepts a subscription for the specified cluster.
-// @Tags clusters
+// @Tags Cloud18
 // @Accept json
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
@@ -3930,7 +3930,7 @@ func (repman *ReplicationManager) handlerMuxAcceptSubscription(w http.ResponseWr
 // handlerMuxRejectSubscription handles the rejection of a subscription for a given cluster.
 // @Summary Reject a subscription for a specific cluster
 // @Description This endpoint rejects a subscription for the specified cluster.
-// @Tags clusters
+// @Tags Cloud18
 // @Accept json
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
@@ -3994,7 +3994,7 @@ func (repman *ReplicationManager) handlerMuxRejectSubscription(w http.ResponseWr
 // handlerMuxRemoveSponsor handles the removal of a sponsor from a given cluster.
 // @Summary Remove a sponsor from a specific cluster
 // @Description This endpoint removes a sponsor from the specified cluster.
-// @Tags clusters
+// @Tags Cloud18
 // @Accept json
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
@@ -4079,7 +4079,7 @@ type CredentialMailForm struct {
 // handlerMuxSendCredentials sends the credentials to the specified user via email.
 // @Summary Send credentials to a specific user
 // @Description This endpoint sends the credentials to the specified user via email.
-// @Tags clusters
+// @Tags User
 // @Accept json
 // @Produce json
 // @Param clusterName path string true "Cluster Name"

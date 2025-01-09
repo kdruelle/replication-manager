@@ -45,7 +45,7 @@ func (repman *ReplicationManager) apiProxyProtectedHandler(router *mux.Router) {
 
 // @Summary Start Proxy Service
 // @Description Start the proxy service for a given cluster and proxy
-// @Tags proxies
+// @Tags Proxies
 // @Accept json
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
@@ -78,7 +78,7 @@ func (repman *ReplicationManager) handlerMuxProxyStart(w http.ResponseWriter, r 
 
 // @Summary Stop Proxy Service
 // @Description Stop the proxy service for a given cluster and proxy
-// @Tags proxies
+// @Tags Proxies
 // @Accept json
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
@@ -111,7 +111,7 @@ func (repman *ReplicationManager) handlerMuxProxyStop(w http.ResponseWriter, r *
 
 // @Summary Provision Proxy Service
 // @Description Provision the proxy service for a given cluster and proxy
-// @Tags proxies
+// @Tags Proxies
 // @Accept json
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
@@ -144,7 +144,7 @@ func (repman *ReplicationManager) handlerMuxProxyProvision(w http.ResponseWriter
 
 // @Summary Unprovision Proxy Service
 // @Description Unprovision the proxy service for a given cluster and proxy
-// @Tags proxies
+// @Tags Proxies
 // @Accept json
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
@@ -177,7 +177,7 @@ func (repman *ReplicationManager) handlerMuxProxyUnprovision(w http.ResponseWrit
 
 // @Summary Get Sphinx Indexes
 // @Description Get the Sphinx indexes for a given cluster
-// @Tags proxies
+// @Tags Proxies
 // @Accept json
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
@@ -210,7 +210,7 @@ func (repman *ReplicationManager) handlerMuxSphinxIndexes(w http.ResponseWriter,
 
 // @Summary Check if Proxy Needs Restart
 // @Description Check if the proxy service for a given cluster and proxy needs a restart
-// @Tags proxies
+// @Tags Proxies
 // @Accept json
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
@@ -250,7 +250,7 @@ func (repman *ReplicationManager) handlerMuxProxyNeedRestart(w http.ResponseWrit
 
 // @Summary Check if Proxy Needs Reprovision
 // @Description Check if the proxy service for a given cluster and proxy needs reprovisioning
-// @Tags proxies
+// @Tags Proxies
 // @Accept json
 // @Produce json
 // @Param clusterName path string true "Cluster Name"

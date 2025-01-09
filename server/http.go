@@ -269,7 +269,7 @@ func (repman *ReplicationManager) handlerApp(w http.ResponseWriter, r *http.Requ
 // handlerRepoComp handles the HTTP request for retrieving the current repository component.
 // @Summary Retrieve current repository component
 // @Description Reads the current repository component from the specified directory and returns its content.
-// @Tags repository
+// @Tags Public
 // @Produce plain
 // @Success 200 {string} string "Current repository component content"
 // @Failure 404 {string} string "404 Something went wrong - Not Found"

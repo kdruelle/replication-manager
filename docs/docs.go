@@ -22,7 +22,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "Cluster"
                 ],
                 "summary": "Fetch clusters",
                 "responses": {
@@ -60,7 +60,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "Cluster"
                 ],
                 "summary": "Add a new cluster",
                 "parameters": [
@@ -110,7 +110,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "Cluster"
                 ],
                 "summary": "Delete a cluster",
                 "parameters": [
@@ -151,7 +151,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "PeerClusters"
+                    "Cloud18"
                 ],
                 "summary": "Retrieve peer clusters for sale",
                 "parameters": [
@@ -195,7 +195,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "PeerClusters"
+                    "Cloud18"
                 ],
                 "summary": "Retrieve peer clusters for a user",
                 "parameters": [
@@ -236,7 +236,7 @@ const docTemplate = `{
             "post": {
                 "description": "This endpoint reloads the cluster plans for all clusters.",
                 "tags": [
-                    "clusters"
+                    "ClusterActions"
                 ],
                 "summary": "Reload cluster plans",
                 "responses": {
@@ -271,7 +271,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "settings"
+                    "ClusterSettings"
                 ],
                 "summary": "Set global settings for the server",
                 "parameters": [
@@ -328,7 +328,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "settings"
+                    "GlobalSetting"
                 ],
                 "summary": "Switch global settings for the server",
                 "parameters": [
@@ -375,7 +375,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "Cluster"
                 ],
                 "summary": "Retrieve details of a cluster",
                 "parameters": [
@@ -419,7 +419,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "ClusterTopology"
                 ],
                 "summary": "Add a sharding cluster to an existing cluster",
                 "parameters": [
@@ -470,7 +470,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "ClusterMonitor"
                 ],
                 "summary": "Add a server to a specific cluster",
                 "parameters": [
@@ -534,7 +534,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "ClusterMonitor"
                 ],
                 "summary": "Add a server to a specific cluster",
                 "parameters": [
@@ -604,7 +604,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "ClusterProvision"
                 ],
                 "summary": "Cancel rolling reprovision for a specific cluster",
                 "parameters": [
@@ -648,7 +648,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "ClusterMaintenance"
                 ],
                 "summary": "Cancel rolling restart for a specific cluster",
                 "parameters": [
@@ -686,7 +686,7 @@ const docTemplate = `{
             "post": {
                 "description": "Rotate the keys for the specified cluster",
                 "tags": [
-                    "clusters"
+                    "ClusterCertificates"
                 ],
                 "summary": "Rotate keys for a specific cluster",
                 "parameters": [
@@ -730,7 +730,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "ClusterSchema"
                 ],
                 "summary": "Calculate checksum for all tables in a specific cluster",
                 "parameters": [
@@ -774,7 +774,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "cluster"
+                    "ClusterActions"
                 ],
                 "summary": "Handles the failover process for a given cluster.",
                 "parameters": [
@@ -818,7 +818,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "ClusterBackup"
                 ],
                 "summary": "Perform a physical backup for the master of a specific cluster",
                 "parameters": [
@@ -862,7 +862,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "ClusterActions"
                 ],
                 "summary": "Optimize a specific cluster",
                 "parameters": [
@@ -906,7 +906,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "ClusterReplication"
                 ],
                 "summary": "Bootstrap replication for a specific cluster",
                 "parameters": [
@@ -957,7 +957,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "ClusterReplication"
                 ],
                 "summary": "Cleanup replication bootstrap for a specific cluster",
                 "parameters": [
@@ -1001,7 +1001,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "ClusterActions"
                 ],
                 "summary": "Reset failover control for a specific cluster",
                 "parameters": [
@@ -1039,7 +1039,7 @@ const docTemplate = `{
             "post": {
                 "description": "Reset the SLA for the specified cluster",
                 "tags": [
-                    "clusters"
+                    "ClusterActions"
                 ],
                 "summary": "Reset SLA for a specific cluster",
                 "parameters": [
@@ -1083,7 +1083,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "ClusterMaintenance"
                 ],
                 "summary": "Handles the rolling restart process for a given cluster.",
                 "parameters": [
@@ -1127,7 +1127,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "ClusterActions"
                 ],
                 "summary": "Rotate passwords for a specific cluster",
                 "parameters": [
@@ -1171,7 +1171,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "ClusterTraffics"
                 ],
                 "summary": "Start traffic for a specific cluster",
                 "parameters": [
@@ -1215,7 +1215,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "ClusterTraffics"
                 ],
                 "summary": "Stop traffic for a specific cluster",
                 "parameters": [
@@ -1259,7 +1259,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "ClusterActions"
                 ],
                 "summary": "Handles the switchover process for a given cluster.",
                 "parameters": [
@@ -1315,7 +1315,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "ClusterTest"
                 ],
                 "summary": "Run sysbench for a specific cluster",
                 "parameters": [
@@ -1365,7 +1365,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "Cluster"
                 ],
                 "summary": "Wait for databases to be ready for a specific cluster",
                 "parameters": [
@@ -1406,7 +1406,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "ClusterBackups"
                 ],
                 "summary": "Retrieve backups for a specific cluster",
                 "parameters": [
@@ -1451,7 +1451,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "ClusterCertificates"
                 ],
                 "summary": "Retrieve client certificates for a specific cluster",
                 "parameters": [
@@ -1490,7 +1490,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "Cluster"
                 ],
                 "summary": "Retrieve variable differences for a specific cluster",
                 "parameters": [
@@ -1534,7 +1534,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "ClusterGraphite"
                 ],
                 "summary": "Retrieve Graphite filter list for a specific cluster",
                 "parameters": [
@@ -1572,7 +1572,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "Cluster"
                 ],
                 "summary": "Retrieve job entries for a specific cluster",
                 "parameters": [
@@ -1617,7 +1617,7 @@ const docTemplate = `{
                     "text/plain"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "Database"
                 ],
                 "summary": "Check if a cluster needs a rolling reprovision",
                 "parameters": [
@@ -1652,7 +1652,7 @@ const docTemplate = `{
                     "text/plain"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "Database"
                 ],
                 "summary": "Check if a cluster needs a rolling restart",
                 "parameters": [
@@ -1690,7 +1690,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "proxies"
+                    "Proxies"
                 ],
                 "summary": "Check if Proxy Needs Reprovision",
                 "parameters": [
@@ -1747,7 +1747,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "proxies"
+                    "Proxies"
                 ],
                 "summary": "Check if Proxy Needs Restart",
                 "parameters": [
@@ -1804,7 +1804,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "proxies"
+                    "Proxies"
                 ],
                 "summary": "Provision Proxy Service",
                 "parameters": [
@@ -1855,7 +1855,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "proxies"
+                    "Proxies"
                 ],
                 "summary": "Start Proxy Service",
                 "parameters": [
@@ -1906,7 +1906,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "proxies"
+                    "Proxies"
                 ],
                 "summary": "Stop Proxy Service",
                 "parameters": [
@@ -1957,7 +1957,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "proxies"
+                    "Proxies"
                 ],
                 "summary": "Unprovision Proxy Service",
                 "parameters": [
@@ -2005,7 +2005,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "Cluster"
                 ],
                 "summary": "Retrieve query rules for a specific cluster",
                 "parameters": [
@@ -2053,7 +2053,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "Cloud18"
                 ],
                 "summary": "Accept a subscription for a specific cluster",
                 "parameters": [
@@ -2106,7 +2106,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "Cloud18"
                 ],
                 "summary": "Remove a sponsor from a specific cluster",
                 "parameters": [
@@ -2159,7 +2159,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "Cloud18"
                 ],
                 "summary": "Reject a subscription for a specific cluster",
                 "parameters": [
@@ -2209,7 +2209,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "ClusterSchema"
                 ],
                 "summary": "Retrieve schema information for a specific cluster",
                 "parameters": [
@@ -2254,7 +2254,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "ClusterSchema"
                 ],
                 "summary": "Calculate checksum for a specific table in a specific cluster",
                 "parameters": [
@@ -2312,7 +2312,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "ClusterSchema"
                 ],
                 "summary": "Move a table to a different shard cluster",
                 "parameters": [
@@ -2377,7 +2377,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "ClusterSchema"
                 ],
                 "summary": "Reshard a table for a specific cluster",
                 "parameters": [
@@ -2435,7 +2435,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "ClusterSchema"
                 ],
                 "summary": "Reshard a table for a specific cluster",
                 "parameters": [
@@ -2499,7 +2499,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "ClusterSchema"
                 ],
                 "summary": "Set a universal table for a specific cluster",
                 "parameters": [
@@ -2557,7 +2557,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "ClusterVault"
                 ],
                 "summary": "Send Vault token to a specific cluster",
                 "parameters": [
@@ -2598,7 +2598,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "DatabaseLogs"
                 ],
                 "summary": "Perform a backup of the error log on a server",
                 "parameters": [
@@ -2646,7 +2646,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "DatabaseBackup"
                 ],
                 "summary": "Perform a logical backup on a server",
                 "parameters": [
@@ -2694,7 +2694,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "DatabaseBackup"
                 ],
                 "summary": "Perform a physical backup on a server",
                 "parameters": [
@@ -2742,7 +2742,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "DatabaseLogs"
                 ],
                 "summary": "Perform a backup of the slow query log on a server",
                 "parameters": [
@@ -2790,7 +2790,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "DatabaseMaintenance"
                 ],
                 "summary": "Delete maintenance mode on a server",
                 "parameters": [
@@ -2838,7 +2838,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "DatabaseLogs"
                 ],
                 "summary": "Flush logs on a server",
                 "parameters": [
@@ -2886,7 +2886,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "DatabaseTasks"
                 ],
                 "summary": "Cancel a task on a server",
                 "parameters": [
@@ -2941,7 +2941,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "DatabaseMaintenance"
                 ],
                 "summary": "Toggle maintenance mode on a server",
                 "parameters": [
@@ -2989,7 +2989,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "DatabaseActions"
                 ],
                 "summary": "Optimize a server",
                 "parameters": [
@@ -3037,7 +3037,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "DatabaseBackup"
                 ],
                 "summary": "Perform a point-in-time recovery on a server",
                 "parameters": [
@@ -3085,7 +3085,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "DatabaseProvision"
                 ],
                 "summary": "Provision a server",
                 "parameters": [
@@ -3133,7 +3133,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "DatabaseBackup"
                 ],
                 "summary": "Cancel a reseed task on a server",
                 "parameters": [
@@ -3188,7 +3188,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "DatabaseBackup"
                 ],
                 "summary": "Reseed a server",
                 "parameters": [
@@ -3243,7 +3243,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "DatabaseReplication"
                 ],
                 "summary": "Reset the master on a server",
                 "parameters": [
@@ -3291,7 +3291,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "DatabaseQueries"
                 ],
                 "summary": "Reset PFS queries on a server",
                 "parameters": [
@@ -3339,7 +3339,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "DatabaseReplication"
                 ],
                 "summary": "Reset all slaves on a server",
                 "parameters": [
@@ -3387,7 +3387,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "DatabaseTasks"
                 ],
                 "summary": "Run jobs on a server",
                 "parameters": [
@@ -3435,7 +3435,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "DatabaseTopology"
                 ],
                 "summary": "Set a server as ignored",
                 "parameters": [
@@ -3483,7 +3483,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "DatabaseQueries"
                 ],
                 "summary": "Set long query time on a server",
                 "parameters": [
@@ -3538,7 +3538,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "DatabaseMaintenance"
                 ],
                 "summary": "Set a server to maintenance mode",
                 "parameters": [
@@ -3586,7 +3586,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "DatabaseTopology"
                 ],
                 "summary": "Set a server as preferred",
                 "parameters": [
@@ -3634,7 +3634,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "DatabaseTopology"
                 ],
                 "summary": "Set a server as unrated",
                 "parameters": [
@@ -3682,7 +3682,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "DatabaseReplication"
                 ],
                 "summary": "Skip a replication event on a server",
                 "parameters": [
@@ -3730,7 +3730,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "DatabaseActions"
                 ],
                 "summary": "Start a server",
                 "parameters": [
@@ -3778,7 +3778,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "DatabaseReplication"
                 ],
                 "summary": "Start the slave on a server",
                 "parameters": [
@@ -3826,7 +3826,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "DatabaseActions"
                 ],
                 "summary": "Stop a server",
                 "parameters": [
@@ -3874,7 +3874,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "DatabaseReplication"
                 ],
                 "summary": "Stop the slave on a server",
                 "parameters": [
@@ -3922,7 +3922,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "DatabaseTopology"
                 ],
                 "summary": "Perform a switchover on a server",
                 "parameters": [
@@ -3970,7 +3970,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "Database"
                 ],
                 "summary": "Toggle InnoDB monitor on a server",
                 "parameters": [
@@ -4018,7 +4018,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "DatabaseActions"
                 ],
                 "summary": "Toggle metadata locks on a server",
                 "parameters": [
@@ -4066,7 +4066,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "DatabaseQueries"
                 ],
                 "summary": "Toggle PFS slow query capture on a server",
                 "parameters": [
@@ -4114,7 +4114,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "DatabaseActions"
                 ],
                 "summary": "Toggle query response time on a server",
                 "parameters": [
@@ -4162,7 +4162,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "DatabaseActions"
                 ],
                 "summary": "Toggle read-only mode on a server",
                 "parameters": [
@@ -4210,7 +4210,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "DatabaseQueries"
                 ],
                 "summary": "Toggle slow query on a server",
                 "parameters": [
@@ -4258,7 +4258,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "DatabaseQueries"
                 ],
                 "summary": "Toggle slow query capture on a server",
                 "parameters": [
@@ -4306,7 +4306,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "DatabaseQueries"
                 ],
                 "summary": "Toggle slow query table mode on a server",
                 "parameters": [
@@ -4354,7 +4354,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "DatabaseLogs"
                 ],
                 "summary": "Toggle SQL error log on a server",
                 "parameters": [
@@ -4402,7 +4402,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "DatabaseProvision"
                 ],
                 "summary": "Unprovision a server",
                 "parameters": [
@@ -4450,7 +4450,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "DatabaseActions"
                 ],
                 "summary": "Wait for InnoDB purge on a server",
                 "parameters": [
@@ -4498,7 +4498,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "Database"
                 ],
                 "summary": "Get status of all slaves of a server",
                 "parameters": [
@@ -4547,7 +4547,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "DatabaseQueries"
                 ],
                 "summary": "Get PFS statements of a server",
                 "parameters": [
@@ -4596,7 +4596,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "DatabaseQueries"
                 ],
                 "summary": "Get PFS statements from the slow log of a server",
                 "parameters": [
@@ -4645,7 +4645,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "DatabaseLogs"
                 ],
                 "summary": "Get error log of a server",
                 "parameters": [
@@ -4694,7 +4694,7 @@ const docTemplate = `{
                     "text/plain"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "Database"
                 ],
                 "summary": "Check if a server is a master",
                 "parameters": [
@@ -4742,7 +4742,7 @@ const docTemplate = `{
                     "text/plain"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "Database"
                 ],
                 "summary": "Check if a server is a slave",
                 "parameters": [
@@ -4790,7 +4790,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "Database"
                 ],
                 "summary": "Get master status of a server",
                 "parameters": [
@@ -4839,7 +4839,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "Database"
                 ],
                 "summary": "Get metadata locks of a server",
                 "parameters": [
@@ -4888,7 +4888,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "Database"
                 ],
                 "summary": "Get process list of a server",
                 "parameters": [
@@ -4937,7 +4937,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "DatabaseQueries"
                 ],
                 "summary": "Analyze a query using PFS on a server",
                 "parameters": [
@@ -4992,7 +4992,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "DatabaseQueries"
                 ],
                 "summary": "Analyze a query using the slow log on a server",
                 "parameters": [
@@ -5047,7 +5047,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "DatabaseQueries"
                 ],
                 "summary": "Explain a query using PFS on a server",
                 "parameters": [
@@ -5103,7 +5103,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "DatabaseQueries"
                 ],
                 "summary": "Explain a query using the slow log on a server",
                 "parameters": [
@@ -5159,7 +5159,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "DatabaseQueries"
                 ],
                 "summary": "Kill a query on a server",
                 "parameters": [
@@ -5214,7 +5214,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "DatabaseQueries"
                 ],
                 "summary": "Kill a thread on a server",
                 "parameters": [
@@ -5269,7 +5269,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "DatabaseQueries"
                 ],
                 "summary": "Get query response time of a server",
                 "parameters": [
@@ -5318,7 +5318,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "DatabaseSchema"
                 ],
                 "summary": "Get schemas of a server",
                 "parameters": [
@@ -5367,7 +5367,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "Database"
                 ],
                 "summary": "Get database service configuration of a server",
                 "parameters": [
@@ -5415,7 +5415,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "DatabaseQueries"
                 ],
                 "summary": "Get slow log of a server",
                 "parameters": [
@@ -5464,7 +5464,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "Database"
                 ],
                 "summary": "Get status of a server",
                 "parameters": [
@@ -5513,7 +5513,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "Database"
                 ],
                 "summary": "Get status delta of a server",
                 "parameters": [
@@ -5562,7 +5562,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "Database"
                 ],
                 "summary": "Get InnoDB status of a server",
                 "parameters": [
@@ -5611,7 +5611,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "Database"
                 ],
                 "summary": "Get tables of a server",
                 "parameters": [
@@ -5660,7 +5660,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "Database"
                 ],
                 "summary": "Get variables of a server",
                 "parameters": [
@@ -5709,7 +5709,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "Database"
                 ],
                 "summary": "Get virtual tables of a server",
                 "parameters": [
@@ -5758,7 +5758,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "DatabaseBackup"
                 ],
                 "summary": "Perform a physical backup on a server port",
                 "parameters": [
@@ -5813,7 +5813,7 @@ const docTemplate = `{
                     "application/octet-stream"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "Database"
                 ],
                 "summary": "Get server port configuration",
                 "parameters": [
@@ -5874,7 +5874,7 @@ const docTemplate = `{
                     "text/plain"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "Database"
                 ],
                 "summary": "Check if a server port is a master",
                 "parameters": [
@@ -5929,7 +5929,7 @@ const docTemplate = `{
                     "text/plain"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "Database"
                 ],
                 "summary": "Check if a server port is a slave",
                 "parameters": [
@@ -5984,7 +5984,7 @@ const docTemplate = `{
                     "text/plain"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "Database"
                 ],
                 "summary": "Check if a server needs a config change",
                 "parameters": [
@@ -6033,7 +6033,7 @@ const docTemplate = `{
                     "text/plain"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "Database"
                 ],
                 "summary": "Check if a server needs provisioning",
                 "parameters": [
@@ -6088,7 +6088,7 @@ const docTemplate = `{
                     "text/plain"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "Database"
                 ],
                 "summary": "Check if a server needs re-provisioning",
                 "parameters": [
@@ -6143,7 +6143,7 @@ const docTemplate = `{
                     "text/plain"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "Database"
                 ],
                 "summary": "Check if a server needs a restart",
                 "parameters": [
@@ -6198,7 +6198,7 @@ const docTemplate = `{
                     "text/plain"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "Database"
                 ],
                 "summary": "Check if a server needs to start",
                 "parameters": [
@@ -6247,7 +6247,7 @@ const docTemplate = `{
                     "text/plain"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "Database"
                 ],
                 "summary": "Check if a server needs to stop",
                 "parameters": [
@@ -6296,7 +6296,7 @@ const docTemplate = `{
                     "text/plain"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "Database"
                 ],
                 "summary": "Check if a server needs unprovisioning",
                 "parameters": [
@@ -6351,7 +6351,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ReplicationManager"
+                    "DatabaseTasks"
                 ],
                 "summary": "Write logs for a server",
                 "parameters": [
@@ -6425,7 +6425,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "ClusterProvision"
                 ],
                 "summary": "Provision services for a specific cluster",
                 "parameters": [
@@ -6469,7 +6469,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "ClusterProvision"
                 ],
                 "summary": "Unprovision services for a specific cluster",
                 "parameters": [
@@ -6510,7 +6510,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "ClusterSettings"
                 ],
                 "summary": "Retrieve settings for a specific cluster",
                 "parameters": [
@@ -6554,7 +6554,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "ClusterTags"
                 ],
                 "summary": "Add a tag to a specific cluster",
                 "parameters": [
@@ -6605,7 +6605,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "ClusterTags"
                 ],
                 "summary": "Add a proxy tag to a specific cluster",
                 "parameters": [
@@ -6656,7 +6656,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "ClusterTags"
                 ],
                 "summary": "Apply dynamic configuration for a specific cluster",
                 "parameters": [
@@ -6700,7 +6700,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "ClusterSettings"
                 ],
                 "summary": "Reload client certificates for a specific cluster",
                 "parameters": [
@@ -6744,7 +6744,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "ClusterSettings"
                 ],
                 "summary": "Discover settings for a specific cluster",
                 "parameters": [
@@ -6788,7 +6788,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "ClusterTags"
                 ],
                 "summary": "Remove a tag from a specific cluster",
                 "parameters": [
@@ -6839,7 +6839,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "ClusterTags"
                 ],
                 "summary": "Remove a proxy tag from a specific cluster",
                 "parameters": [
@@ -6890,7 +6890,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "ClusterSettings"
                 ],
                 "summary": "Reload cluster settings",
                 "parameters": [
@@ -6928,7 +6928,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "ClusterGraphite"
                 ],
                 "summary": "Reload Graphite filter list for a specific cluster",
                 "parameters": [
@@ -6972,7 +6972,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "ClusterGraphite"
                 ],
                 "summary": "Reset Graphite filter list for a specific cluster",
                 "parameters": [
@@ -7023,7 +7023,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "ClusterSettings"
                 ],
                 "summary": "Set cron jobs for a specific cluster",
                 "parameters": [
@@ -7081,7 +7081,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "ClusterGraphite"
                 ],
                 "summary": "Set Graphite filter list for a specific cluster",
                 "parameters": [
@@ -7141,7 +7141,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "ClusterSettings"
                 ],
                 "summary": "Set settings for a specific cluster",
                 "parameters": [
@@ -7199,7 +7199,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "ClusterSettings"
                 ],
                 "summary": "Switch settings for a specific cluster",
                 "parameters": [
@@ -7247,7 +7247,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "ClusterTopology"
                 ],
                 "summary": "Retrieve shard clusters for a specific cluster",
                 "parameters": [
@@ -7295,7 +7295,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "proxies"
+                    "Proxies"
                 ],
                 "summary": "Get Sphinx Indexes",
                 "parameters": [
@@ -7342,7 +7342,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "Cluster"
                 ],
                 "summary": "Retrieve status of a cluster",
                 "parameters": [
@@ -7383,7 +7383,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "cluster"
+                    "Cloud18"
                 ],
                 "summary": "Subscribe a user to a cluster",
                 "parameters": [
@@ -7451,7 +7451,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "ClusterTags"
                 ],
                 "summary": "Retrieve tags for a specific cluster",
                 "parameters": [
@@ -7492,7 +7492,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "ClusterTest"
                 ],
                 "summary": "Run all tests for a given cluster",
                 "parameters": [
@@ -7539,7 +7539,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "ClusterTest"
                 ],
                 "summary": "Run a specific test for a given cluster",
                 "parameters": [
@@ -7599,7 +7599,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "Cluster"
                 ],
                 "summary": "Retrieve top metrics for a specific cluster",
                 "parameters": [
@@ -7644,7 +7644,7 @@ const docTemplate = `{
             "get": {
                 "description": "Shows the alerts for that specific named cluster",
                 "tags": [
-                    "clusters"
+                    "ClusterTopology"
                 ],
                 "summary": "Shows the alerts for that specific named cluster",
                 "parameters": [
@@ -7679,7 +7679,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "Cluster"
                 ],
                 "summary": "Retrieve crashes for a specific cluster",
                 "parameters": [
@@ -7717,7 +7717,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "ClusterTopology"
                 ],
                 "summary": "Retrieve logs for a specific cluster",
                 "parameters": [
@@ -7755,7 +7755,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "ClusterTopology"
                 ],
                 "summary": "Retrieve master of a cluster",
                 "parameters": [
@@ -7787,7 +7787,7 @@ const docTemplate = `{
             "get": {
                 "description": "Shows the proxies for that specific named cluster",
                 "tags": [
-                    "clusters"
+                    "ClusterTopology"
                 ],
                 "summary": "Shows the proxies for that specific named cluster",
                 "parameters": [
@@ -7826,7 +7826,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "ClusterTopology"
                 ],
                 "summary": "Retrieve servers for a specific cluster",
                 "parameters": [
@@ -7862,7 +7862,7 @@ const docTemplate = `{
             "get": {
                 "description": "Shows the slaves for that specific named cluster",
                 "tags": [
-                    "clusters"
+                    "ClusterTopology"
                 ],
                 "summary": "Shows the slaves for that specific named cluster",
                 "parameters": [
@@ -7904,7 +7904,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "User"
                 ],
                 "summary": "Add a new user to a cluster",
                 "parameters": [
@@ -7963,7 +7963,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "User"
                 ],
                 "summary": "Drop a cluster user",
                 "parameters": [
@@ -8022,7 +8022,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "User"
                 ],
                 "summary": "Send credentials to a specific user",
                 "parameters": [
@@ -8075,7 +8075,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "clusters"
+                    "User"
                 ],
                 "summary": "Update a cluster user",
                 "parameters": [
@@ -8131,7 +8131,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "grafana"
+                    "Public"
                 ],
                 "summary": "List Grafana files",
                 "responses": {
@@ -8163,7 +8163,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Heartbeat"
+                    "Public"
                 ],
                 "summary": "Monitor Heartbeat",
                 "responses": {
@@ -8195,7 +8195,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "authentication"
+                    "Auth"
                 ],
                 "summary": "User login",
                 "parameters": [
@@ -8253,7 +8253,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "replication-manager"
+                    "Public"
                 ],
                 "summary": "Handles replication manager requests",
                 "responses": {
@@ -8272,46 +8272,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/monitor/actions/adduser/{userName}": {
-            "post": {
-                "description": "Adds a new user to the replication manager by decoding the request body into a UserForm struct and adding the user to each cluster if the request is valid.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "users"
-                ],
-                "summary": "Add a new user",
-                "parameters": [
-                    {
-                        "description": "User Form",
-                        "name": "user",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/cluster.UserForm"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "User added successfully",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Error in request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
         "/api/prometheus": {
             "get": {
                 "description": "Fetches Prometheus metrics for all servers in all clusters managed by the replication manager.",
@@ -8319,7 +8279,7 @@ const docTemplate = `{
                     "text/plain"
                 ],
                 "tags": [
-                    "metrics"
+                    "Public"
                 ],
                 "summary": "Fetch Prometheus metrics",
                 "responses": {
@@ -8345,7 +8305,7 @@ const docTemplate = `{
                     "text/plain"
                 ],
                 "tags": [
-                    "repository"
+                    "Public"
                 ],
                 "summary": "Retrieve current repository component",
                 "responses": {
@@ -8371,7 +8331,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "status"
+                    "Public"
                 ],
                 "summary": "Get Replication Manager Status",
                 "responses": {
@@ -8393,6 +8353,9 @@ const docTemplate = `{
                 "produces": [
                     "text/plain"
                 ],
+                "tags": [
+                    "Cloud18"
+                ],
                 "summary": "Retrieves terms",
                 "responses": {
                     "200": {
@@ -8411,7 +8374,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "status"
+                    "Public"
                 ],
                 "summary": "Check if the replication manager is running",
                 "responses": {
@@ -8437,7 +8400,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "cluster"
+                    "ClusterMonitor"
                 ],
                 "summary": "Drop a server monitor from a cluster",
                 "parameters": [
@@ -8495,7 +8458,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "cluster"
+                    "ClusterMonitor"
                 ],
                 "summary": "Drop a server monitor from a cluster",
                 "parameters": [
@@ -9750,6 +9713,9 @@ const docTemplate = `{
                 "dbopsEmail": {
                     "type": "string"
                 },
+                "domains": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "integer"
                 },
@@ -10399,6 +10365,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "apiServer": {
+                    "type": "boolean"
+                },
+                "apiSwaggerEnabled": {
                     "type": "boolean"
                 },
                 "apiTokenTimeout": {
@@ -12624,6 +12593,9 @@ const docTemplate = `{
                 },
                 "osUser": {
                     "$ref": "#/definitions/user.User"
+                },
+                "partner": {
+                    "$ref": "#/definitions/config.Partner"
                 },
                 "partners": {
                     "type": "array",
