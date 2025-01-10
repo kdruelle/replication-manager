@@ -153,6 +153,14 @@ func (server *ServerMonitor) HasReprovCookie() bool {
 	return server.hasCookie("cookie_reprov")
 }
 
+func (server *ServerMonitor) HasWaitDBACredCookie() bool {
+	return server.hasCookie("cookie_waitdbacred")
+}
+
+func (server *ServerMonitor) HasWaitSponsorCredCookie() bool {
+	return server.hasCookie("cookie_waitsponsorcred")
+}
+
 func (server *ServerMonitor) HasUnprovisionCookie() bool {
 	return server.hasCookie("cookie_unprov")
 }

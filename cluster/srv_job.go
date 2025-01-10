@@ -1167,11 +1167,20 @@ func (server *ServerMonitor) JobReseedMysqldump(backupfile string) error {
 	return nil
 }
 
+// JobReseedBackupScript will execute the backup load script
+// The script will be executed with the following parameters:
+// 1. Server Host
+// 2. Master Host
+// 2. Server Port
+// 2. Master Port
+// 3. User
+// 4. Password
+// 5. Cluster Name
 func (server *ServerMonitor) JobReseedBackupScript() {
 	cluster := server.ClusterGroup
 	defer server.SetInReseedBackup("")
 
-	cmd := exec.Command(cluster.Conf.BackupLoadScript, misc.Unbracket(server.Host), misc.Unbracket(cluster.master.Host))
+	cmd := exec.Command(cluster.Conf.BackupLoadScript, misc.Unbracket(server.Host), misc.Unbracket(cluster.master.Host), server.Port, server.GetCluster().GetMaster().Port, cluster.GetDbUser(), cluster.GetDbPass(), cluster.Name)
 
 	cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTask, config.LvlInfo, "Command backup load script: %s", strings.Replace(cmd.String(), cluster.GetDbPass(), "XXXX", 1))
 
@@ -1598,13 +1607,22 @@ func (server *ServerMonitor) GetMasterBackupDirectory() string {
 
 }
 
+// JobBackupScript execute a backup script
+// The script must be able to handle the following parameters:
+// 1. DB Server Host
+// 2. Master Host
+// 3. DB Server Port
+// 4. Master Port
+// 5. DB User
+// 6. DB Password
+// 7. Cluster Name
 func (server *ServerMonitor) JobBackupScript() error {
 	var err error
 	cluster := server.ClusterGroup
 
 	defer cluster.SetInLogicalBackupState(false)
 
-	scriptCmd := exec.Command(cluster.Conf.BackupSaveScript, server.Host, server.GetCluster().GetMaster().Host, server.Port, server.GetCluster().GetMaster().Port)
+	scriptCmd := exec.Command(cluster.Conf.BackupSaveScript, server.Host, server.GetCluster().GetMaster().Host, server.Port, server.GetCluster().GetMaster().Port, cluster.GetDbUser(), cluster.GetDbPass(), cluster.Name)
 	cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModTask, config.LvlInfo, "Command: %s", strings.Replace(scriptCmd.String(), cluster.GetDbPass(), "XXXX", 1))
 	stdoutIn, _ := scriptCmd.StdoutPipe()
 	stderrIn, _ := scriptCmd.StderrPipe()

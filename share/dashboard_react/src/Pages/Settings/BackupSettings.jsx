@@ -1,4 +1,4 @@
-import { Flex, Spinner } from '@chakra-ui/react'
+import { Box, Flex, HStack, Spinner, Stack, Text } from '@chakra-ui/react'
 import React, { useState, useEffect } from 'react'
 import styles from './styles.module.scss'
 import RMSwitch from '../../components/RMSwitch'
@@ -10,6 +10,11 @@ import RMSlider from '../../components/Sliders/RMSlider'
 import Dropdown from '../../components/Dropdown'
 import { convertObjectToArrayForDropdown, formatBytes } from '../../utility/common'
 import TextForm from '../../components/TextForm'
+import CommonModal from '../../components/Modals/CommonModal'
+import Markdown from 'react-markdown'
+import { HiQuestionMarkCircle } from 'react-icons/hi'
+import RMIconButton from '../../components/RMIconButton'
+import remarkGfm from 'remark-gfm'
 
 function BackupSettings({ selectedCluster, user }) {
   const dispatch = useDispatch()
@@ -23,10 +28,47 @@ function BackupSettings({ selectedCluster, user }) {
     })
   )
   const [selectedBinlogBackupType, setselectedBinlogBackupType] = useState('')
+  const [action, setAction] = useState({
+    title: '',
+    type: '',
+    body: <></>
+  })
+  const { title, type } = action
+  const [isCommonModalOpen, setIsCommonModalOpen] = useState(false)
 
   const {
     globalClusters: { monitor }
   } = useSelector((state) => state)
+
+  const BackupSaveScriptRequirement = `Backup save script execute a backup script and will not execute other logical backup tools.  
+The script must be able to handle the following parameters:  
+1. DB Server Host
+2. Master Host
+3. DB Server Port
+4. Master Port
+5. DB User
+6. DB Password
+7. Cluster Name
+`
+
+  const BackupLoadScriptRequirement = `Backup load script will execute a script.  
+The script will be executed with the following parameters:  
+1. DB Server Host
+2. Master Host
+3. DB Server Port
+4. Master Port
+5. DB User
+6. DB Password
+7. Cluster Name
+`
+
+  const openCommonModal = () => {
+    setIsCommonModalOpen(true)
+  }
+
+  const closeCommonModal = () => {
+    setIsCommonModalOpen(false)
+  }
 
   useEffect(() => {
     if (selectedCluster?.config?.binlogCopyMode) {
@@ -49,7 +91,64 @@ function BackupSettings({ selectedCluster, user }) {
     }
   }, [monitor?.backupBinlogList, monitor?.backupLogicalList, monitor?.backupPhysicalList, monitor?.binlogParseList])
 
+  const isUsingScript = selectedCluster?.config?.backupSaveScript.length > 0
+
   const dataObject = [
+    {
+      key: (
+        <Stack>
+          <Text as="span">Custom Backup Script</Text>
+          <Text as="span" fontSize='sm' color='gray.500'>(Will not use other logical backup options if set)</Text>
+        </Stack>
+      ),
+      value: (
+        <HStack width={'100%'}>
+          <TextForm
+            value={selectedCluster?.config?.backupSaveScript}
+            confirmTitle={`Confirm backup-save-script to `}
+            maxLength={1024}
+            className={styles.textbox}
+            onSave={(value) =>
+              dispatch(
+                setSetting({
+                  clusterName: selectedCluster?.name,
+                  setting: 'backup-save-script',
+                  value: btoa(value)
+                })
+              )
+            }
+          />
+          <RMIconButton icon={HiQuestionMarkCircle} onClick={() => { setAction({ title: 'Custom Backup Save Script', type: '', body: <Box><Markdown remarkPlugins={[remarkGfm]}>{BackupSaveScriptRequirement}</Markdown></Box> }); openCommonModal() }} />
+        </HStack>
+      )
+    },
+    {
+      key: (
+        <Stack>
+          <Text>Custom Load Script</Text>
+        </Stack>
+      ),
+      value: (
+        <HStack width={'100%'}>
+          <TextForm
+            value={selectedCluster?.config?.backupLoadScript}
+            confirmTitle={`Confirm backup-load-script to `}
+            maxLength={1024}
+            className={styles.textbox}
+            onSave={(value) =>
+              dispatch(
+                setSetting({
+                  clusterName: selectedCluster?.name,
+                  setting: 'backup-load-script',
+                  value: btoa(value)
+                })
+              )
+            }
+          />
+          <RMIconButton icon={HiQuestionMarkCircle} onClick={() => { setAction({ title: 'Custom Backup Load Script', type: '', body: <Box><Markdown remarkPlugins={[remarkGfm]}>{BackupLoadScriptRequirement}</Markdown></Box> }); openCommonModal() }} />
+        </HStack>
+      )
+    },
     {
       key: 'Logical Backup',
       value: (
@@ -59,6 +158,7 @@ function BackupSettings({ selectedCluster, user }) {
             className={styles.dropdownButton}
             selectedValue={selectedCluster?.config?.backupLogicalType}
             confirmTitle={`Confirm logical backup to`}
+            isDisabled={isUsingScript}
             onChange={(backupType) => {
               dispatch(
                 setSetting({
@@ -580,6 +680,17 @@ function BackupSettings({ selectedCluster, user }) {
   return (
     <Flex justify='space-between' gap='0'>
       <TableType2 dataArray={dataObject} className={styles.table} />
+      {isCommonModalOpen && (
+        <CommonModal
+          isOpen={isCommonModalOpen}
+          size='lg'
+          title={title}
+          body={action.body}
+          closeModal={() => {
+            closeCommonModal()
+          }}
+        />
+      )}
     </Flex>
   )
 }

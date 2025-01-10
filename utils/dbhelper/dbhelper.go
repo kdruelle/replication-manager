@@ -2950,6 +2950,12 @@ func SetUserGrants(db *sqlx.DB, myver *version.Version, user_host string, user_n
 	return query, nil
 }
 
+func RevokeUserGrants(db *sqlx.DB, myver *version.Version, user_host string, user_name string) (string, error) {
+	var query string = "REVOKE ALL PRIVILEGES, GRANT OPTION ON *.* FROM '" + user_name + "'@'" + user_host + "'"
+	_, err := db.Exec(query)
+	return query, err
+}
+
 func SetUserGrantsWithGrantOption(db *sqlx.DB, myver *version.Version, user_host string, user_name string, grants ...string) (string, error) {
 	var query string
 

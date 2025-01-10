@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/signal18/replication-manager/cluster"
@@ -44,6 +45,9 @@ Replication Manager
 }
 
 func (repman *ReplicationManager) SendSponsorCloud18SubscriptionMail(clustername string, userform cluster.UserForm) error {
+	if repman.Partner.Name == "" {
+		repman.Partner.Name = "Signal 18"
+	}
 	to := userform.Username
 
 	subj := fmt.Sprintf("Subscription Request for Cluster %s: %s", clustername, userform.Username)
@@ -73,13 +77,16 @@ We appreciate your cooperation and look forward to assisting you further.
 
 Best regards,
 
-Signal18
-`, userform.Username, clustername, time.Now().Format("2006-01-02 15:04:05"), "", "", "", "", "")
+%s
+`, userform.Username, clustername, time.Now().Format("2006-01-02 15:04:05"), "", "", "", "", "", repman.Partner.Name)
 
 	return repman.Mailer.SendEmailMessage(msg, subj, repman.Conf.MailFrom, to, "", repman.Conf.MailSMTPTLSSkipVerify)
 }
 
 func (repman *ReplicationManager) SendSponsorActivationMail(cl *cluster.Cluster, userform cluster.UserForm) error {
+	if repman.Partner.Name == "" {
+		repman.Partner.Name = "Signal 18"
+	}
 	to := userform.Username
 
 	subj := fmt.Sprintf("Subscription Active for Cluster %s: %s", cl.Name, userform.Username)
@@ -97,13 +104,16 @@ Thank you for choosing Cloud18!
 
 Best regards,
 
-Signal18
-`)
+%s
+`, repman.Partner.Name)
 
 	return repman.Mailer.SendEmailMessage(msg, subj, repman.Conf.MailFrom, to, "", repman.Conf.MailSMTPTLSSkipVerify)
 }
 
 func (repman *ReplicationManager) SendPendingRejectionMail(cl *cluster.Cluster, userform cluster.UserForm) error {
+	if repman.Partner.Name == "" {
+		repman.Partner.Name = "Signal 18"
+	}
 	to := userform.Username
 
 	subj := fmt.Sprintf("Subscription Rejected for Cluster %s: %s", cl.Name, userform.Username)
@@ -121,13 +131,17 @@ Thank you for your understanding.
 
 Best regards,
 
-Signal18
-`, cl.Name)
+%s
+`, cl.Name, repman.Partner.Name)
 
 	return repman.Mailer.SendEmailMessage(msg, subj, repman.Conf.MailFrom, to, "", repman.Conf.MailSMTPTLSSkipVerify)
 }
 
 func (repman *ReplicationManager) SendSponsorCredentialsMail(cl *cluster.Cluster) error {
+	if repman.Partner.Name == "" {
+		repman.Partner.Name = "Signal 18"
+	}
+
 	var user cluster.APIUser
 	for _, u := range cl.APIUsers {
 		if u.Roles[config.RoleSponsor] {
@@ -161,13 +175,35 @@ Thank you for choosing Cloud18. We are committed to supporting your success.
 
 Best regards,
 
-Signal18
-`, cl.Conf.Cloud18DatabaseReadWriteSplitSrvRecord, cl.Conf.Cloud18DatabaseReadWriteSrvRecord, cl.Conf.Cloud18DatabaseReadSrvRecord, cl.GetSponsorUser(), cl.GetSponsorPass())
+%s
+`, cl.Conf.Cloud18DatabaseReadWriteSplitSrvRecord, cl.Conf.Cloud18DatabaseReadWriteSrvRecord, cl.Conf.Cloud18DatabaseReadSrvRecord, cl.GetSponsorUser(), cl.GetSponsorPass(), repman.Partner.Name)
 
 	return repman.Mailer.SendEmailMessage(msg, subj, repman.Conf.MailFrom, to, "", repman.Conf.MailSMTPTLSSkipVerify)
 }
 
-func (repman *ReplicationManager) SendDBACredentialsMail(cl *cluster.Cluster, to, delegator string) error {
+func (repman *ReplicationManager) SendDBACredentialsMail(cl *cluster.Cluster, dest, delegator string) error {
+	if repman.Partner.Name == "" {
+		repman.Partner.Name = "Signal 18"
+	}
+	to := make([]string, 0)
+	if dest == "dbops" {
+		for _, u := range cl.APIUsers {
+			if u.Roles[config.RoleDBOps] {
+				if u.User == "admin" {
+					continue
+				}
+				to = append(to, u.User)
+			}
+		}
+
+		if len(to) == 0 {
+			if repman.Conf.MailTo != "" {
+				to = append(to, repman.Conf.MailTo)
+			} else {
+				return fmt.Errorf("No valid email destination for cluster %s", cl.Name)
+			}
+		}
+	}
 	subj := fmt.Sprintf("DB Credentials for Cluster %s", cl.Name)
 	msg := fmt.Sprintf(`Dear DBA,
 
@@ -187,13 +223,17 @@ Thank you for your attention to this matter.
 
 Best regards,
 
-Signal18
-`, delegator, cl.Conf.Cloud18DatabaseReadWriteSplitSrvRecord, cl.Conf.Cloud18DatabaseReadWriteSrvRecord, cl.Conf.Cloud18DatabaseReadSrvRecord, cl.GetDbaUser(), cl.GetDbaPass())
+%s
+`, delegator, cl.Conf.Cloud18DatabaseReadWriteSplitSrvRecord, cl.Conf.Cloud18DatabaseReadWriteSrvRecord, cl.Conf.Cloud18DatabaseReadSrvRecord, cl.GetDbaUser(), cl.GetDbaPass(), repman.Partner.Name)
 
-	return repman.Mailer.SendEmailMessage(msg, subj, repman.Conf.MailFrom, to, "", repman.Conf.MailSMTPTLSSkipVerify)
+	return repman.Mailer.SendEmailMessage(msg, subj, repman.Conf.MailFrom, strings.Join(to, ","), "", repman.Conf.MailSMTPTLSSkipVerify)
 }
 
 func (repman *ReplicationManager) SendSysAdmCredentialsMail(cl *cluster.Cluster, to, delegator string) error {
+	if repman.Partner.Name == "" {
+		repman.Partner.Name = "Signal 18"
+	}
+
 	subj := fmt.Sprintf("DB Credentials for Cluster %s", cl.Name)
 	msg := fmt.Sprintf(`Dear System Admin,
 
@@ -213,8 +253,30 @@ Thank you for your attention to this matter.
 
 Best regards,
 
-Signal18
-`, delegator, cl.Conf.Cloud18DatabaseReadWriteSplitSrvRecord, cl.Conf.Cloud18DatabaseReadWriteSrvRecord, cl.Conf.Cloud18DatabaseReadSrvRecord, cl.GetDbaUser(), cl.GetDbaPass())
+%s
+`, delegator, cl.Conf.Cloud18DatabaseReadWriteSplitSrvRecord, cl.Conf.Cloud18DatabaseReadWriteSrvRecord, cl.Conf.Cloud18DatabaseReadSrvRecord, cl.GetDbaUser(), cl.GetDbaPass(), repman.Partner.Name)
+
+	return repman.Mailer.SendEmailMessage(msg, subj, repman.Conf.MailFrom, to, "", repman.Conf.MailSMTPTLSSkipVerify)
+}
+
+func (repman *ReplicationManager) SendSponsorUnsubscribeMail(cl *cluster.Cluster, userform cluster.UserForm) error {
+	if repman.Partner.Name == "" {
+		repman.Partner.Name = "Signal 18"
+	}
+	to := userform.Username
+	subj := fmt.Sprintf("Subscription Deactivated for Cluster %s: %s", cl.Name, userform.Username)
+	msg := fmt.Sprintf(`Dear Sponsor,
+
+We wanted to let you know that your subscription has ended. We hope you had a great experience using our services.
+
+If you have any questions or need further assistance, please feel free to contact our support team by replying to this email.
+
+Thank you for being a valued customer of Cloud18. We look forward to serving you again in the future.
+
+Best regards,
+
+%s
+`, repman.Partner.Name)
 
 	return repman.Mailer.SendEmailMessage(msg, subj, repman.Conf.MailFrom, to, "", repman.Conf.MailSMTPTLSSkipVerify)
 }

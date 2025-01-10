@@ -728,7 +728,7 @@ type Config struct {
 	CacheStaticMaxAge                         int                    `mapstructure:"cache-static-max-age" toml:"cache-static-max-age" json:"-"`
 	TokenTimeout                              int                    `scope:"server" mapstructure:"api-token-timeout" toml:"api-token-timeout" json:"apiTokenTimeout"`
 	JobLogBatchSize                           int                    `mapstructure:"job-log-batch-size" toml:"job-log-batch-size" json:"jobLogBatchSize"`
-	ApiSwaggerEnabled                         bool                   `mapstructure:"api-swagger-enabled" toml:"api-swagger-enabled" json:"apiSwaggerEnabled"`
+	ApiSwaggerEnabled                         bool                   `scope:"server" mapstructure:"api-swagger-enabled" toml:"api-swagger-enabled" json:"apiSwaggerEnabled"`
 	//OAuthRedirectURL                          string                 `mapstructure:"api-oauth-redirect-url" toml:"git-url" json:"-"`
 	//	BackupResticStoragePolicy                  string `mapstructure:"backup-restic-storage-policy"  toml:"backup-restic-storage-policy" json:"backupResticStoragePolicy"`
 	//ProvMode                           string `mapstructure:"prov-mode" toml:"prov-mode" json:"provMode"` //InitContainer vs API
@@ -803,6 +803,7 @@ type PeerCluster struct {
 type Partner struct {
 	Id          int
 	Name        string
+	Domains     string
 	IsDbops     int
 	IsSysops    int
 	DbopsEmail  string
@@ -3055,6 +3056,10 @@ func GetLabelsAsMap(v any) map[string]bool {
 		field := t.Field(i)
 		jsonTag := field.Tag.Get("json")
 		if jsonTag != "" {
+			parts := strings.Split(jsonTag, ",")
+			if len(parts) > 1 {
+				jsonTag = parts[0]
+			}
 			labels[jsonTag] = true
 		} else {
 			labels[field.Name] = true

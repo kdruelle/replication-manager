@@ -12,7 +12,7 @@ import {
   reseedLogicalFromMaster,
   reseedPhysicalFromBackup,
   resetMaster,
-  resetSlave,
+  resetSlaveAll,
   runRemoteJobs,
   setAsIgnored,
   setAsPreferred,
@@ -362,7 +362,7 @@ function ServerMenu({
                       onClick: () => {
                         openConfirmModal()
                         setConfirmTitle(`Confirm reset slave this will break replication on, ${serverName}?`)
-                        setConfirmHandler(() => () => dispatch(resetSlave({ clusterName, serverId: row.id })))
+                        setConfirmHandler(() => () => dispatch(resetSlaveAll({ clusterName, serverId: row.id })))
                       }
                     }
                   ]

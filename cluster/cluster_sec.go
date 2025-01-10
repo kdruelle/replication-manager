@@ -371,7 +371,7 @@ func (cluster *Cluster) SendVaultTokenByMail(Conf config.Config) error {
 
 }
 
-func (cluster *Cluster) SetUserDBCredentials(user_pass string, create bool) error {
+func (cluster *Cluster) SetUserDBCredentials(user_pass string) error {
 	var found bool
 	user, password := misc.SplitPair(user_pass)
 
@@ -397,7 +397,7 @@ func (cluster *Cluster) SetUserDBCredentials(user_pass string, create bool) erro
 
 	}
 
-	if !found && create {
+	if !found {
 		logs, err := dbhelper.CreateUser(conn, cluster.master.DBVersion, "%", user, password)
 		cluster.LogSQL(logs, err, cluster.master.URL, "Security", config.LvlErr, "Create user : %s", err)
 		if err != nil {
@@ -408,10 +408,8 @@ func (cluster *Cluster) SetUserDBCredentials(user_pass string, create bool) erro
 	return nil
 }
 
-func (cluster *Cluster) SetUserDBGrants(user_pass, host string, grantOpt bool, grants ...string) error {
+func (cluster *Cluster) SetUserDBGrants(user, host string, grantOpt bool, grants ...string) error {
 	var logs string
-
-	user, _ := misc.SplitPair(user_pass)
 
 	master := cluster.GetMaster()
 	if master == nil {
@@ -433,22 +431,47 @@ func (cluster *Cluster) SetUserDBGrants(user_pass, host string, grantOpt bool, g
 	return nil
 }
 
-func (cluster *Cluster) SetDBAUserCredentials(user_pass string, create bool) error {
-	err := cluster.SetUserDBCredentials(user_pass, create)
+func (cluster *Cluster) SetDBAUserCredentials() error {
+	err := cluster.SetUserDBCredentials(cluster.GetDbaUser() + ":" + cluster.GetDbaPass())
 	if err != nil {
+		cluster.SetWaitDBACredCookie()
 		return err
 	}
+	cluster.DelWaitDBACredCookie()
 
-	err = cluster.SetUserDBGrants(user_pass, "%", true, "ALL PRIVILEGES ON *.*")
+	err = cluster.SetUserDBGrants(cluster.GetDbaUser(), "%", true, "ALL PRIVILEGES ON *.*")
 	return err
 }
 
-func (cluster *Cluster) SetSponsorUserCredentials(user_pass string, create bool) error {
-	err := cluster.SetUserDBCredentials(user_pass, create)
+func (cluster *Cluster) SetSponsorUserCredentials() error {
+	err := cluster.SetUserDBCredentials(cluster.GetSponsorUser() + ":" + cluster.GetSponsorPass())
+	if err != nil {
+		cluster.SetWaitSponsorCredCookie()
+		return err
+	}
+	cluster.DelWaitSponsorCredCookie()
+
+	err = cluster.SetUserDBGrants(cluster.GetSponsorUser(), "%", true, "ALL PRIVILEGES ON *.*")
+	return err
+}
+
+func (cluster *Cluster) RevokeUserDBGrants(user_pass, host string) error {
+	var logs string
+
+	user, _ := misc.SplitPair(user_pass)
+
+	master := cluster.GetMaster()
+	if master == nil {
+		return fmt.Errorf("No master found")
+	}
+
+	conn, err := master.GetNewDBConn()
 	if err != nil {
 		return err
 	}
 
-	err = cluster.SetUserDBGrants(user_pass, "%", true, "ALL PRIVILEGES ON *.*")
-	return err
+	logs, err = dbhelper.RevokeUserGrants(conn, cluster.master.DBVersion, host, user)
+	cluster.LogSQL(logs, err, cluster.master.URL, "Security", config.LvlErr, "Set user grants : %s", err)
+
+	return nil
 }

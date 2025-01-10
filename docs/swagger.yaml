@@ -802,6 +802,8 @@ definitions:
     properties:
       dbopsEmail:
         type: string
+      domains:
+        type: string
       id:
         type: integer
       isDbops:
@@ -1244,6 +1246,8 @@ definitions:
       apiPublicUrl:
         type: string
       apiServer:
+        type: boolean
+      apiSwaggerEnabled:
         type: boolean
       apiTokenTimeout:
         type: integer
@@ -2724,6 +2728,8 @@ definitions:
         type: string
       osUser:
         $ref: '#/definitions/user.User'
+      partner:
+        $ref: '#/definitions/config.Partner'
       partners:
         items:
           $ref: '#/definitions/config.Partner'
@@ -2901,6 +2907,13 @@ paths:
     get:
       description: Fetches the list of clusters that the user has access to based
         on ACL.
+      parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -2920,12 +2933,18 @@ paths:
             type: string
       summary: Fetch clusters
       tags:
-      - clusters
+      - Cluster
   /api/clusters/{clusterName}:
     get:
       description: This endpoint retrieves the details of a specified cluster and
         returns it in JSON format.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -2948,7 +2967,7 @@ paths:
             type: string
       summary: Retrieve details of a cluster
       tags:
-      - clusters
+      - Cluster
   /api/clusters/{clusterName}/actions/add/{clusterShardingName}:
     post:
       consumes:
@@ -2956,6 +2975,12 @@ paths:
       description: This endpoint adds a sharding cluster to an existing cluster and
         triggers a rolling restart.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -2983,13 +3008,19 @@ paths:
             type: string
       summary: Add a sharding cluster to an existing cluster
       tags:
-      - clusters
+      - ClusterTopology
   /api/clusters/{clusterName}/actions/addserver/{host}/{port}:
     post:
       consumes:
       - application/json
       description: This endpoint adds a server to the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -3026,13 +3057,19 @@ paths:
             type: string
       summary: Add a server to a specific cluster
       tags:
-      - clusters
+      - ClusterMonitor
   /api/clusters/{clusterName}/actions/addserver/{host}/{port}/{type}:
     post:
       consumes:
       - application/json
       description: This endpoint adds a server to the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -3073,7 +3110,7 @@ paths:
             type: string
       summary: Add a server to a specific cluster
       tags:
-      - clusters
+      - ClusterMonitor
   /api/clusters/{clusterName}/actions/cancel-rolling-reprov:
     post:
       consumes:
@@ -3081,6 +3118,12 @@ paths:
       description: This endpoint cancels the rolling reprovision for the specified
         cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -3103,13 +3146,19 @@ paths:
             type: string
       summary: Cancel rolling reprovision for a specific cluster
       tags:
-      - clusters
+      - ClusterProvision
   /api/clusters/{clusterName}/actions/cancel-rolling-restart:
     post:
       consumes:
       - application/json
       description: This endpoint cancels the rolling restart for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -3132,11 +3181,17 @@ paths:
             type: string
       summary: Cancel rolling restart for a specific cluster
       tags:
-      - clusters
+      - ClusterMaintenance
   /api/clusters/{clusterName}/actions/certificates-rotate:
     post:
       description: Rotate the keys for the specified cluster
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -3157,7 +3212,7 @@ paths:
             type: string
       summary: Rotate keys for a specific cluster
       tags:
-      - clusters
+      - ClusterCertificates
   /api/clusters/{clusterName}/actions/checksum-all-tables:
     post:
       consumes:
@@ -3165,6 +3220,12 @@ paths:
       description: This endpoint triggers the checksum calculation for all tables
         in the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -3187,13 +3248,19 @@ paths:
             type: string
       summary: Calculate checksum for all tables in a specific cluster
       tags:
-      - clusters
+      - ClusterSchema
   /api/clusters/{clusterName}/actions/failover:
     post:
       consumes:
       - application/json
       description: This endpoint triggers a master failover for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -3216,7 +3283,7 @@ paths:
             type: string
       summary: Handles the failover process for a given cluster.
       tags:
-      - cluster
+      - ClusterActions
   /api/clusters/{clusterName}/actions/master-physical-backup:
     post:
       consumes:
@@ -3246,7 +3313,7 @@ paths:
             type: string
       summary: Perform a physical backup for the master of a specific cluster
       tags:
-      - clusters
+      - ClusterBackup
   /api/clusters/{clusterName}/actions/optimize:
     post:
       consumes:
@@ -3254,6 +3321,12 @@ paths:
       description: This endpoint triggers the optimization process for the specified
         cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -3276,7 +3349,7 @@ paths:
             type: string
       summary: Optimize a specific cluster
       tags:
-      - clusters
+      - ClusterActions
   /api/clusters/{clusterName}/actions/replication/bootstrap/{topology}:
     post:
       consumes:
@@ -3284,6 +3357,12 @@ paths:
       description: This endpoint triggers the bootstrap replication process for the
         specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -3311,7 +3390,7 @@ paths:
             type: string
       summary: Bootstrap replication for a specific cluster
       tags:
-      - clusters
+      - ClusterReplication
   /api/clusters/{clusterName}/actions/replication/cleanup:
     post:
       consumes:
@@ -3319,6 +3398,12 @@ paths:
       description: This endpoint triggers the cleanup process for replication bootstrap
         for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -3341,13 +3426,19 @@ paths:
             type: string
       summary: Cleanup replication bootstrap for a specific cluster
       tags:
-      - clusters
+      - ClusterReplication
   /api/clusters/{clusterName}/actions/reset-failover-control:
     post:
       consumes:
       - application/json
       description: This endpoint resets the failover control for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -3370,11 +3461,17 @@ paths:
             type: string
       summary: Reset failover control for a specific cluster
       tags:
-      - clusters
+      - ClusterActions
   /api/clusters/{clusterName}/actions/reset-sla:
     post:
       description: Reset the SLA for the specified cluster
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -3395,13 +3492,19 @@ paths:
             type: string
       summary: Reset SLA for a specific cluster
       tags:
-      - clusters
+      - ClusterActions
   /api/clusters/{clusterName}/actions/rolling:
     post:
       consumes:
       - application/json
       description: This endpoint triggers a rolling restart for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -3424,13 +3527,19 @@ paths:
             type: string
       summary: Handles the rolling restart process for a given cluster.
       tags:
-      - clusters
+      - ClusterMaintenance
   /api/clusters/{clusterName}/actions/rotate-passwords:
     post:
       consumes:
       - application/json
       description: This endpoint rotates the passwords for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -3453,13 +3562,19 @@ paths:
             type: string
       summary: Rotate passwords for a specific cluster
       tags:
-      - clusters
+      - ClusterActions
   /api/clusters/{clusterName}/actions/start-traffic:
     post:
       consumes:
       - application/json
       description: This endpoint starts traffic for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -3482,13 +3597,19 @@ paths:
             type: string
       summary: Start traffic for a specific cluster
       tags:
-      - clusters
+      - ClusterTraffics
   /api/clusters/{clusterName}/actions/stop-traffic:
     post:
       consumes:
       - application/json
       description: This endpoint stops traffic for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -3511,13 +3632,19 @@ paths:
             type: string
       summary: Stop traffic for a specific cluster
       tags:
-      - clusters
+      - ClusterTraffics
   /api/clusters/{clusterName}/actions/switchover:
     post:
       consumes:
       - application/json
       description: This endpoint triggers a master switchover for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -3548,13 +3675,19 @@ paths:
             type: string
       summary: Handles the switchover process for a given cluster.
       tags:
-      - clusters
+      - ClusterActions
   /api/clusters/{clusterName}/actions/sysbench:
     post:
       consumes:
       - application/json
       description: This endpoint runs sysbench for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -3581,7 +3714,7 @@ paths:
             type: string
       summary: Run sysbench for a specific cluster
       tags:
-      - clusters
+      - ClusterTest
   /api/clusters/{clusterName}/actions/waitdatabases:
     post:
       consumes:
@@ -3589,6 +3722,12 @@ paths:
       description: This endpoint waits for the databases to be ready for the specified
         cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -3611,11 +3750,17 @@ paths:
             type: string
       summary: Wait for databases to be ready for a specific cluster
       tags:
-      - clusters
+      - Cluster
   /api/clusters/{clusterName}/backups:
     get:
       description: This endpoint retrieves the backups for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -3641,12 +3786,18 @@ paths:
             type: string
       summary: Retrieve backups for a specific cluster
       tags:
-      - clusters
+      - ClusterBackups
   /api/clusters/{clusterName}/certificates:
     get:
       description: This endpoint retrieves the client certificates for the specified
         cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -3668,12 +3819,18 @@ paths:
             type: string
       summary: Retrieve client certificates for a specific cluster
       tags:
-      - clusters
+      - ClusterCertificates
   /api/clusters/{clusterName}/diffvariables:
     get:
       description: This endpoint retrieves the variable differences for the specified
         cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -3698,12 +3855,18 @@ paths:
             type: string
       summary: Retrieve variable differences for a specific cluster
       tags:
-      - clusters
+      - Cluster
   /api/clusters/{clusterName}/graphite-filterlist:
     get:
       description: This endpoint retrieves the Graphite filter list for the specified
         cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -3724,11 +3887,17 @@ paths:
             type: string
       summary: Retrieve Graphite filter list for a specific cluster
       tags:
-      - clusters
+      - ClusterGraphite
   /api/clusters/{clusterName}/jobs:
     get:
       description: This endpoint retrieves the job entries for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -3754,7 +3923,7 @@ paths:
             type: string
       summary: Retrieve job entries for a specific cluster
       tags:
-      - clusters
+      - Cluster
   /api/clusters/{clusterName}/need-rolling-reprov:
     get:
       description: Checks if a specified cluster needs a rolling reprovision.
@@ -3777,7 +3946,7 @@ paths:
             type: string
       summary: Check if a cluster needs a rolling reprovision
       tags:
-      - ReplicationManager
+      - Database
   /api/clusters/{clusterName}/need-rolling-restart:
     get:
       description: Checks if a specified cluster needs a rolling restart.
@@ -3800,7 +3969,7 @@ paths:
             type: string
       summary: Check if a cluster needs a rolling restart
       tags:
-      - ReplicationManager
+      - Database
   /api/clusters/{clusterName}/proxies/{proxyName}/actions/need-reprov:
     get:
       consumes:
@@ -3808,6 +3977,12 @@ paths:
       description: Check if the proxy service for a given cluster and proxy needs
         reprovisioning
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -3839,7 +4014,7 @@ paths:
             type: string
       summary: Check if Proxy Needs Reprovision
       tags:
-      - proxies
+      - Proxies
   /api/clusters/{clusterName}/proxies/{proxyName}/actions/need-restart:
     get:
       consumes:
@@ -3847,6 +4022,12 @@ paths:
       description: Check if the proxy service for a given cluster and proxy needs
         a restart
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -3878,13 +4059,19 @@ paths:
             type: string
       summary: Check if Proxy Needs Restart
       tags:
-      - proxies
+      - Proxies
   /api/clusters/{clusterName}/proxies/{proxyName}/actions/provision:
     post:
       consumes:
       - application/json
       description: Provision the proxy service for a given cluster and proxy
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -3912,13 +4099,19 @@ paths:
             type: string
       summary: Provision Proxy Service
       tags:
-      - proxies
+      - Proxies
   /api/clusters/{clusterName}/proxies/{proxyName}/actions/start:
     post:
       consumes:
       - application/json
       description: Start the proxy service for a given cluster and proxy
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -3946,13 +4139,19 @@ paths:
             type: string
       summary: Start Proxy Service
       tags:
-      - proxies
+      - Proxies
   /api/clusters/{clusterName}/proxies/{proxyName}/actions/stop:
     post:
       consumes:
       - application/json
       description: Stop the proxy service for a given cluster and proxy
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -3980,13 +4179,19 @@ paths:
             type: string
       summary: Stop Proxy Service
       tags:
-      - proxies
+      - Proxies
   /api/clusters/{clusterName}/proxies/{proxyName}/actions/unprovision:
     post:
       consumes:
       - application/json
       description: Unprovision the proxy service for a given cluster and proxy
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -4014,11 +4219,17 @@ paths:
             type: string
       summary: Unprovision Proxy Service
       tags:
-      - proxies
+      - Proxies
   /api/clusters/{clusterName}/queryrules:
     get:
       description: This endpoint retrieves the query rules for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -4044,13 +4255,19 @@ paths:
             type: string
       summary: Retrieve query rules for a specific cluster
       tags:
-      - clusters
+      - Cluster
   /api/clusters/{clusterName}/sales/accept-subscription:
     post:
       consumes:
       - application/json
       description: This endpoint accepts a subscription for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -4079,13 +4296,19 @@ paths:
             type: string
       summary: Accept a subscription for a specific cluster
       tags:
-      - clusters
+      - Cloud18
   /api/clusters/{clusterName}/sales/end-subscription:
     post:
       consumes:
       - application/json
       description: This endpoint removes a sponsor from the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -4114,13 +4337,19 @@ paths:
             type: string
       summary: Remove a sponsor from a specific cluster
       tags:
-      - clusters
+      - Cloud18
   /api/clusters/{clusterName}/sales/refuse-subscription:
     post:
       consumes:
       - application/json
       description: This endpoint rejects a subscription for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -4149,12 +4378,18 @@ paths:
             type: string
       summary: Reject a subscription for a specific cluster
       tags:
-      - clusters
+      - Cloud18
   /api/clusters/{clusterName}/schema:
     get:
       description: This endpoint retrieves the schema information for the specified
         cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -4178,7 +4413,7 @@ paths:
             type: string
       summary: Retrieve schema information for a specific cluster
       tags:
-      - clusters
+      - ClusterSchema
   /api/clusters/{clusterName}/schema/{schemaName}/{tableName}/actions/checksum-table:
     post:
       consumes:
@@ -4186,6 +4421,12 @@ paths:
       description: This endpoint triggers the checksum calculation for a specific
         table in the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -4218,7 +4459,7 @@ paths:
             type: string
       summary: Calculate checksum for a specific table in a specific cluster
       tags:
-      - clusters
+      - ClusterSchema
   /api/clusters/{clusterName}/schema/{schemaName}/{tableName}/actions/move-table/{clusterShard}:
     post:
       consumes:
@@ -4226,6 +4467,12 @@ paths:
       description: This endpoint moves a table to a different shard cluster for the
         specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -4263,7 +4510,7 @@ paths:
             type: string
       summary: Move a table to a different shard cluster
       tags:
-      - clusters
+      - ClusterSchema
   /api/clusters/{clusterName}/schema/{schemaName}/{tableName}/actions/reshard-table:
     post:
       consumes:
@@ -4271,6 +4518,12 @@ paths:
       description: This endpoint triggers the resharding of a table for the specified
         cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -4303,7 +4556,7 @@ paths:
             type: string
       summary: Reshard a table for a specific cluster
       tags:
-      - clusters
+      - ClusterSchema
   /api/clusters/{clusterName}/schema/{schemaName}/{tableName}/actions/reshard-table/{clusterList}:
     post:
       consumes:
@@ -4311,6 +4564,12 @@ paths:
       description: This endpoint triggers the resharding of a table for the specified
         cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -4347,13 +4606,19 @@ paths:
             type: string
       summary: Reshard a table for a specific cluster
       tags:
-      - clusters
+      - ClusterSchema
   /api/clusters/{clusterName}/schema/{schemaName}/{tableName}/actions/universal-table:
     post:
       consumes:
       - application/json
       description: This endpoint sets a universal table for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -4386,7 +4651,7 @@ paths:
             type: string
       summary: Set a universal table for a specific cluster
       tags:
-      - clusters
+      - ClusterSchema
   /api/clusters/{clusterName}/send-vault-token:
     post:
       consumes:
@@ -4394,6 +4659,12 @@ paths:
       description: This endpoint sends the Vault token to the specified cluster via
         email.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -4416,12 +4687,18 @@ paths:
             type: string
       summary: Send Vault token to a specific cluster
       tags:
-      - clusters
+      - ClusterVault
   /api/clusters/{clusterName}/servers/{serverName}/{serverPort}/backup:
     get:
       description: Initiates a physical backup on a specified server port within a
         cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -4454,7 +4731,7 @@ paths:
             type: string
       summary: Perform a physical backup on a server port
       tags:
-      - ReplicationManager
+      - DatabaseBackup
   /api/clusters/{clusterName}/servers/{serverName}/{serverPort}/config:
     get:
       description: Retrieves the configuration of a specified server port within a
@@ -4496,7 +4773,7 @@ paths:
             type: string
       summary: Get server port configuration
       tags:
-      - ReplicationManager
+      - Database
   /api/clusters/{clusterName}/servers/{serverName}/{serverPort}/is-master:
     get:
       description: Checks if a specified server port within a cluster is a master.
@@ -4533,7 +4810,7 @@ paths:
             type: string
       summary: Check if a server port is a master
       tags:
-      - ReplicationManager
+      - Database
   /api/clusters/{clusterName}/servers/{serverName}/{serverPort}/is-slave:
     get:
       description: Checks if a specified server port within a cluster is a slave.
@@ -4570,7 +4847,7 @@ paths:
             type: string
       summary: Check if a server port is a slave
       tags:
-      - ReplicationManager
+      - Database
   /api/clusters/{clusterName}/servers/{serverName}/{serverPort}/need-config-change:
     get:
       description: Checks if a specified server within a cluster needs a config change.
@@ -4604,7 +4881,7 @@ paths:
             type: string
       summary: Check if a server needs a config change
       tags:
-      - ReplicationManager
+      - Database
   /api/clusters/{clusterName}/servers/{serverName}/{serverPort}/need-prov:
     get:
       description: Checks if a specified server within a cluster needs provisioning.
@@ -4641,7 +4918,7 @@ paths:
             type: string
       summary: Check if a server needs provisioning
       tags:
-      - ReplicationManager
+      - Database
   /api/clusters/{clusterName}/servers/{serverName}/{serverPort}/need-reprov:
     get:
       description: Checks if a specified server within a cluster needs re-provisioning.
@@ -4678,7 +4955,7 @@ paths:
             type: string
       summary: Check if a server needs re-provisioning
       tags:
-      - ReplicationManager
+      - Database
   /api/clusters/{clusterName}/servers/{serverName}/{serverPort}/need-restart:
     get:
       description: Checks if a specified server within a cluster needs a restart.
@@ -4715,7 +4992,7 @@ paths:
             type: string
       summary: Check if a server needs a restart
       tags:
-      - ReplicationManager
+      - Database
   /api/clusters/{clusterName}/servers/{serverName}/{serverPort}/need-start:
     get:
       description: Checks if a specified server within a cluster needs to start.
@@ -4749,7 +5026,7 @@ paths:
             type: string
       summary: Check if a server needs to start
       tags:
-      - ReplicationManager
+      - Database
   /api/clusters/{clusterName}/servers/{serverName}/{serverPort}/need-stop:
     get:
       description: Checks if a specified server within a cluster needs to stop.
@@ -4783,7 +5060,7 @@ paths:
             type: string
       summary: Check if a server needs to stop
       tags:
-      - ReplicationManager
+      - Database
   /api/clusters/{clusterName}/servers/{serverName}/{serverPort}/need-unprov:
     get:
       description: Checks if a specified server within a cluster needs unprovisioning.
@@ -4820,7 +5097,7 @@ paths:
             type: string
       summary: Check if a server needs unprovisioning
       tags:
-      - ReplicationManager
+      - Database
   /api/clusters/{clusterName}/servers/{serverName}/{serverPort}/write-log/{task}:
     post:
       description: Writes logs for a specified server within a cluster.
@@ -4869,12 +5146,18 @@ paths:
             type: string
       summary: Write logs for a server
       tags:
-      - ReplicationManager
+      - DatabaseTasks
   /api/clusters/{clusterName}/servers/{serverName}/actions/backup-error-log:
     get:
       description: Initiates a backup of the error log on a specified server within
         a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -4902,11 +5185,17 @@ paths:
             type: string
       summary: Perform a backup of the error log on a server
       tags:
-      - ReplicationManager
+      - DatabaseLogs
   /api/clusters/{clusterName}/servers/{serverName}/actions/backup-logical:
     get:
       description: Initiates a logical backup on a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -4934,11 +5223,17 @@ paths:
             type: string
       summary: Perform a logical backup on a server
       tags:
-      - ReplicationManager
+      - DatabaseBackup
   /api/clusters/{clusterName}/servers/{serverName}/actions/backup-physical:
     get:
       description: Initiates a physical backup on a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -4966,12 +5261,18 @@ paths:
             type: string
       summary: Perform a physical backup on a server
       tags:
-      - ReplicationManager
+      - DatabaseBackup
   /api/clusters/{clusterName}/servers/{serverName}/actions/backup-slowquery-log:
     get:
       description: Initiates a backup of the slow query log on a specified server
         within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -4999,11 +5300,17 @@ paths:
             type: string
       summary: Perform a backup of the slow query log on a server
       tags:
-      - ReplicationManager
+      - DatabaseLogs
   /api/clusters/{clusterName}/servers/{serverName}/actions/del-maintenance:
     get:
       description: Deletes the maintenance mode on a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5031,11 +5338,17 @@ paths:
             type: string
       summary: Delete maintenance mode on a server
       tags:
-      - ReplicationManager
+      - DatabaseMaintenance
   /api/clusters/{clusterName}/servers/{serverName}/actions/flush-logs:
     get:
       description: Flushes the logs on a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5063,12 +5376,18 @@ paths:
             type: string
       summary: Flush logs on a server
       tags:
-      - ReplicationManager
+      - DatabaseLogs
   /api/clusters/{clusterName}/servers/{serverName}/actions/job-cancel/{task}:
     get:
       description: Cancels a task identified by its name on a specified server within
         a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5102,11 +5421,17 @@ paths:
             type: string
       summary: Cancel a task on a server
       tags:
-      - ReplicationManager
+      - DatabaseTasks
   /api/clusters/{clusterName}/servers/{serverName}/actions/maintenance:
     get:
       description: Toggles the maintenance mode on a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5134,11 +5459,17 @@ paths:
             type: string
       summary: Toggle maintenance mode on a server
       tags:
-      - ReplicationManager
+      - DatabaseMaintenance
   /api/clusters/{clusterName}/servers/{serverName}/actions/optimize:
     get:
       description: Optimizes a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5166,12 +5497,18 @@ paths:
             type: string
       summary: Optimize a server
       tags:
-      - ReplicationManager
+      - DatabaseActions
   /api/clusters/{clusterName}/servers/{serverName}/actions/pitr:
     post:
       description: Initiates a point-in-time recovery on a specified server within
         a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5200,11 +5537,17 @@ paths:
             type: string
       summary: Perform a point-in-time recovery on a server
       tags:
-      - ReplicationManager
+      - DatabaseBackup
   /api/clusters/{clusterName}/servers/{serverName}/actions/provision:
     get:
       description: Provisions a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5232,12 +5575,18 @@ paths:
             type: string
       summary: Provision a server
       tags:
-      - ReplicationManager
+      - DatabaseProvision
   /api/clusters/{clusterName}/servers/{serverName}/actions/reseed-cancel/{task}:
     get:
       description: Cancels a reseed task identified by its name on a specified server
         within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5271,12 +5620,18 @@ paths:
             type: string
       summary: Cancel a reseed task on a server
       tags:
-      - ReplicationManager
+      - DatabaseBackup
   /api/clusters/{clusterName}/servers/{serverName}/actions/reseed/{backupMethod}:
     get:
       description: Reseeds a specified server within a cluster using the specified
         backup method.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5310,11 +5665,17 @@ paths:
             type: string
       summary: Reseed a server
       tags:
-      - ReplicationManager
+      - DatabaseBackup
   /api/clusters/{clusterName}/servers/{serverName}/actions/reset-master:
     get:
       description: Resets the master on a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5342,11 +5703,17 @@ paths:
             type: string
       summary: Reset the master on a server
       tags:
-      - ReplicationManager
+      - DatabaseReplication
   /api/clusters/{clusterName}/servers/{serverName}/actions/reset-pfs-queries:
     get:
       description: Resets PFS queries on a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5374,11 +5741,17 @@ paths:
             type: string
       summary: Reset PFS queries on a server
       tags:
-      - ReplicationManager
+      - DatabaseQueries
   /api/clusters/{clusterName}/servers/{serverName}/actions/reset-slave-all:
     get:
       description: Resets all slaves on a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5406,11 +5779,17 @@ paths:
             type: string
       summary: Reset all slaves on a server
       tags:
-      - ReplicationManager
+      - DatabaseReplication
   /api/clusters/{clusterName}/servers/{serverName}/actions/run-jobs:
     get:
       description: Runs jobs on a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5439,11 +5818,17 @@ paths:
             type: string
       summary: Run jobs on a server
       tags:
-      - ReplicationManager
+      - DatabaseTasks
   /api/clusters/{clusterName}/servers/{serverName}/actions/set-ignored:
     get:
       description: Sets a specified server within a cluster as ignored.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5471,11 +5856,17 @@ paths:
             type: string
       summary: Set a server as ignored
       tags:
-      - ReplicationManager
+      - DatabaseTopology
   /api/clusters/{clusterName}/servers/{serverName}/actions/set-long-query-time/{queryTime}:
     get:
       description: Sets the long query time on a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5508,11 +5899,17 @@ paths:
             type: string
       summary: Set long query time on a server
       tags:
-      - ReplicationManager
+      - DatabaseQueries
   /api/clusters/{clusterName}/servers/{serverName}/actions/set-maintenance:
     get:
       description: Sets a specified server within a cluster to maintenance mode.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5540,11 +5937,17 @@ paths:
             type: string
       summary: Set a server to maintenance mode
       tags:
-      - ReplicationManager
+      - DatabaseMaintenance
   /api/clusters/{clusterName}/servers/{serverName}/actions/set-prefered:
     get:
       description: Sets a specified server within a cluster as preferred.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5572,11 +5975,17 @@ paths:
             type: string
       summary: Set a server as preferred
       tags:
-      - ReplicationManager
+      - DatabaseTopology
   /api/clusters/{clusterName}/servers/{serverName}/actions/set-unrated:
     get:
       description: Sets a specified server within a cluster as unrated.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5604,11 +6013,17 @@ paths:
             type: string
       summary: Set a server as unrated
       tags:
-      - ReplicationManager
+      - DatabaseTopology
   /api/clusters/{clusterName}/servers/{serverName}/actions/skip-replication-event:
     get:
       description: Skips a replication event on a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5636,11 +6051,17 @@ paths:
             type: string
       summary: Skip a replication event on a server
       tags:
-      - ReplicationManager
+      - DatabaseReplication
   /api/clusters/{clusterName}/servers/{serverName}/actions/start:
     get:
       description: Starts a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5668,11 +6089,17 @@ paths:
             type: string
       summary: Start a server
       tags:
-      - ReplicationManager
+      - DatabaseActions
   /api/clusters/{clusterName}/servers/{serverName}/actions/start-slave:
     get:
       description: Starts the slave on a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5700,11 +6127,17 @@ paths:
             type: string
       summary: Start the slave on a server
       tags:
-      - ReplicationManager
+      - DatabaseReplication
   /api/clusters/{clusterName}/servers/{serverName}/actions/stop:
     get:
       description: Stops a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5732,11 +6165,17 @@ paths:
             type: string
       summary: Stop a server
       tags:
-      - ReplicationManager
+      - DatabaseActions
   /api/clusters/{clusterName}/servers/{serverName}/actions/stop-slave:
     get:
       description: Stops the slave on a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5764,11 +6203,17 @@ paths:
             type: string
       summary: Stop the slave on a server
       tags:
-      - ReplicationManager
+      - DatabaseReplication
   /api/clusters/{clusterName}/servers/{serverName}/actions/switchover:
     get:
       description: Initiates a switchover on a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5797,11 +6242,17 @@ paths:
             type: string
       summary: Perform a switchover on a server
       tags:
-      - ReplicationManager
+      - DatabaseTopology
   /api/clusters/{clusterName}/servers/{serverName}/actions/toogle-innodb-monitor:
     get:
       description: Toggles the InnoDB monitor on a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5829,11 +6280,17 @@ paths:
             type: string
       summary: Toggle InnoDB monitor on a server
       tags:
-      - ReplicationManager
+      - Database
   /api/clusters/{clusterName}/servers/{serverName}/actions/toogle-meta-data-locks:
     get:
       description: Toggles the metadata locks on a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5861,12 +6318,18 @@ paths:
             type: string
       summary: Toggle metadata locks on a server
       tags:
-      - ReplicationManager
+      - DatabaseActions
   /api/clusters/{clusterName}/servers/{serverName}/actions/toogle-pfs-slow-query:
     get:
       description: Toggles the PFS slow query capture on a specified server within
         a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5894,12 +6357,18 @@ paths:
             type: string
       summary: Toggle PFS slow query capture on a server
       tags:
-      - ReplicationManager
+      - DatabaseQueries
   /api/clusters/{clusterName}/servers/{serverName}/actions/toogle-query-response-time:
     get:
       description: Toggles the query response time on a specified server within a
         cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5927,11 +6396,17 @@ paths:
             type: string
       summary: Toggle query response time on a server
       tags:
-      - ReplicationManager
+      - DatabaseActions
   /api/clusters/{clusterName}/servers/{serverName}/actions/toogle-read-only:
     get:
       description: Toggles the read-only mode on a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5959,11 +6434,17 @@ paths:
             type: string
       summary: Toggle read-only mode on a server
       tags:
-      - ReplicationManager
+      - DatabaseActions
   /api/clusters/{clusterName}/servers/{serverName}/actions/toogle-slow-query:
     get:
       description: Toggles the slow query on a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -5991,11 +6472,17 @@ paths:
             type: string
       summary: Toggle slow query on a server
       tags:
-      - ReplicationManager
+      - DatabaseQueries
   /api/clusters/{clusterName}/servers/{serverName}/actions/toogle-slow-query-capture:
     get:
       description: Toggles the slow query capture on a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -6023,12 +6510,18 @@ paths:
             type: string
       summary: Toggle slow query capture on a server
       tags:
-      - ReplicationManager
+      - DatabaseQueries
   /api/clusters/{clusterName}/servers/{serverName}/actions/toogle-slow-query-table:
     get:
       description: Toggles the slow query table mode on a specified server within
         a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -6056,11 +6549,17 @@ paths:
             type: string
       summary: Toggle slow query table mode on a server
       tags:
-      - ReplicationManager
+      - DatabaseQueries
   /api/clusters/{clusterName}/servers/{serverName}/actions/toogle-sql-error-log:
     get:
       description: Toggles the SQL error log on a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -6088,11 +6587,17 @@ paths:
             type: string
       summary: Toggle SQL error log on a server
       tags:
-      - ReplicationManager
+      - DatabaseLogs
   /api/clusters/{clusterName}/servers/{serverName}/actions/unprovision:
     get:
       description: Unprovisions a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -6120,11 +6625,17 @@ paths:
             type: string
       summary: Unprovision a server
       tags:
-      - ReplicationManager
+      - DatabaseProvision
   /api/clusters/{clusterName}/servers/{serverName}/actions/wait-innodb-purge:
     get:
       description: Waits for InnoDB purge on a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -6153,12 +6664,18 @@ paths:
             type: string
       summary: Wait for InnoDB purge on a server
       tags:
-      - ReplicationManager
+      - DatabaseActions
   /api/clusters/{clusterName}/servers/{serverName}/all-slaves-status:
     get:
       description: Retrieves the status of all slaves of a specified server within
         a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -6187,11 +6704,17 @@ paths:
             type: string
       summary: Get status of all slaves of a server
       tags:
-      - ReplicationManager
+      - Database
   /api/clusters/{clusterName}/servers/{serverName}/digest-statements-pfs:
     get:
       description: Retrieves the PFS statements of a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -6220,12 +6743,18 @@ paths:
             type: string
       summary: Get PFS statements of a server
       tags:
-      - ReplicationManager
+      - DatabaseQueries
   /api/clusters/{clusterName}/servers/{serverName}/digest-statements-slow:
     get:
       description: Retrieves the PFS statements from the slow log of a specified server
         within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -6254,11 +6783,17 @@ paths:
             type: string
       summary: Get PFS statements from the slow log of a server
       tags:
-      - ReplicationManager
+      - DatabaseQueries
   /api/clusters/{clusterName}/servers/{serverName}/errorlog:
     get:
       description: Retrieves the error log of a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -6287,7 +6822,7 @@ paths:
             type: string
       summary: Get error log of a server
       tags:
-      - ReplicationManager
+      - DatabaseLogs
   /api/clusters/{clusterName}/servers/{serverName}/is-master:
     get:
       description: Checks if a specified server within a cluster is a master.
@@ -6319,7 +6854,7 @@ paths:
             type: string
       summary: Check if a server is a master
       tags:
-      - ReplicationManager
+      - Database
   /api/clusters/{clusterName}/servers/{serverName}/is-slave:
     get:
       description: Checks if a specified server within a cluster is a slave.
@@ -6351,11 +6886,17 @@ paths:
             type: string
       summary: Check if a server is a slave
       tags:
-      - ReplicationManager
+      - Database
   /api/clusters/{clusterName}/servers/{serverName}/master-status:
     get:
       description: Retrieves the master status of a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -6384,11 +6925,17 @@ paths:
             type: string
       summary: Get master status of a server
       tags:
-      - ReplicationManager
+      - Database
   /api/clusters/{clusterName}/servers/{serverName}/meta-data-locks:
     get:
       description: Retrieves the metadata locks of a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -6417,11 +6964,17 @@ paths:
             type: string
       summary: Get metadata locks of a server
       tags:
-      - ReplicationManager
+      - Database
   /api/clusters/{clusterName}/servers/{serverName}/processlist:
     get:
       description: Retrieves the process list of a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -6450,12 +7003,18 @@ paths:
             type: string
       summary: Get process list of a server
       tags:
-      - ReplicationManager
+      - Database
   /api/clusters/{clusterName}/servers/{serverName}/queries/{queryDigest}/actions/analyze-pfs:
     get:
       description: Analyzes a query identified by its digest on a specified server
         within a cluster using PFS.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -6488,12 +7047,18 @@ paths:
             type: string
       summary: Analyze a query using PFS on a server
       tags:
-      - ReplicationManager
+      - DatabaseQueries
   /api/clusters/{clusterName}/servers/{serverName}/queries/{queryDigest}/actions/analyze-slowlog:
     get:
       description: Analyzes a query identified by its digest on a specified server
         within a cluster using the slow log.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -6526,12 +7091,18 @@ paths:
             type: string
       summary: Analyze a query using the slow log on a server
       tags:
-      - ReplicationManager
+      - DatabaseQueries
   /api/clusters/{clusterName}/servers/{serverName}/queries/{queryDigest}/actions/explain-pfs:
     get:
       description: Explains a query identified by its digest on a specified server
         within a cluster using PFS.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -6565,12 +7136,18 @@ paths:
             type: string
       summary: Explain a query using PFS on a server
       tags:
-      - ReplicationManager
+      - DatabaseQueries
   /api/clusters/{clusterName}/servers/{serverName}/queries/{queryDigest}/actions/explain-slowlog:
     get:
       description: Explains a query identified by its digest on a specified server
         within a cluster using the slow log.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -6604,12 +7181,18 @@ paths:
             type: string
       summary: Explain a query using the slow log on a server
       tags:
-      - ReplicationManager
+      - DatabaseQueries
   /api/clusters/{clusterName}/servers/{serverName}/queries/{queryDigest}/actions/kill-query:
     get:
       description: Kills a query identified by its digest on a specified server within
         a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -6642,12 +7225,18 @@ paths:
             type: string
       summary: Kill a query on a server
       tags:
-      - ReplicationManager
+      - DatabaseQueries
   /api/clusters/{clusterName}/servers/{serverName}/queries/{queryDigest}/actions/kill-thread:
     get:
       description: Kills a thread identified by its digest on a specified server within
         a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -6680,12 +7269,18 @@ paths:
             type: string
       summary: Kill a thread on a server
       tags:
-      - ReplicationManager
+      - DatabaseQueries
   /api/clusters/{clusterName}/servers/{serverName}/query-response-time:
     get:
       description: Retrieves the query response time of a specified server within
         a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -6714,11 +7309,17 @@ paths:
             type: string
       summary: Get query response time of a server
       tags:
-      - ReplicationManager
+      - DatabaseQueries
   /api/clusters/{clusterName}/servers/{serverName}/schemas:
     get:
       description: Retrieves the schemas of a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -6747,12 +7348,18 @@ paths:
             type: string
       summary: Get schemas of a server
       tags:
-      - ReplicationManager
+      - DatabaseSchema
   /api/clusters/{clusterName}/servers/{serverName}/service-opensvc:
     get:
       description: Retrieves the database service configuration of a specified server
         within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -6780,11 +7387,17 @@ paths:
             type: string
       summary: Get database service configuration of a server
       tags:
-      - ReplicationManager
+      - Database
   /api/clusters/{clusterName}/servers/{serverName}/slow-queries:
     get:
       description: Retrieves the slow log of a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -6813,11 +7426,17 @@ paths:
             type: string
       summary: Get slow log of a server
       tags:
-      - ReplicationManager
+      - DatabaseQueries
   /api/clusters/{clusterName}/servers/{serverName}/status:
     get:
       description: Retrieves the status of a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -6846,11 +7465,17 @@ paths:
             type: string
       summary: Get status of a server
       tags:
-      - ReplicationManager
+      - Database
   /api/clusters/{clusterName}/servers/{serverName}/status-delta:
     get:
       description: Retrieves the status delta of a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -6879,11 +7504,17 @@ paths:
             type: string
       summary: Get status delta of a server
       tags:
-      - ReplicationManager
+      - Database
   /api/clusters/{clusterName}/servers/{serverName}/status-innodb:
     get:
       description: Retrieves the InnoDB status of a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -6912,11 +7543,17 @@ paths:
             type: string
       summary: Get InnoDB status of a server
       tags:
-      - ReplicationManager
+      - Database
   /api/clusters/{clusterName}/servers/{serverName}/tables:
     get:
       description: Retrieves the tables of a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -6945,11 +7582,17 @@ paths:
             type: string
       summary: Get tables of a server
       tags:
-      - ReplicationManager
+      - Database
   /api/clusters/{clusterName}/servers/{serverName}/variables:
     get:
       description: Retrieves the variables of a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -6978,11 +7621,17 @@ paths:
             type: string
       summary: Get variables of a server
       tags:
-      - ReplicationManager
+      - Database
   /api/clusters/{clusterName}/servers/{serverName}/vtables:
     get:
       description: Retrieves the virtual tables of a specified server within a cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7011,13 +7660,19 @@ paths:
             type: string
       summary: Get virtual tables of a server
       tags:
-      - ReplicationManager
+      - Database
   /api/clusters/{clusterName}/services/actions/provision:
     post:
       consumes:
       - application/json
       description: This endpoint provisions services for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7040,13 +7695,19 @@ paths:
             type: string
       summary: Provision services for a specific cluster
       tags:
-      - clusters
+      - ClusterProvision
   /api/clusters/{clusterName}/services/actions/unprovision:
     post:
       consumes:
       - application/json
       description: This endpoint unprovisions services for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7069,11 +7730,17 @@ paths:
             type: string
       summary: Unprovision services for a specific cluster
       tags:
-      - clusters
+      - ClusterProvision
   /api/clusters/{clusterName}/settings:
     get:
       description: This endpoint retrieves the settings for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7096,13 +7763,19 @@ paths:
             type: string
       summary: Retrieve settings for a specific cluster
       tags:
-      - clusters
+      - ClusterSettings
   /api/clusters/{clusterName}/settings/actions/add-db-tag/{tagValue}:
     post:
       consumes:
       - application/json
       description: This endpoint adds a tag to the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7130,13 +7803,19 @@ paths:
             type: string
       summary: Add a tag to a specific cluster
       tags:
-      - clusters
+      - ClusterTags
   /api/clusters/{clusterName}/settings/actions/add-proxy-tag/{tagValue}:
     post:
       consumes:
       - application/json
       description: This endpoint adds a proxy tag to the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7164,13 +7843,19 @@ paths:
             type: string
       summary: Add a proxy tag to a specific cluster
       tags:
-      - clusters
+      - ClusterTags
   /api/clusters/{clusterName}/settings/actions/apply-dynamic-config:
     post:
       consumes:
       - application/json
       description: This endpoint applies dynamic configuration for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7193,7 +7878,7 @@ paths:
             type: string
       summary: Apply dynamic configuration for a specific cluster
       tags:
-      - clusters
+      - ClusterTags
   /api/clusters/{clusterName}/settings/actions/certificates-reload:
     post:
       consumes:
@@ -7201,6 +7886,12 @@ paths:
       description: This endpoint reloads the client certificates for the specified
         cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7223,7 +7914,7 @@ paths:
             type: string
       summary: Reload client certificates for a specific cluster
       tags:
-      - clusters
+      - ClusterSettings
   /api/clusters/{clusterName}/settings/actions/discover:
     post:
       consumes:
@@ -7231,6 +7922,12 @@ paths:
       description: This endpoint triggers the discovery of settings for the specified
         cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7253,13 +7950,19 @@ paths:
             type: string
       summary: Discover settings for a specific cluster
       tags:
-      - clusters
+      - ClusterSettings
   /api/clusters/{clusterName}/settings/actions/drop-db-tag/{tagValue}:
     post:
       consumes:
       - application/json
       description: This endpoint removes a tag from the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7287,13 +7990,19 @@ paths:
             type: string
       summary: Remove a tag from a specific cluster
       tags:
-      - clusters
+      - ClusterTags
   /api/clusters/{clusterName}/settings/actions/drop-proxy-tag/{tagValue}:
     post:
       consumes:
       - application/json
       description: This endpoint removes a proxy tag from the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7321,13 +8030,19 @@ paths:
             type: string
       summary: Remove a proxy tag from a specific cluster
       tags:
-      - clusters
+      - ClusterTags
   /api/clusters/{clusterName}/settings/actions/reload:
     post:
       consumes:
       - application/json
       description: This endpoint reloads the settings for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7346,7 +8061,7 @@ paths:
             type: string
       summary: Reload cluster settings
       tags:
-      - clusters
+      - ClusterSettings
   /api/clusters/{clusterName}/settings/actions/reload-graphite-filterlist:
     post:
       consumes:
@@ -7354,6 +8069,12 @@ paths:
       description: This endpoint reloads the Graphite filter list for the specified
         cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7376,7 +8097,7 @@ paths:
             type: string
       summary: Reload Graphite filter list for a specific cluster
       tags:
-      - clusters
+      - ClusterGraphite
   /api/clusters/{clusterName}/settings/actions/reset-graphite-filterlist/{template}:
     post:
       consumes:
@@ -7384,6 +8105,12 @@ paths:
       description: This endpoint resets the Graphite filter list for the specified
         cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7411,13 +8138,19 @@ paths:
             type: string
       summary: Reset Graphite filter list for a specific cluster
       tags:
-      - clusters
+      - ClusterGraphite
   /api/clusters/{clusterName}/settings/actions/set-cron/{settingName}/{settingValue}:
     post:
       consumes:
       - application/json
       description: This endpoint sets the cron jobs for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7450,13 +8183,19 @@ paths:
             type: string
       summary: Set cron jobs for a specific cluster
       tags:
-      - clusters
+      - ClusterSettings
   /api/clusters/{clusterName}/settings/actions/set-graphite-filterlist/{filterType}:
     post:
       consumes:
       - application/json
       description: This endpoint sets the Graphite filter list for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7490,13 +8229,19 @@ paths:
             type: string
       summary: Set Graphite filter list for a specific cluster
       tags:
-      - clusters
+      - ClusterGraphite
   /api/clusters/{clusterName}/settings/actions/set/{settingName}/{settingValue}:
     post:
       consumes:
       - application/json
       description: This endpoint sets the settings for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7529,13 +8274,19 @@ paths:
             type: string
       summary: Set settings for a specific cluster
       tags:
-      - clusters
+      - ClusterSettings
   /api/clusters/{clusterName}/settings/actions/switch/{settingName}:
     post:
       consumes:
       - application/json
       description: This endpoint switches the settings for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7563,11 +8314,17 @@ paths:
             type: string
       summary: Switch settings for a specific cluster
       tags:
-      - clusters
+      - ClusterSettings
   /api/clusters/{clusterName}/shardclusters:
     get:
       description: This endpoint retrieves the shard clusters for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7593,13 +8350,19 @@ paths:
             type: string
       summary: Retrieve shard clusters for a specific cluster
       tags:
-      - clusters
+      - ClusterTopology
   /api/clusters/{clusterName}/sphinx/indexes:
     get:
       consumes:
       - application/json
       description: Get the Sphinx indexes for a given cluster
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7626,7 +8389,7 @@ paths:
             type: string
       summary: Get Sphinx Indexes
       tags:
-      - proxies
+      - Proxies
   /api/clusters/{clusterName}/status:
     get:
       description: This endpoint retrieves the status of a specified cluster and returns
@@ -7652,13 +8415,19 @@ paths:
             type: string
       summary: Retrieve status of a cluster
       tags:
-      - clusters
+      - Cluster
   /api/clusters/{clusterName}/subscribe:
     post:
       consumes:
       - application/json
       description: This endpoint allows a user to subscribe to a specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7701,11 +8470,17 @@ paths:
             type: string
       summary: Subscribe a user to a cluster
       tags:
-      - cluster
+      - Cloud18
   /api/clusters/{clusterName}/tags:
     get:
       description: This endpoint retrieves the tags for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7726,13 +8501,19 @@ paths:
             type: string
       summary: Retrieve tags for a specific cluster
       tags:
-      - clusters
+      - ClusterTags
   /api/clusters/{clusterName}/tests/actions/run/{testName}:
     post:
       consumes:
       - application/json
       description: This endpoint runs a specific test for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7768,13 +8549,19 @@ paths:
             type: string
       summary: Run a specific test for a given cluster
       tags:
-      - clusters
+      - ClusterTest
   /api/clusters/{clusterName}/tests/actions/run/all:
     post:
       consumes:
       - application/json
       description: This endpoint runs all tests for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7799,11 +8586,17 @@ paths:
             type: string
       summary: Run all tests for a given cluster
       tags:
-      - clusters
+      - ClusterTest
   /api/clusters/{clusterName}/top:
     get:
       description: This endpoint retrieves the top metrics for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7831,11 +8624,17 @@ paths:
             type: string
       summary: Retrieve top metrics for a specific cluster
       tags:
-      - clusters
+      - Cluster
   /api/clusters/{clusterName}/topology/alerts:
     get:
       description: Shows the alerts for that specific named cluster
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7852,11 +8651,17 @@ paths:
             type: string
       summary: Shows the alerts for that specific named cluster
       tags:
-      - clusters
+      - ClusterTopology
   /api/clusters/{clusterName}/topology/crashes:
     get:
       description: This endpoint retrieves the crashes for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7877,11 +8682,17 @@ paths:
             type: string
       summary: Retrieve crashes for a specific cluster
       tags:
-      - clusters
+      - Cluster
   /api/clusters/{clusterName}/topology/logs:
     get:
       description: This endpoint retrieves the logs for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7902,12 +8713,18 @@ paths:
             type: string
       summary: Retrieve logs for a specific cluster
       tags:
-      - clusters
+      - ClusterTopology
   /api/clusters/{clusterName}/topology/master:
     get:
       description: This endpoint retrieves the master of a specified cluster and returns
         it in JSON format.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7926,11 +8743,17 @@ paths:
             type: string
       summary: Retrieve master of a cluster
       tags:
-      - clusters
+      - ClusterTopology
   /api/clusters/{clusterName}/topology/proxies:
     get:
       description: Shows the proxies for that specific named cluster
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7950,11 +8773,17 @@ paths:
             type: string
       summary: Shows the proxies for that specific named cluster
       tags:
-      - clusters
+      - ClusterTopology
   /api/clusters/{clusterName}/topology/servers:
     get:
       description: This endpoint retrieves the servers for the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -7976,11 +8805,17 @@ paths:
             type: string
       summary: Retrieve servers for a specific cluster
       tags:
-      - clusters
+      - ClusterTopology
   /api/clusters/{clusterName}/topology/slaves:
     get:
       description: Shows the slaves for that specific named cluster
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -8000,7 +8835,7 @@ paths:
             type: string
       summary: Shows the slaves for that specific named cluster
       tags:
-      - clusters
+      - ClusterTopology
   /api/clusters/{clusterName}/users/add:
     post:
       consumes:
@@ -8008,6 +8843,12 @@ paths:
       description: Adds a new user to the specified cluster if the request is valid
         and the user has the necessary permissions.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -8040,13 +8881,19 @@ paths:
             type: string
       summary: Add a new user to a cluster
       tags:
-      - clusters
+      - User
   /api/clusters/{clusterName}/users/drop:
     post:
       consumes:
       - application/json
       description: Drops a user from the specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -8079,13 +8926,19 @@ paths:
             type: string
       summary: Drop a cluster user
       tags:
-      - clusters
+      - User
   /api/clusters/{clusterName}/users/send-credentials:
     post:
       consumes:
       - application/json
       description: This endpoint sends the credentials to the specified user via email.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -8114,13 +8967,19 @@ paths:
             type: string
       summary: Send credentials to a specific user
       tags:
-      - clusters
+      - User
   /api/clusters/{clusterName}/users/update:
     post:
       consumes:
       - application/json
       description: Updates the user information for a specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -8153,7 +9012,7 @@ paths:
             type: string
       summary: Update a cluster user
       tags:
-      - clusters
+      - User
   /api/clusters/actions/add/{clusterName}:
     post:
       consumes:
@@ -8161,6 +9020,12 @@ paths:
       description: Adds a new cluster to the replication manager. If the cluster already
         exists, it returns an error.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -8189,11 +9054,17 @@ paths:
             type: string
       summary: Add a new cluster
       tags:
-      - clusters
+      - Cluster
   /api/clusters/actions/delete/{clusterName}:
     delete:
       description: Deletes a cluster identified by its name.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -8216,13 +9087,14 @@ paths:
             type: string
       summary: Delete a cluster
       tags:
-      - clusters
+      - Cluster
   /api/clusters/for-sale:
     get:
       description: This endpoint returns a list of peer clusters that are available
         for sale, excluding those that are booked by the requesting user.
       parameters:
-      - description: JWT token
+      - default: Bearer <Add access token here>
+        description: Insert your access token
         in: header
         name: Authorization
         required: true
@@ -8246,13 +9118,14 @@ paths:
             type: string
       summary: Retrieve peer clusters for sale
       tags:
-      - PeerClusters
+      - Cloud18
   /api/clusters/peers:
     get:
       description: This endpoint retrieves the peer clusters that a user has access
         to.
       parameters:
-      - description: Bearer token
+      - default: Bearer <Add access token here>
+        description: Insert your access token
         in: header
         name: Authorization
         required: true
@@ -8276,7 +9149,7 @@ paths:
             type: string
       summary: Retrieve peer clusters for a user
       tags:
-      - PeerClusters
+      - Cloud18
   /api/clusters/settings/actions/reload-clusters-plans:
     post:
       description: This endpoint reloads the cluster plans for all clusters.
@@ -8295,7 +9168,7 @@ paths:
             type: string
       summary: Reload cluster plans
       tags:
-      - clusters
+      - ClusterActions
   /api/clusters/settings/actions/set/{settingName}/{settingValue}:
     post:
       consumes:
@@ -8305,6 +9178,12 @@ paths:
       - description: Setting Name
         in: path
         name: settingName
+        required: true
+        type: string
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
         required: true
         type: string
       - description: Cluster Name
@@ -8333,7 +9212,7 @@ paths:
             type: string
       summary: Set global settings for the server
       tags:
-      - settings
+      - ClusterSettings
   /api/clusters/settings/actions/switch/{settingName}:
     post:
       consumes:
@@ -8343,6 +9222,12 @@ paths:
       - description: Setting Name
         in: path
         name: settingName
+        required: true
+        type: string
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
         required: true
         type: string
       - description: Cluster Name
@@ -8366,7 +9251,7 @@ paths:
             type: string
       summary: Switch global settings for the server
       tags:
-      - settings
+      - GlobalSetting
   /api/configs/grafana:
     get:
       description: Returns a list of Grafana files from the specified directory.
@@ -8385,7 +9270,7 @@ paths:
             type: string
       summary: List Grafana files
       tags:
-      - grafana
+      - Public
   /api/heartbeat:
     get:
       consumes:
@@ -8406,7 +9291,7 @@ paths:
             type: object
       summary: Monitor Heartbeat
       tags:
-      - Heartbeat
+      - Public
   /api/login:
     post:
       consumes:
@@ -8444,13 +9329,19 @@ paths:
             type: string
       summary: User login
       tags:
-      - authentication
+      - Auth
   /api/monitor:
     get:
       consumes:
       - application/json
       description: This endpoint processes the replication manager requests, validates
         cluster ACLs, and returns the cluster list in JSON format.
+      parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        type: string
       produces:
       - application/json
       responses:
@@ -8464,35 +9355,7 @@ paths:
             type: string
       summary: Handles replication manager requests
       tags:
-      - replication-manager
-  /api/monitor/actions/adduser/{userName}:
-    post:
-      consumes:
-      - application/json
-      description: Adds a new user to the replication manager by decoding the request
-        body into a UserForm struct and adding the user to each cluster if the request
-        is valid.
-      parameters:
-      - description: User Form
-        in: body
-        name: user
-        required: true
-        schema:
-          $ref: '#/definitions/cluster.UserForm'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: User added successfully
-          schema:
-            type: string
-        "400":
-          description: Error in request
-          schema:
-            type: string
-      summary: Add a new user
-      tags:
-      - users
+      - Public
   /api/prometheus:
     get:
       description: Fetches Prometheus metrics for all servers in all clusters managed
@@ -8510,7 +9373,7 @@ paths:
             type: string
       summary: Fetch Prometheus metrics
       tags:
-      - metrics
+      - Public
   /api/repocomp/current:
     get:
       description: Reads the current repository component from the specified directory
@@ -8528,7 +9391,7 @@ paths:
             type: string
       summary: Retrieve current repository component
       tags:
-      - repository
+      - Public
   /api/status:
     get:
       description: Returns the status of the replication manager indicating whether
@@ -8544,7 +9407,7 @@ paths:
             type: object
       summary: Get Replication Manager Status
       tags:
-      - status
+      - Public
   /api/terms:
     get:
       description: This endpoint returns the terms managed by the replication manager.
@@ -8556,6 +9419,8 @@ paths:
           schema:
             type: string
       summary: Retrieves terms
+      tags:
+      - Cloud18
   /api/timeout:
     get:
       description: This endpoint is used to check if the replication manager is running.
@@ -8571,7 +9436,7 @@ paths:
             type: object
       summary: Check if the replication manager is running
       tags:
-      - status
+      - Public
   /cluster/{clusterName}/actions/dropserver/{host}/{port}:
     post:
       consumes:
@@ -8579,6 +9444,12 @@ paths:
       description: This endpoint allows dropping a server monitor or proxy monitor
         from a specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -8611,7 +9482,7 @@ paths:
             type: string
       summary: Drop a server monitor from a cluster
       tags:
-      - cluster
+      - ClusterMonitor
   /cluster/{clusterName}/actions/dropserver/{host}/{port}/{type}:
     post:
       consumes:
@@ -8619,6 +9490,12 @@ paths:
       description: This endpoint allows dropping a server monitor or proxy monitor
         from a specified cluster.
       parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Cluster Name
         in: path
         name: clusterName
@@ -8655,5 +9532,5 @@ paths:
             type: string
       summary: Drop a server monitor from a cluster
       tags:
-      - cluster
+      - ClusterMonitor
 swagger: "2.0"

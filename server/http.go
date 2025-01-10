@@ -118,13 +118,6 @@ func (repman *ReplicationManager) httpserver() {
 		router.PathPrefix("/grafana/").Handler(http.StripPrefix("/grafana/", repman.SharedirHandler("grafana")))
 	}
 
-	if repman.Conf.ApiSwaggerEnabled {
-		// Serve Swagger documentation
-		router.PathPrefix("/api-docs/").Handler(httpSwagger.Handler(
-			httpSwagger.URL("/api-docs/doc.json"), // URL for the generated Swagger JSON
-		))
-	}
-
 	router.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Check if the path starts with "/api"
 		if len(r.URL.Path) >= 4 && r.URL.Path[:4] == "/api" {
@@ -150,12 +143,6 @@ func (repman *ReplicationManager) httpserver() {
 	))
 	router.Handle("/api/clusters/peers", negroni.New(
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxPeerClusters)),
-	))
-	router.Handle("/api/clusters/{clusterName}/subscribe", negroni.New(
-		negroni.Wrap(http.HandlerFunc(repman.handlerMuxClusterSubscribe)),
-	))
-	router.Handle("/api/clusters/{clusterName}/unsubscribe", negroni.New(
-		negroni.Wrap(http.HandlerFunc(repman.handlerMuxRejectSubscription)),
 	))
 	router.Handle("/api/status", negroni.New(
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxStatus)),
@@ -236,6 +223,10 @@ func (repman *ReplicationManager) httpserver() {
 		router.Handle("/api/monitor", negroni.New(
 			negroni.Wrap(http.HandlerFunc(repman.handlerMuxReplicationManager)),
 		))
+		router.PathPrefix("/api-docs/").Handler(negroni.New(
+			negroni.HandlerFunc(repman.validateSwaggerMiddleware),
+			negroni.Wrap(http.HandlerFunc(httpSwagger.Handler(httpSwagger.URL("/api-docs/doc.json")))),
+		))
 		repman.apiClusterProtectedHandler(router)
 		repman.apiDatabaseProtectedHandler(router)
 		repman.apiProxyProtectedHandler(router)
@@ -269,7 +260,7 @@ func (repman *ReplicationManager) handlerApp(w http.ResponseWriter, r *http.Requ
 // handlerRepoComp handles the HTTP request for retrieving the current repository component.
 // @Summary Retrieve current repository component
 // @Description Reads the current repository component from the specified directory and returns its content.
-// @Tags repository
+// @Tags Public
 // @Produce plain
 // @Success 200 {string} string "Current repository component content"
 // @Failure 404 {string} string "404 Something went wrong - Not Found"

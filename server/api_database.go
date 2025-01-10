@@ -361,8 +361,9 @@ func (repman *ReplicationManager) apiDatabaseProtectedHandler(router *mux.Router
 // handlerMuxQueryKillQuery handles the HTTP request to kill a query on a specific server within a cluster.
 // @Summary Kill a query on a server
 // @Description Kills a query identified by its digest on a specified server within a cluster.
-// @Tags ReplicationManager
+// @Tags DatabaseQueries
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Param queryDigest path string true "Query Digest"
@@ -395,8 +396,9 @@ func (repman *ReplicationManager) handlerMuxQueryKillQuery(w http.ResponseWriter
 // handlerMuxQueryKillThread handles the HTTP request to kill a thread on a specific server within a cluster.
 // @Summary Kill a thread on a server
 // @Description Kills a thread identified by its digest on a specified server within a cluster.
-// @Tags ReplicationManager
+// @Tags DatabaseQueries
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Param queryDigest path string true "Query Digest"
@@ -429,8 +431,9 @@ func (repman *ReplicationManager) handlerMuxQueryKillThread(w http.ResponseWrite
 // handlerMuxQueryExplainPFS handles the HTTP request to explain a query using PFS on a specific server within a cluster.
 // @Summary Explain a query using PFS on a server
 // @Description Explains a query identified by its digest on a specified server within a cluster using PFS.
-// @Tags ReplicationManager
+// @Tags DatabaseQueries
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Param queryDigest path string true "Query Digest"
@@ -471,8 +474,9 @@ func (repman *ReplicationManager) handlerMuxQueryExplainPFS(w http.ResponseWrite
 // handlerMuxQueryExplainSlowLog handles the HTTP request to explain a query using the slow log on a specific server within a cluster.
 // @Summary Explain a query using the slow log on a server
 // @Description Explains a query identified by its digest on a specified server within a cluster using the slow log.
-// @Tags ReplicationManager
+// @Tags DatabaseQueries
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Param queryDigest path string true "Query Digest"
@@ -512,8 +516,9 @@ func (repman *ReplicationManager) handlerMuxQueryExplainSlowLog(w http.ResponseW
 // handlerMuxQueryAnalyzePFS handles the HTTP request to analyze a query using PFS on a specific server within a cluster.
 // @Summary Analyze a query using PFS on a server
 // @Description Analyzes a query identified by its digest on a specified server within a cluster using PFS.
-// @Tags ReplicationManager
+// @Tags DatabaseQueries
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Param queryDigest path string true "Query Digest"
@@ -546,8 +551,9 @@ func (repman *ReplicationManager) handlerMuxQueryAnalyzePFS(w http.ResponseWrite
 // handlerMuxQueryAnalyzeSlowLog handles the HTTP request to analyze a query using the slow log on a specific server within a cluster.
 // @Summary Analyze a query using the slow log on a server
 // @Description Analyzes a query identified by its digest on a specified server within a cluster using the slow log.
-// @Tags ReplicationManager
+// @Tags DatabaseQueries
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Param queryDigest path string true "Query Digest"
@@ -580,8 +586,9 @@ func (repman *ReplicationManager) handlerMuxQueryAnalyzeSlowLog(w http.ResponseW
 // handlerMuxServerStop handles the HTTP request to stop a server within a cluster.
 // @Summary Stop a server
 // @Description Stops a specified server within a cluster.
-// @Tags ReplicationManager
+// @Tags DatabaseActions
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Success 200 {string} string "Server stopped successfully"
@@ -613,8 +620,9 @@ func (repman *ReplicationManager) handlerMuxServerStop(w http.ResponseWriter, r 
 // handlerMuxServerBackupPhysical handles the HTTP request to perform a physical backup on a specific server within a cluster.
 // @Summary Perform a physical backup on a server
 // @Description Initiates a physical backup on a specified server within a cluster.
-// @Tags ReplicationManager
+// @Tags DatabaseBackup
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Success 200 {string} string "Backup initiated successfully"
@@ -646,8 +654,9 @@ func (repman *ReplicationManager) handlerMuxServerBackupPhysical(w http.Response
 // handlerMuxServerBackupLogical handles the HTTP request to perform a logical backup on a specific server within a cluster.
 // @Summary Perform a logical backup on a server
 // @Description Initiates a logical backup on a specified server within a cluster.
-// @Tags ReplicationManager
+// @Tags DatabaseBackup
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Success 200 {string} string "Backup initiated successfully"
@@ -679,8 +688,9 @@ func (repman *ReplicationManager) handlerMuxServerBackupLogical(w http.ResponseW
 // handlerMuxServerOptimize handles the HTTP request to optimize a server within a cluster.
 // @Summary Optimize a server
 // @Description Optimizes a specified server within a cluster.
-// @Tags ReplicationManager
+// @Tags DatabaseActions
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Success 200 {string} string "Server optimized successfully"
@@ -712,8 +722,9 @@ func (repman *ReplicationManager) handlerMuxServerOptimize(w http.ResponseWriter
 // handlerMuxServerReseed handles the HTTP request to reseed a server within a cluster.
 // @Summary Reseed a server
 // @Description Reseeds a specified server within a cluster using the specified backup method.
-// @Tags ReplicationManager
+// @Tags DatabaseBackup
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Param backupMethod path string true "Backup Method"
@@ -766,8 +777,9 @@ func (repman *ReplicationManager) handlerMuxServerReseed(w http.ResponseWriter, 
 // handlerMuxServerPITR handles the HTTP request to perform a point-in-time recovery (PITR) on a specific server within a cluster.
 // @Summary Perform a point-in-time recovery on a server
 // @Description Initiates a point-in-time recovery on a specified server within a cluster.
-// @Tags ReplicationManager
+// @Tags DatabaseBackup
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Success 200 {object} ApiResponse "PITR initiated successfully"
@@ -827,8 +839,9 @@ func (repman *ReplicationManager) handlerMuxServerPITR(w http.ResponseWriter, r 
 // handlerMuxServerReseedCancel handles the HTTP request to cancel a reseed task on a specific server within a cluster.
 // @Summary Cancel a reseed task on a server
 // @Description Cancels a reseed task identified by its name on a specified server within a cluster.
-// @Tags ReplicationManager
+// @Tags DatabaseBackup
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Param task path string true "Task Name"
@@ -865,8 +878,9 @@ func (repman *ReplicationManager) handlerMuxServerReseedCancel(w http.ResponseWr
 // handlerMuxServerBackupErrorLog handles the HTTP request to perform a backup of the error log on a specific server within a cluster.
 // @Summary Perform a backup of the error log on a server
 // @Description Initiates a backup of the error log on a specified server within a cluster.
-// @Tags ReplicationManager
+// @Tags DatabaseLogs
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Success 200 {string} string "Backup initiated successfully"
@@ -898,8 +912,9 @@ func (repman *ReplicationManager) handlerMuxServerBackupErrorLog(w http.Response
 // handlerMuxServerBackupSlowQueryLog handles the HTTP request to perform a backup of the slow query log on a specific server within a cluster.
 // @Summary Perform a backup of the slow query log on a server
 // @Description Initiates a backup of the slow query log on a specified server within a cluster.
-// @Tags ReplicationManager
+// @Tags DatabaseLogs
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Success 200 {string} string "Backup initiated successfully"
@@ -931,8 +946,9 @@ func (repman *ReplicationManager) handlerMuxServerBackupSlowQueryLog(w http.Resp
 // handlerMuxServerMaintenance handles the HTTP request to toggle maintenance mode on a specific server within a cluster.
 // @Summary Toggle maintenance mode on a server
 // @Description Toggles the maintenance mode on a specified server within a cluster.
-// @Tags ReplicationManager
+// @Tags DatabaseMaintenance
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Success 200 {string} string "Maintenance mode toggled successfully"
@@ -964,8 +980,9 @@ func (repman *ReplicationManager) handlerMuxServerMaintenance(w http.ResponseWri
 // handlerMuxServerSetMaintenance handles the HTTP request to set a server to maintenance mode.
 // @Summary Set a server to maintenance mode
 // @Description Sets a specified server within a cluster to maintenance mode.
-// @Tags ReplicationManager
+// @Tags DatabaseMaintenance
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Success 200 {string} string "Server set to maintenance mode successfully"
@@ -997,8 +1014,9 @@ func (repman *ReplicationManager) handlerMuxServerSetMaintenance(w http.Response
 // handlerMuxServerDelMaintenance handles the HTTP request to delete maintenance mode on a specific server within a cluster.
 // @Summary Delete maintenance mode on a server
 // @Description Deletes the maintenance mode on a specified server within a cluster.
-// @Tags ReplicationManager
+// @Tags DatabaseMaintenance
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Success 200 {string} string "Maintenance mode deleted successfully"
@@ -1030,8 +1048,9 @@ func (repman *ReplicationManager) handlerMuxServerDelMaintenance(w http.Response
 // handlerMuxServerSwitchover handles the HTTP request to perform a switchover on a specific server within a cluster.
 // @Summary Perform a switchover on a server
 // @Description Initiates a switchover on a specified server within a cluster.
-// @Tags ReplicationManager
+// @Tags DatabaseTopology
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Success 200 {string} string "Switchover initiated successfully"
@@ -1073,8 +1092,9 @@ func (repman *ReplicationManager) handlerMuxServerSwitchover(w http.ResponseWrit
 // handlerMuxServerSetPrefered handles the HTTP request to set a server as preferred within a cluster.
 // @Summary Set a server as preferred
 // @Description Sets a specified server within a cluster as preferred.
-// @Tags ReplicationManager
+// @Tags DatabaseTopology
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Success 200 {string} string "Server set as preferred successfully"
@@ -1107,8 +1127,9 @@ func (repman *ReplicationManager) handlerMuxServerSetPrefered(w http.ResponseWri
 // handlerMuxServerSetUnrated handles the HTTP request to set a server as unrated within a cluster.
 // @Summary Set a server as unrated
 // @Description Sets a specified server within a cluster as unrated.
-// @Tags ReplicationManager
+// @Tags DatabaseTopology
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Success 200 {string} string "Server set as unrated successfully"
@@ -1142,8 +1163,9 @@ func (repman *ReplicationManager) handlerMuxServerSetUnrated(w http.ResponseWrit
 // handlerMuxServerSetIgnored handles the HTTP request to set a server as ignored within a cluster.
 // @Summary Set a server as ignored
 // @Description Sets a specified server within a cluster as ignored.
-// @Tags ReplicationManager
+// @Tags DatabaseTopology
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Success 200 {string} string "Server set as ignored successfully"
@@ -1176,8 +1198,9 @@ func (repman *ReplicationManager) handlerMuxServerSetIgnored(w http.ResponseWrit
 // handlerWaitInnoDBPurge handles the HTTP request to wait for InnoDB purge on a specific server within a cluster.
 // @Summary Wait for InnoDB purge on a server
 // @Description Waits for InnoDB purge on a specified server within a cluster.
-// @Tags ReplicationManager
+// @Tags DatabaseActions
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Success 200 {string} string "InnoDB purge completed successfully"
@@ -1213,8 +1236,9 @@ func (repman *ReplicationManager) handlerWaitInnoDBPurge(w http.ResponseWriter, 
 // handlerMuxServerSwitchReadOnly handles the HTTP request to toggle read-only mode on a specific server within a cluster.
 // @Summary Toggle read-only mode on a server
 // @Description Toggles the read-only mode on a specified server within a cluster.
-// @Tags ReplicationManager
+// @Tags DatabaseActions
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Success 200 {string} string "Read-only mode toggled successfully"
@@ -1246,8 +1270,9 @@ func (repman *ReplicationManager) handlerMuxServerSwitchReadOnly(w http.Response
 // handlerMuxServerSwitchMetaDataLocks handles the HTTP request to toggle metadata locks on a specific server within a cluster.
 // @Summary Toggle metadata locks on a server
 // @Description Toggles the metadata locks on a specified server within a cluster.
-// @Tags ReplicationManager
+// @Tags DatabaseActions
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Success 200 {string} string "Metadata locks toggled successfully"
@@ -1279,8 +1304,9 @@ func (repman *ReplicationManager) handlerMuxServerSwitchMetaDataLocks(w http.Res
 // handlerMuxServerSwitchQueryResponseTime handles the HTTP request to toggle query response time on a specific server within a cluster.
 // @Summary Toggle query response time on a server
 // @Description Toggles the query response time on a specified server within a cluster.
-// @Tags ReplicationManager
+// @Tags DatabaseActions
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Success 200 {string} string "Query response time toggled successfully"
@@ -1313,8 +1339,9 @@ func (repman *ReplicationManager) handlerMuxServerSwitchQueryResponseTime(w http
 // handlerMuxServerSwitchSqlErrorLog handles the HTTP request to toggle SQL error log on a specific server within a cluster.
 // @Summary Toggle SQL error log on a server
 // @Description Toggles the SQL error log on a specified server within a cluster.
-// @Tags ReplicationManager
+// @Tags DatabaseLogs
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Success 200 {string} string "SQL error log toggled successfully"
@@ -1347,8 +1374,9 @@ func (repman *ReplicationManager) handlerMuxServerSwitchSqlErrorLog(w http.Respo
 // handlerMuxServerStartSlave handles the HTTP request to start the slave on a specific server within a cluster.
 // @Summary Start the slave on a server
 // @Description Starts the slave on a specified server within a cluster.
-// @Tags ReplicationManager
+// @Tags DatabaseReplication
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Success 200 {string} string "Slave started successfully"
@@ -1380,8 +1408,9 @@ func (repman *ReplicationManager) handlerMuxServerStartSlave(w http.ResponseWrit
 // handlerMuxServerStopSlave handles the HTTP request to stop the slave on a specific server within a cluster.
 // @Summary Stop the slave on a server
 // @Description Stops the slave on a specified server within a cluster.
-// @Tags ReplicationManager
+// @Tags DatabaseReplication
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Success 200 {string} string "Slave stopped successfully"
@@ -1413,8 +1442,9 @@ func (repman *ReplicationManager) handlerMuxServerStopSlave(w http.ResponseWrite
 // handlerMuxServerResetSlaveAll handles the HTTP request to reset all slaves on a specific server within a cluster.
 // @Summary Reset all slaves on a server
 // @Description Resets all slaves on a specified server within a cluster.
-// @Tags ReplicationManager
+// @Tags DatabaseReplication
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Success 200 {string} string "Slaves reset successfully"
@@ -1448,8 +1478,9 @@ func (repman *ReplicationManager) handlerMuxServerResetSlaveAll(w http.ResponseW
 // handlerMuxServerFlushLogs handles the HTTP request to flush logs on a specific server within a cluster.
 // @Summary Flush logs on a server
 // @Description Flushes the logs on a specified server within a cluster.
-// @Tags ReplicationManager
+// @Tags DatabaseLogs
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Success 200 {string} string "Logs flushed successfully"
@@ -1481,8 +1512,9 @@ func (repman *ReplicationManager) handlerMuxServerFlushLogs(w http.ResponseWrite
 // handlerMuxServerResetMaster handles the HTTP request to reset the master on a specific server within a cluster.
 // @Summary Reset the master on a server
 // @Description Resets the master on a specified server within a cluster.
-// @Tags ReplicationManager
+// @Tags DatabaseReplication
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Success 200 {string} string "Master reset successfully"
@@ -1514,8 +1546,9 @@ func (repman *ReplicationManager) handlerMuxServerResetMaster(w http.ResponseWri
 // handlerMuxServerResetPFSQueries handles the HTTP request to reset PFS queries on a specific server within a cluster.
 // @Summary Reset PFS queries on a server
 // @Description Resets PFS queries on a specified server within a cluster.
-// @Tags ReplicationManager
+// @Tags DatabaseQueries
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Success 200 {string} string "PFS queries reset successfully"
@@ -1547,8 +1580,9 @@ func (repman *ReplicationManager) handlerMuxServerResetPFSQueries(w http.Respons
 // handlerMuxSwitchSlowQueryCapture handles the HTTP request to toggle slow query capture on a specific server within a cluster.
 // @Summary Toggle slow query capture on a server
 // @Description Toggles the slow query capture on a specified server within a cluster.
-// @Tags ReplicationManager
+// @Tags DatabaseQueries
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Success 200 {string} string "Slow query capture toggled successfully"
@@ -1580,8 +1614,9 @@ func (repman *ReplicationManager) handlerMuxSwitchSlowQueryCapture(w http.Respon
 // handlerMuxSwitchPFSSlowQuery handles the HTTP request to toggle PFS slow query capture on a specific server within a cluster.
 // @Summary Toggle PFS slow query capture on a server
 // @Description Toggles the PFS slow query capture on a specified server within a cluster.
-// @Tags ReplicationManager
+// @Tags DatabaseQueries
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Success 200 {string} string "PFS slow query capture toggled successfully"
@@ -1613,8 +1648,9 @@ func (repman *ReplicationManager) handlerMuxSwitchPFSSlowQuery(w http.ResponseWr
 // handlerMuxSwitchSlowQuery handles the HTTP request to toggle slow query on a specific server within a cluster.
 // @Summary Toggle slow query on a server
 // @Description Toggles the slow query on a specified server within a cluster.
-// @Tags ReplicationManager
+// @Tags DatabaseQueries
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Success 200 {string} string "Slow query toggled successfully"
@@ -1646,8 +1682,9 @@ func (repman *ReplicationManager) handlerMuxSwitchSlowQuery(w http.ResponseWrite
 // handlerMuxSwitchSlowQueryTable handles the HTTP request to toggle slow query table mode on a specific server within a cluster.
 // @Summary Toggle slow query table mode on a server
 // @Description Toggles the slow query table mode on a specified server within a cluster.
-// @Tags ReplicationManager
+// @Tags DatabaseQueries
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Success 200 {string} string "Slow query table mode toggled successfully"
@@ -1679,8 +1716,9 @@ func (repman *ReplicationManager) handlerMuxSwitchSlowQueryTable(w http.Response
 // handlerMuxSetLongQueryTime handles the HTTP request to set the long query time on a specific server within a cluster.
 // @Summary Set long query time on a server
 // @Description Sets the long query time on a specified server within a cluster.
-// @Tags ReplicationManager
+// @Tags DatabaseQueries
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Param queryTime path string true "Query Time"
@@ -1713,8 +1751,9 @@ func (repman *ReplicationManager) handlerMuxSetLongQueryTime(w http.ResponseWrit
 // handlerMuxServerStart handles the HTTP request to start a server within a cluster.
 // @Summary Start a server
 // @Description Starts a specified server within a cluster.
-// @Tags ReplicationManager
+// @Tags DatabaseActions
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Success 200 {string} string "Server started successfully"
@@ -1746,8 +1785,9 @@ func (repman *ReplicationManager) handlerMuxServerStart(w http.ResponseWriter, r
 // handlerMuxServerProvision handles the HTTP request to provision a server within a cluster.
 // @Summary Provision a server
 // @Description Provisions a specified server within a cluster.
-// @Tags ReplicationManager
+// @Tags DatabaseProvision
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Success 200 {string} string "Server provisioned successfully"
@@ -1779,8 +1819,9 @@ func (repman *ReplicationManager) handlerMuxServerProvision(w http.ResponseWrite
 // handlerMuxServerUnprovision handles the HTTP request to unprovision a server within a cluster.
 // @Summary Unprovision a server
 // @Description Unprovisions a specified server within a cluster.
-// @Tags ReplicationManager
+// @Tags DatabaseProvision
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Success 200 {string} string "Server unprovisioned successfully"
@@ -1812,7 +1853,7 @@ func (repman *ReplicationManager) handlerMuxServerUnprovision(w http.ResponseWri
 // handlerMuxServersIsMasterStatus handles the HTTP request to check if a server is a master within a cluster.
 // @Summary Check if a server is a master
 // @Description Checks if a specified server within a cluster is a master.
-// @Tags ReplicationManager
+// @Tags Database
 // @Produce text/plain
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
@@ -1846,7 +1887,7 @@ func (repman *ReplicationManager) handlerMuxServersIsMasterStatus(w http.Respons
 // handlerMuxServerNeedRestart handles the HTTP request to check if a server needs a restart.
 // @Summary Check if a server needs a restart
 // @Description Checks if a specified server within a cluster needs a restart.
-// @Tags ReplicationManager
+// @Tags Database
 // @Produce text/plain
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
@@ -1891,7 +1932,7 @@ func (repman *ReplicationManager) handlerMuxServerNeedRestart(w http.ResponseWri
 // handlerMuxServerNeedReprov handles the HTTP request to check if a server needs re-provisioning.
 // @Summary Check if a server needs re-provisioning
 // @Description Checks if a specified server within a cluster needs re-provisioning.
-// @Tags ReplicationManager
+// @Tags Database
 // @Produce text/plain
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
@@ -1935,7 +1976,7 @@ func (repman *ReplicationManager) handlerMuxServerNeedReprov(w http.ResponseWrit
 // handlerMuxServerNeedProv handles the HTTP request to check if a server needs provisioning.
 // @Summary Check if a server needs provisioning
 // @Description Checks if a specified server within a cluster needs provisioning.
-// @Tags ReplicationManager
+// @Tags Database
 // @Produce text/plain
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
@@ -1979,7 +2020,7 @@ func (repman *ReplicationManager) handlerMuxServerNeedProv(w http.ResponseWriter
 // handlerMuxServerNeedUnprov handles the HTTP request to check if a server needs unprovisioning.
 // @Summary Check if a server needs unprovisioning
 // @Description Checks if a specified server within a cluster needs unprovisioning.
-// @Tags ReplicationManager
+// @Tags Database
 // @Produce text/plain
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
@@ -2023,7 +2064,7 @@ func (repman *ReplicationManager) handlerMuxServerNeedUnprov(w http.ResponseWrit
 // handlerMuxServerNeedStart handles the HTTP request to check if a server needs to start.
 // @Summary Check if a server needs to start
 // @Description Checks if a specified server within a cluster needs to start.
-// @Tags ReplicationManager
+// @Tags Database
 // @Produce text/plain
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
@@ -2071,7 +2112,7 @@ func (repman *ReplicationManager) handlerMuxServerNeedStart(w http.ResponseWrite
 // handlerMuxServerNeedStop handles the HTTP request to check if a server needs to stop.
 // @Summary Check if a server needs to stop
 // @Description Checks if a specified server within a cluster needs to stop.
-// @Tags ReplicationManager
+// @Tags Database
 // @Produce text/plain
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
@@ -2118,7 +2159,7 @@ func (repman *ReplicationManager) handlerMuxServerNeedStop(w http.ResponseWriter
 // handlerMuxServerNeedConfigChange handles the HTTP request to check if a server needs a config change.
 // @Summary Check if a server needs a config change
 // @Description Checks if a specified server within a cluster needs a config change.
-// @Tags ReplicationManager
+// @Tags Database
 // @Produce text/plain
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
@@ -2166,7 +2207,7 @@ func (repman *ReplicationManager) handlerMuxServerNeedConfigChange(w http.Respon
 // handlerMuxServerNeedRollingReprov handles the HTTP request to check if a cluster needs a rolling reprovision.
 // @Summary Check if a cluster needs a rolling reprovision
 // @Description Checks if a specified cluster needs a rolling reprovision.
-// @Tags ReplicationManager
+// @Tags Database
 // @Produce text/plain
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {string} string "200 -Need rolling reprov!"
@@ -2194,7 +2235,7 @@ func (repman *ReplicationManager) handlerMuxServerNeedRollingReprov(w http.Respo
 // handlerMuxServerNeedRollingRestart handles the HTTP request to check if a cluster needs a rolling restart.
 // @Summary Check if a cluster needs a rolling restart
 // @Description Checks if a specified cluster needs a rolling restart.
-// @Tags ReplicationManager
+// @Tags Database
 // @Produce text/plain
 // @Param clusterName path string true "Cluster Name"
 // @Success 200 {string} string "200 -Need rolling restart!"
@@ -2222,7 +2263,7 @@ func (repman *ReplicationManager) handlerMuxServerNeedRollingRestart(w http.Resp
 // handlerMuxServersPortIsMasterStatus handles the HTTP request to check if a server port is a master within a cluster.
 // @Summary Check if a server port is a master
 // @Description Checks if a specified server port within a cluster is a master.
-// @Tags ReplicationManager
+// @Tags Database
 // @Produce text/plain
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
@@ -2264,7 +2305,7 @@ func (repman *ReplicationManager) handlerMuxServersPortIsMasterStatus(w http.Res
 // handlerMuxServersIsSlaveStatus handles the HTTP request to check if a server is a slave within a cluster.
 // @Summary Check if a server is a slave
 // @Description Checks if a specified server within a cluster is a slave.
-// @Tags ReplicationManager
+// @Tags Database
 // @Produce text/plain
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
@@ -2300,7 +2341,7 @@ func (repman *ReplicationManager) handlerMuxServersIsSlaveStatus(w http.Response
 // handlerMuxServersPortIsSlaveStatus handles the HTTP request to check if a server port is a slave within a cluster.
 // @Summary Check if a server port is a slave
 // @Description Checks if a specified server port within a cluster is a slave.
-// @Tags ReplicationManager
+// @Tags Database
 // @Produce text/plain
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
@@ -2339,8 +2380,9 @@ func (repman *ReplicationManager) handlerMuxServersPortIsSlaveStatus(w http.Resp
 // handlerMuxServersPortBackup handles the HTTP request to perform a physical backup on a specific server port within a cluster.
 // @Summary Perform a physical backup on a server port
 // @Description Initiates a physical backup on a specified server port within a cluster.
-// @Tags ReplicationManager
+// @Tags DatabaseBackup
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Param serverPort path string true "Server Port"
@@ -2374,7 +2416,7 @@ func (repman *ReplicationManager) handlerMuxServersPortBackup(w http.ResponseWri
 // handlerMuxServersPortConfig handles the HTTP request to get the configuration of a specific server port within a cluster.
 // @Summary Get server port configuration
 // @Description Retrieves the configuration of a specified server port within a cluster.
-// @Tags ReplicationManager
+// @Tags Database
 // @Produce application/octet-stream
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
@@ -2434,7 +2476,7 @@ type DecodedData struct {
 // handlerMuxServersWriteLog handles the HTTP request to write logs for a specific server within a cluster.
 // @Summary Write logs for a server
 // @Description Writes logs for a specified server within a cluster.
-// @Tags ReplicationManager
+// @Tags DatabaseTasks
 // @Produce json
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
@@ -2501,8 +2543,9 @@ func (repman *ReplicationManager) handlerMuxServersWriteLog(w http.ResponseWrite
 // handlerMuxServerProcesslist handles the HTTP request to get the process list of a specific server within a cluster.
 // @Summary Get process list of a server
 // @Description Retrieves the process list of a specified server within a cluster.
-// @Tags ReplicationManager
+// @Tags Database
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Success 200 {object} map[string]interface{} "Process list retrieved successfully"
@@ -2544,8 +2587,9 @@ func (repman *ReplicationManager) handlerMuxServerProcesslist(w http.ResponseWri
 // handlerMuxServerMetaDataLocks handles the HTTP request to get metadata locks of a specific server within a cluster.
 // @Summary Get metadata locks of a server
 // @Description Retrieves the metadata locks of a specified server within a cluster.
-// @Tags ReplicationManager
+// @Tags Database
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Success 200 {object} map[string]interface{} "Metadata locks retrieved successfully"
@@ -2585,8 +2629,9 @@ func (repman *ReplicationManager) handlerMuxServerMetaDataLocks(w http.ResponseW
 // handlerMuxServerQueryResponseTime handles the HTTP request to get query response time of a specific server within a cluster.
 // @Summary Get query response time of a server
 // @Description Retrieves the query response time of a specified server within a cluster.
-// @Tags ReplicationManager
+// @Tags DatabaseQueries
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Success 200 {object} map[string]interface{} "Query response time retrieved successfully"
@@ -2626,8 +2671,9 @@ func (repman *ReplicationManager) handlerMuxServerQueryResponseTime(w http.Respo
 // handlerMuxServerErrorLog handles the HTTP request to get the error log of a specific server within a cluster.
 // @Summary Get error log of a server
 // @Description Retrieves the error log of a specified server within a cluster.
-// @Tags ReplicationManager
+// @Tags DatabaseLogs
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Success 200 {object} map[string]interface{} "Error log retrieved successfully"
@@ -2668,8 +2714,9 @@ func (repman *ReplicationManager) handlerMuxServerErrorLog(w http.ResponseWriter
 // handlerMuxServerSlowLog handles the HTTP request to get the slow log of a specific server within a cluster.
 // @Summary Get slow log of a server
 // @Description Retrieves the slow log of a specified server within a cluster.
-// @Tags ReplicationManager
+// @Tags DatabaseQueries
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Success 200 {object} map[string]interface{} "Slow log retrieved successfully"
@@ -2710,8 +2757,9 @@ func (repman *ReplicationManager) handlerMuxServerSlowLog(w http.ResponseWriter,
 // handlerMuxServerPFSStatements handles the HTTP request to get PFS statements of a specific server within a cluster.
 // @Summary Get PFS statements of a server
 // @Description Retrieves the PFS statements of a specified server within a cluster.
-// @Tags ReplicationManager
+// @Tags DatabaseQueries
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Success 200 {object} map[string]interface{} "PFS statements retrieved successfully"
@@ -2751,8 +2799,9 @@ func (repman *ReplicationManager) handlerMuxServerPFSStatements(w http.ResponseW
 // handlerMuxServerPFSStatementsSlowLog handles the HTTP request to get PFS statements from the slow log of a specific server within a cluster.
 // @Summary Get PFS statements from the slow log of a server
 // @Description Retrieves the PFS statements from the slow log of a specified server within a cluster.
-// @Tags ReplicationManager
+// @Tags DatabaseQueries
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Success 200 {object} map[string]interface{} "PFS statements from slow log retrieved successfully"
@@ -2793,8 +2842,9 @@ func (repman *ReplicationManager) handlerMuxServerPFSStatementsSlowLog(w http.Re
 // handlerMuxServerVariables handles the HTTP request to get the variables of a specific server within a cluster.
 // @Summary Get variables of a server
 // @Description Retrieves the variables of a specified server within a cluster.
-// @Tags ReplicationManager
+// @Tags Database
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Success 200 {object} map[string]interface{} "Variables retrieved successfully"
@@ -2835,8 +2885,9 @@ func (repman *ReplicationManager) handlerMuxServerVariables(w http.ResponseWrite
 // handlerMuxServerStatus handles the HTTP request to get the status of a specific server within a cluster.
 // @Summary Get status of a server
 // @Description Retrieves the status of a specified server within a cluster.
-// @Tags ReplicationManager
+// @Tags Database
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Success 200 {object} map[string]interface{} "Status retrieved successfully"
@@ -2877,8 +2928,9 @@ func (repman *ReplicationManager) handlerMuxServerStatus(w http.ResponseWriter, 
 // handlerMuxServerStatusDelta handles the HTTP request to get the status delta of a specific server within a cluster.
 // @Summary Get status delta of a server
 // @Description Retrieves the status delta of a specified server within a cluster.
-// @Tags ReplicationManager
+// @Tags Database
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Success 200 {object} map[string]interface{} "Status delta retrieved successfully"
@@ -2919,8 +2971,9 @@ func (repman *ReplicationManager) handlerMuxServerStatusDelta(w http.ResponseWri
 // handlerMuxServerTables handles the HTTP request to get the tables of a specific server within a cluster.
 // @Summary Get tables of a server
 // @Description Retrieves the tables of a specified server within a cluster.
-// @Tags ReplicationManager
+// @Tags Database
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Success 200 {object} map[string]interface{} "Tables retrieved successfully"
@@ -2961,8 +3014,9 @@ func (repman *ReplicationManager) handlerMuxServerTables(w http.ResponseWriter, 
 // handlerMuxServerVTables handles the HTTP request to get the virtual tables of a specific server within a cluster.
 // @Summary Get virtual tables of a server
 // @Description Retrieves the virtual tables of a specified server within a cluster.
-// @Tags ReplicationManager
+// @Tags Database
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Success 200 {object} map[string]interface{} "Virtual tables retrieved successfully"
@@ -3003,8 +3057,9 @@ func (repman *ReplicationManager) handlerMuxServerVTables(w http.ResponseWriter,
 // handlerMuxRunJobs handles the HTTP request to run jobs on a specific server within a cluster.
 // @Summary Run jobs on a server
 // @Description Runs jobs on a specified server within a cluster.
-// @Tags ReplicationManager
+// @Tags DatabaseTasks
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Success 200 {string} string "Jobs run successfully"
@@ -3041,8 +3096,9 @@ func (repman *ReplicationManager) handlerMuxRunJobs(w http.ResponseWriter, r *ht
 // handlerMuxServerSchemas handles the HTTP request to get the schemas of a specific server within a cluster.
 // @Summary Get schemas of a server
 // @Description Retrieves the schemas of a specified server within a cluster.
-// @Tags ReplicationManager
+// @Tags DatabaseSchema
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Success 200 {object} map[string]interface{} "Schemas retrieved successfully"
@@ -3083,8 +3139,9 @@ func (repman *ReplicationManager) handlerMuxServerSchemas(w http.ResponseWriter,
 // handlerMuxServerInnoDBStatus handles the HTTP request to get the InnoDB status of a specific server within a cluster.
 // @Summary Get InnoDB status of a server
 // @Description Retrieves the InnoDB status of a specified server within a cluster.
-// @Tags ReplicationManager
+// @Tags Database
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Success 200 {object} map[string]interface{} "InnoDB status retrieved successfully"
@@ -3125,8 +3182,9 @@ func (repman *ReplicationManager) handlerMuxServerInnoDBStatus(w http.ResponseWr
 // handlerMuxServerAllSlavesStatus handles the HTTP request to get the status of all slaves of a specific server within a cluster.
 // @Summary Get status of all slaves of a server
 // @Description Retrieves the status of all slaves of a specified server within a cluster.
-// @Tags ReplicationManager
+// @Tags Database
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Success 200 {object} map[string]interface{} "Status of all slaves retrieved successfully"
@@ -3167,8 +3225,9 @@ func (repman *ReplicationManager) handlerMuxServerAllSlavesStatus(w http.Respons
 // handlerMuxServerMasterStatus handles the HTTP request to get the master status of a specific server within a cluster.
 // @Summary Get master status of a server
 // @Description Retrieves the master status of a specified server within a cluster.
-// @Tags ReplicationManager
+// @Tags Database
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Success 200 {object} map[string]interface{} "Master status retrieved successfully"
@@ -3209,8 +3268,9 @@ func (repman *ReplicationManager) handlerMuxServerMasterStatus(w http.ResponseWr
 // handlerMuxSkipReplicationEvent handles the HTTP request to skip a replication event on a specific server within a cluster.
 // @Summary Skip a replication event on a server
 // @Description Skips a replication event on a specified server within a cluster.
-// @Tags ReplicationManager
+// @Tags DatabaseReplication
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Success 200 {string} string "Replication event skipped successfully"
@@ -3242,8 +3302,9 @@ func (repman *ReplicationManager) handlerMuxSkipReplicationEvent(w http.Response
 // handlerMuxSetInnoDBMonitor handles the HTTP request to toggle InnoDB monitor on a specific server within a cluster.
 // @Summary Toggle InnoDB monitor on a server
 // @Description Toggles the InnoDB monitor on a specified server within a cluster.
-// @Tags ReplicationManager
+// @Tags Database
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Success 200 {string} string "InnoDB monitor toggled successfully"
@@ -3275,8 +3336,9 @@ func (repman *ReplicationManager) handlerMuxSetInnoDBMonitor(w http.ResponseWrit
 // handlerMuxGetDatabaseServiceConfig handles the HTTP request to get the database service configuration of a specific server within a cluster.
 // @Summary Get database service configuration of a server
 // @Description Retrieves the database service configuration of a specified server within a cluster.
-// @Tags ReplicationManager
+// @Tags Database
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Success 200 {string} string "Database service configuration retrieved successfully"
@@ -3309,8 +3371,9 @@ func (repman *ReplicationManager) handlerMuxGetDatabaseServiceConfig(w http.Resp
 // handlerMuxServersTaskCancel handles the HTTP request to cancel a task on a specific server within a cluster.
 // @Summary Cancel a task on a server
 // @Description Cancels a task identified by its name on a specified server within a cluster.
-// @Tags ReplicationManager
+// @Tags DatabaseTasks
 // @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Param clusterName path string true "Cluster Name"
 // @Param serverName path string true "Server Name"
 // @Param task path string true "Task Name"

@@ -98,7 +98,7 @@ function DatabaseJobs({ clusterName }) {
       {jobs?.servers &&
         Object.entries(jobs.servers).map((entry) => {
           const [dbId, jobServer] = entry
-          const dbServer = clusterServers.find((server) => server.url === jobServer.serverUrl)
+          const dbServer = clusterServers?.find((server) => server?.url === jobServer?.serverUrl)
           const serverStatus = dbServer?.state || ''
           const updatedTasks = [...jobServer.tasks].map((task) => {
             const updatedTask = { ...task }
