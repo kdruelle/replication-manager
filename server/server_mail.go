@@ -188,7 +188,7 @@ func (repman *ReplicationManager) SendDBACredentialsMail(cl *cluster.Cluster, de
 	to := make([]string, 0)
 	if dest == "dbops" {
 		for _, u := range cl.APIUsers {
-			if u.Roles[config.RoleDBOps] {
+			if u.Roles[config.RoleDBOps] || u.Roles[config.RoleExtDBOps] {
 				if u.User == "admin" {
 					continue
 				}

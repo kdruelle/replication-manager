@@ -430,27 +430,23 @@ func (cluster *Cluster) SetUserDBGrants(user, host string, grantOpt bool, grants
 	return nil
 }
 
-func (cluster *Cluster) SetDBAUserCredentials() error {
-	err := cluster.SetUserDBCredentials(cluster.GetDbaUser() + ":" + cluster.GetDbaPass())
+func (cluster *Cluster) SetDBAUserCredentials(user, pass string) error {
+	err := cluster.SetUserDBCredentials(user + ":" + pass)
 	if err != nil {
-		cluster.SetWaitDBACredCookie()
 		return err
 	}
-	cluster.DelWaitDBACredCookie()
 
-	err = cluster.SetUserDBGrants(cluster.GetDbaUser(), "%", true, "ALL PRIVILEGES ON *.*")
+	err = cluster.SetUserDBGrants(user, "%", true, "ALL PRIVILEGES ON *.*")
 	return err
 }
 
-func (cluster *Cluster) SetSponsorUserCredentials() error {
-	err := cluster.SetUserDBCredentials(cluster.GetSponsorUser() + ":" + cluster.GetSponsorPass())
+func (cluster *Cluster) SetSponsorUserCredentials(user, pass string) error {
+	err := cluster.SetUserDBCredentials(user + ":" + pass)
 	if err != nil {
-		cluster.SetWaitSponsorCredCookie()
 		return err
 	}
-	cluster.DelWaitSponsorCredCookie()
 
-	err = cluster.SetUserDBGrants(cluster.GetSponsorUser(), "%", true, "ALL PRIVILEGES ON *.*")
+	err = cluster.SetUserDBGrants(user, "%", true, "ALL PRIVILEGES ON *.*")
 	return err
 }
 

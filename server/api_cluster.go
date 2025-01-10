@@ -2230,40 +2230,50 @@ func (repman *ReplicationManager) setClusterSetting(mycluster *cluster.Cluster, 
 		if err != nil {
 			return errors.New("Unable to decode")
 		}
-		mycluster.Conf.Cloud18DbaUserCredentials = string(val)
-		var new_secret config.Secret
-		new_secret.Value = mycluster.Conf.Cloud18DbaUserCredentials
-		new_secret.OldValue = mycluster.Conf.GetDecryptedValue("cloud18-dba-user-credentials")
-		mycluster.Conf.Secrets["cloud18-dba-user-credentials"] = new_secret
-
-		dbauser := mycluster.GetDbaUser()
+		cred := string(val)
+		dbauser, dbapass := misc.SplitPair(cred)
 		if dbauser != "" {
-			err = mycluster.SetDBAUserCredentials()
+			if dbapass == "" {
+				dbapass, _ = mycluster.GeneratePassword()
+			}
+			err = mycluster.SetDBAUserCredentials(dbauser, dbapass)
 			if err != nil {
 				mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, "ERROR", "Error setting dba user credentials: %s", err.Error())
 				return err
 			}
 		}
+
+		var new_secret config.Secret
+		new_secret.Value = cred
+		new_secret.OldValue = mycluster.Conf.GetDecryptedValue("cloud18-dba-user-credentials")
+
+		mycluster.Conf.Cloud18DbaUserCredentials = cred
+		mycluster.Conf.Secrets["cloud18-dba-user-credentials"] = new_secret
 	case "cloud18-sponsor-user-credentials":
 		val, err := base64.StdEncoding.DecodeString(value)
 		if err != nil {
 			return errors.New("Unable to decode")
 		}
-		mycluster.Conf.Cloud18SponsorUserCredentials = string(val)
-		var new_secret config.Secret
-		new_secret.Value = mycluster.Conf.Cloud18SponsorUserCredentials
-		new_secret.OldValue = mycluster.Conf.GetDecryptedValue("cloud18-sponsor-user-credentials")
-		mycluster.Conf.Secrets["cloud18-sponsor-user-credentials"] = new_secret
 
-		sponsoruser := mycluster.GetSponsorUser()
-		if sponsoruser != "" {
-			err = mycluster.SetSponsorUserCredentials()
+		cred := string(val)
+		suser, spass := misc.SplitPair(cred)
+		if suser != "" {
+			if spass == "" {
+				spass, _ = mycluster.GeneratePassword()
+			}
+			err = mycluster.SetSponsorUserCredentials(suser, spass)
 			if err != nil {
 				mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, "ERROR", "Error setting sponsor user credentials: %s", err.Error())
-				mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlInfo, "Created wait dba cred cookie. Will retry when master is ready", err.Error())
 				return err
 			}
 		}
+
+		var new_secret config.Secret
+		new_secret.Value = cred
+		new_secret.OldValue = mycluster.Conf.GetDecryptedValue("cloud18-sponsor-user-credentials")
+
+		mycluster.Conf.Cloud18SponsorUserCredentials = cred
+		mycluster.Conf.Secrets["cloud18-sponsor-user-credentials"] = new_secret
 	case "cloud18-cloud18-dbops":
 		if value != "" && value != mycluster.Conf.Cloud18GitUser {
 			dbops := repman.CreateDBOpsForm(value)
@@ -3939,17 +3949,9 @@ func (repman *ReplicationManager) handlerMuxAcceptSubscription(w http.ResponseWr
 		return
 	}
 
-	err = repman.AcceptSubscription(userform, mycluster)
-	if err != nil {
-		http.Error(w, "Error accepting subscription :"+err.Error(), 500)
-		return
-	}
+	mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlInfo, "Processing sponsorship for %s with %s as sponsor", mycluster.Name, userform.Username)
 
-	mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlInfo, "User %s accepted as sponsor for cluster %s", userform.Username, mycluster.Name)
-
-	if repman.Conf.Cloud18SalesSubscriptionValidateScript != "" {
-		repman.BashScriptSalesSubscriptionValidate(mycluster, userform.Username, uinfomap["User"])
-	}
+	mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlInfo, "Setting up db credentials for sponsor of cluster %s", mycluster.Name)
 
 	suser, spass := misc.SplitPair(mycluster.Conf.GetDecryptedValue("cloud18-sponsor-user-credentials"))
 	if suser == "" {
@@ -3960,7 +3962,13 @@ func (repman *ReplicationManager) handlerMuxAcceptSubscription(w http.ResponseWr
 		spass, _ = mycluster.GeneratePassword()
 	}
 
-	repman.setClusterSetting(mycluster, "cloud18-sponsor-user-credentials", base64.StdEncoding.EncodeToString([]byte(suser+":"+spass)))
+	err = repman.setClusterSetting(mycluster, "cloud18-sponsor-user-credentials", base64.StdEncoding.EncodeToString([]byte(suser+":"+spass)))
+	if err != nil {
+		http.Error(w, "Error setting sponsor db credentials :"+err.Error(), 500)
+		return
+	}
+
+	mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlInfo, "Setting up db credentials for dba of cluster %s", mycluster.Name)
 
 	duser, dpass := misc.SplitPair(mycluster.Conf.GetDecryptedValue("cloud18-dba-user-credentials"))
 	if duser == "" {
@@ -3971,7 +3979,28 @@ func (repman *ReplicationManager) handlerMuxAcceptSubscription(w http.ResponseWr
 		dpass, _ = mycluster.GeneratePassword()
 	}
 
-	repman.setClusterSetting(mycluster, "cloud18-dba-user-credentials", base64.StdEncoding.EncodeToString([]byte(duser+":"+dpass)))
+	err = repman.setClusterSetting(mycluster, "cloud18-dba-user-credentials", base64.StdEncoding.EncodeToString([]byte(duser+":"+dpass)))
+	if err != nil {
+		mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlWarn, "The sponsorship process for %s is proceeding without creating a DBA user, as it does not impact the sponsor's operations", mycluster.Name)
+	}
+
+	err = repman.AcceptSubscription(userform, mycluster)
+	if err != nil {
+		// Reset sponsor credentials if failed
+		repman.setClusterSetting(mycluster, "cloud18-sponsor-user-credentials", base64.StdEncoding.EncodeToString([]byte("")))
+		mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlErr, "Error accepting subscription : %v", err)
+		http.Error(w, "Error accepting subscription :"+err.Error(), 500)
+		return
+	}
+
+	mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlInfo, "User %s registered as sponsor successfully", userform.Username)
+
+	if repman.Conf.Cloud18SalesSubscriptionValidateScript != "" {
+		mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlInfo, "Executing script after sponsor validated")
+		repman.BashScriptSalesSubscriptionValidate(mycluster, userform.Username, uinfomap["User"])
+	} else {
+		mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlInfo, "No script to execute after sponsor validated")
+	}
 
 	mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlInfo, "Sending sponsor activation email to user %s", userform.Username)
 
