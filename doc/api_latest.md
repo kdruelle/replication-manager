@@ -243,16 +243,23 @@
 |---------|---------|--------|---------|
 | GET | /api/clusters/{clusterName}/need-rolling-reprov | [get API clusters cluster name need rolling reprov](#get-api-clusters-cluster-name-need-rolling-reprov) | Check if a cluster needs a rolling reprovision |
 | GET | /api/clusters/{clusterName}/need-rolling-restart | [get API clusters cluster name need rolling restart](#get-api-clusters-cluster-name-need-rolling-restart) | Check if a cluster needs a rolling restart |
+| GET | /api/clusters/{clusterName}/servers/{serverName} | [get API clusters cluster name servers server name](#get-api-clusters-cluster-name-servers-server-name) | Get server details |
 | GET | /api/clusters/{clusterName}/servers/{serverName}/actions/toogle-innodb-monitor | [get API clusters cluster name servers server name actions toogle innodb monitor](#get-api-clusters-cluster-name-servers-server-name-actions-toogle-innodb-monitor) | Toggle InnoDB monitor on a server |
 | GET | /api/clusters/{clusterName}/servers/{serverName}/all-slaves-status | [get API clusters cluster name servers server name all slaves status](#get-api-clusters-cluster-name-servers-server-name-all-slaves-status) | Get status of all slaves of a server |
+| GET | /api/clusters/{clusterName}/servers/{serverName}/is-failed | [get API clusters cluster name servers server name is failed](#get-api-clusters-cluster-name-servers-server-name-is-failed) | Check if a server is failed |
 | GET | /api/clusters/{clusterName}/servers/{serverName}/is-master | [get API clusters cluster name servers server name is master](#get-api-clusters-cluster-name-servers-server-name-is-master) | Check if a server is a master |
 | GET | /api/clusters/{clusterName}/servers/{serverName}/is-slave | [get API clusters cluster name servers server name is slave](#get-api-clusters-cluster-name-servers-server-name-is-slave) | Check if a server is a slave |
+| GET | /api/clusters/{clusterName}/servers/{serverName}/is-slave-error | [get API clusters cluster name servers server name is slave error](#get-api-clusters-cluster-name-servers-server-name-is-slave-error) | Check if a server is in slave error state |
+| GET | /api/clusters/{clusterName}/servers/{serverName}/is-standalone | [get API clusters cluster name servers server name is standalone](#get-api-clusters-cluster-name-servers-server-name-is-standalone) | Check if a server is in standalone state |
 | GET | /api/clusters/{clusterName}/servers/{serverName}/master-status | [get API clusters cluster name servers server name master status](#get-api-clusters-cluster-name-servers-server-name-master-status) | Get master status of a server |
 | GET | /api/clusters/{clusterName}/servers/{serverName}/meta-data-locks | [get API clusters cluster name servers server name meta data locks](#get-api-clusters-cluster-name-servers-server-name-meta-data-locks) | Get metadata locks of a server |
 | GET | /api/clusters/{clusterName}/servers/{serverName}/processlist | [get API clusters cluster name servers server name processlist](#get-api-clusters-cluster-name-servers-server-name-processlist) | Get process list of a server |
 | GET | /api/clusters/{clusterName}/servers/{serverName}/{serverPort}/config | [get API clusters cluster name servers server name server port config](#get-api-clusters-cluster-name-servers-server-name-server-port-config) | Get server port configuration |
+| GET | /api/clusters/{clusterName}/servers/{serverName}/{serverPort}/is-failed | [get API clusters cluster name servers server name server port is failed](#get-api-clusters-cluster-name-servers-server-name-server-port-is-failed) | Check if a server is failed |
 | GET | /api/clusters/{clusterName}/servers/{serverName}/{serverPort}/is-master | [get API clusters cluster name servers server name server port is master](#get-api-clusters-cluster-name-servers-server-name-server-port-is-master) | Check if a server port is a master |
 | GET | /api/clusters/{clusterName}/servers/{serverName}/{serverPort}/is-slave | [get API clusters cluster name servers server name server port is slave](#get-api-clusters-cluster-name-servers-server-name-server-port-is-slave) | Check if a server port is a slave |
+| GET | /api/clusters/{clusterName}/servers/{serverName}/{serverPort}/is-slave-error | [get API clusters cluster name servers server name server port is slave error](#get-api-clusters-cluster-name-servers-server-name-server-port-is-slave-error) | Check if a server is in slave error state |
+| GET | /api/clusters/{clusterName}/servers/{serverName}/{serverPort}/is-standalone | [get API clusters cluster name servers server name server port is standalone](#get-api-clusters-cluster-name-servers-server-name-server-port-is-standalone) | Check if a server is in standalone state |
 | GET | /api/clusters/{clusterName}/servers/{serverName}/{serverPort}/need-config-change | [get API clusters cluster name servers server name server port need config change](#get-api-clusters-cluster-name-servers-server-name-server-port-need-config-change) | Check if a server needs a config change |
 | GET | /api/clusters/{clusterName}/servers/{serverName}/{serverPort}/need-prov | [get API clusters cluster name servers server name server port need prov](#get-api-clusters-cluster-name-servers-server-name-server-port-need-prov) | Check if a server needs provisioning |
 | GET | /api/clusters/{clusterName}/servers/{serverName}/{serverPort}/need-reprov | [get API clusters cluster name servers server name server port need reprov](#get-api-clusters-cluster-name-servers-server-name-server-port-need-reprov) | Check if a server needs re-provisioning |
@@ -404,6 +411,7 @@
 
 | Method  | URI     | Name   | Summary |
 |---------|---------|--------|---------|
+| GET | /api/clusters/{clusterName}/proxies/{proxyName} | [get API clusters cluster name proxies proxy name](#get-api-clusters-cluster-name-proxies-proxy-name) | Shows the proxies for that specific named cluster |
 | GET | /api/clusters/{clusterName}/proxies/{proxyName}/actions/need-reprov | [get API clusters cluster name proxies proxy name actions need reprov](#get-api-clusters-cluster-name-proxies-proxy-name-actions-need-reprov) | Check if Proxy Needs Reprovision |
 | GET | /api/clusters/{clusterName}/proxies/{proxyName}/actions/need-restart | [get API clusters cluster name proxies proxy name actions need restart](#get-api-clusters-cluster-name-proxies-proxy-name-actions-need-restart) | Check if Proxy Needs Restart |
 | GET | /api/clusters/{clusterName}/sphinx/indexes | [get API clusters cluster name sphinx indexes](#get-api-clusters-cluster-name-sphinx-indexes) | Get Sphinx Indexes |
@@ -425,6 +433,14 @@
 | GET | /api/repocomp/current | [get API repocomp current](#get-api-repocomp-current) | Retrieve current repository component |
 | GET | /api/status | [get API status](#get-api-status) | Get Replication Manager Status |
 | GET | /api/timeout | [get API timeout](#get-api-timeout) | Check if the replication manager is running |
+  
+
+
+###  replication
+
+| Method  | URI     | Name   | Summary |
+|---------|---------|--------|---------|
+| GET | /replication/{clusterName}/{serverName}/slave-late-status | [get replication cluster name server name slave late status](#get-replication-cluster-name-server-name-slave-late-status) | Check if server is in Slave Late state |
   
 
 
@@ -457,6 +473,7 @@ Deletes a cluster identified by its name.
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -505,6 +522,12 @@ Fetches the list of clusters that the user has access to based on ACL.
 
 #### Produces
   * application/json
+
+#### Parameters
+
+| Name | Source | Type | Go type | Separator | Required | Default | Description |
+|------|--------|------|---------|-----------| :------: |---------|-------------|
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -559,6 +582,7 @@ This endpoint retrieves the details of a specified cluster and returns it in JSO
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -613,6 +637,7 @@ This endpoint retrieves the backups for the specified cluster.
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -667,6 +692,7 @@ This endpoint retrieves the client certificates for the specified cluster.
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -711,6 +737,7 @@ This endpoint retrieves the variable differences for the specified cluster.
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -765,6 +792,7 @@ This endpoint retrieves the Graphite filter list for the specified cluster.
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -809,6 +837,7 @@ This endpoint retrieves the job entries for the specified cluster.
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -935,6 +964,48 @@ Status: Internal Server Error
 
 
 
+### <span id="get-api-clusters-cluster-name-proxies-proxy-name"></span> Shows the proxies for that specific named cluster (*GetAPIClustersClusterNameProxiesProxyName*)
+
+```
+GET /api/clusters/{clusterName}/proxies/{proxyName}
+```
+
+Shows the proxies for that specific named cluster
+
+#### Parameters
+
+| Name | Source | Type | Go type | Separator | Required | Default | Description |
+|------|--------|------|---------|-----------| :------: |---------|-------------|
+| clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
+
+#### All responses
+| Code | Status | Description | Has headers | Schema |
+|------|--------|-------------|:-----------:|--------|
+| [200](#get-api-clusters-cluster-name-proxies-proxy-name-200) | OK | Server details retrieved successfully |  | [schema](#get-api-clusters-cluster-name-proxies-proxy-name-200-schema) |
+| [500](#get-api-clusters-cluster-name-proxies-proxy-name-500) | Internal Server Error | Internal Server Error |  | [schema](#get-api-clusters-cluster-name-proxies-proxy-name-500-schema) |
+
+#### Responses
+
+
+##### <span id="get-api-clusters-cluster-name-proxies-proxy-name-200"></span> 200 - Server details retrieved successfully
+Status: OK
+
+###### <span id="get-api-clusters-cluster-name-proxies-proxy-name-200-schema"></span> Schema
+   
+  
+
+[ClusterProxy](#cluster-proxy)
+
+##### <span id="get-api-clusters-cluster-name-proxies-proxy-name-500"></span> 500 - Internal Server Error
+Status: Internal Server Error
+
+###### <span id="get-api-clusters-cluster-name-proxies-proxy-name-500-schema"></span> Schema
+   
+  
+
+
+
 ### <span id="get-api-clusters-cluster-name-proxies-proxy-name-actions-need-reprov"></span> Check if Proxy Needs Reprovision (*GetAPIClustersClusterNameProxiesProxyNameActionsNeedReprov*)
 
 ```
@@ -955,6 +1026,7 @@ Check if the proxy service for a given cluster and proxy needs reprovisioning
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | proxyName | `path` | string | `string` |  | ✓ |  | Proxy Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -1023,6 +1095,7 @@ Check if the proxy service for a given cluster and proxy needs a restart
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | proxyName | `path` | string | `string` |  | ✓ |  | Proxy Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -1087,6 +1160,7 @@ This endpoint retrieves the query rules for the specified cluster.
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -1141,6 +1215,7 @@ This endpoint retrieves the schema information for the specified cluster.
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -1179,6 +1254,52 @@ Status: Internal Server Error
 
 
 
+### <span id="get-api-clusters-cluster-name-servers-server-name"></span> Get server details (*GetAPIClustersClusterNameServersServerName*)
+
+```
+GET /api/clusters/{clusterName}/servers/{serverName}
+```
+
+Retrieves the details of a specified server within a cluster.
+
+#### Produces
+  * application/json
+
+#### Parameters
+
+| Name | Source | Type | Go type | Separator | Required | Default | Description |
+|------|--------|------|---------|-----------| :------: |---------|-------------|
+| clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
+
+#### All responses
+| Code | Status | Description | Has headers | Schema |
+|------|--------|-------------|:-----------:|--------|
+| [200](#get-api-clusters-cluster-name-servers-server-name-200) | OK | Server details retrieved successfully |  | [schema](#get-api-clusters-cluster-name-servers-server-name-200-schema) |
+| [500](#get-api-clusters-cluster-name-servers-server-name-500) | Internal Server Error | No cluster" or "Server Not Found" or "Encoding error |  | [schema](#get-api-clusters-cluster-name-servers-server-name-500-schema) |
+
+#### Responses
+
+
+##### <span id="get-api-clusters-cluster-name-servers-server-name-200"></span> 200 - Server details retrieved successfully
+Status: OK
+
+###### <span id="get-api-clusters-cluster-name-servers-server-name-200-schema"></span> Schema
+   
+  
+
+[ClusterServerMonitor](#cluster-server-monitor)
+
+##### <span id="get-api-clusters-cluster-name-servers-server-name-500"></span> 500 - No cluster" or "Server Not Found" or "Encoding error
+Status: Internal Server Error
+
+###### <span id="get-api-clusters-cluster-name-servers-server-name-500-schema"></span> Schema
+   
+  
+
+
+
 ### <span id="get-api-clusters-cluster-name-servers-server-name-actions-backup-error-log"></span> Perform a backup of the error log on a server (*GetAPIClustersClusterNameServersServerNameActionsBackupErrorLog*)
 
 ```
@@ -1196,6 +1317,7 @@ Initiates a backup of the error log on a specified server within a cluster.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -1251,6 +1373,7 @@ Initiates a logical backup on a specified server within a cluster.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -1306,6 +1429,7 @@ Initiates a physical backup on a specified server within a cluster.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -1361,6 +1485,7 @@ Initiates a backup of the slow query log on a specified server within a cluster.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -1416,6 +1541,7 @@ Deletes the maintenance mode on a specified server within a cluster.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -1471,6 +1597,7 @@ Flushes the logs on a specified server within a cluster.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -1527,6 +1654,7 @@ Cancels a task identified by its name on a specified server within a cluster.
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
 | task | `path` | string | `string` |  | ✓ |  | Task Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -1582,6 +1710,7 @@ Toggles the maintenance mode on a specified server within a cluster.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -1637,6 +1766,7 @@ Optimizes a specified server within a cluster.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -1692,6 +1822,7 @@ Provisions a specified server within a cluster.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -1748,6 +1879,7 @@ Reseeds a specified server within a cluster using the specified backup method.
 | backupMethod | `path` | string | `string` |  | ✓ |  | Backup Method |
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -1804,6 +1936,7 @@ Cancels a reseed task identified by its name on a specified server within a clus
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
 | task | `path` | string | `string` |  | ✓ |  | Task Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -1859,6 +1992,7 @@ Resets the master on a specified server within a cluster.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -1914,6 +2048,7 @@ Resets PFS queries on a specified server within a cluster.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -1969,6 +2104,7 @@ Resets all slaves on a specified server within a cluster.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -2024,6 +2160,7 @@ Runs jobs on a specified server within a cluster.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -2079,6 +2216,7 @@ Sets a specified server within a cluster as ignored.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -2135,6 +2273,7 @@ Sets the long query time on a specified server within a cluster.
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | queryTime | `path` | string | `string` |  | ✓ |  | Query Time |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -2190,6 +2329,7 @@ Sets a specified server within a cluster to maintenance mode.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -2245,6 +2385,7 @@ Sets a specified server within a cluster as preferred.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -2300,6 +2441,7 @@ Sets a specified server within a cluster as unrated.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -2355,6 +2497,7 @@ Skips a replication event on a specified server within a cluster.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -2410,6 +2553,7 @@ Starts a specified server within a cluster.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -2465,6 +2609,7 @@ Starts the slave on a specified server within a cluster.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -2520,6 +2665,7 @@ Stops a specified server within a cluster.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -2575,6 +2721,7 @@ Stops the slave on a specified server within a cluster.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -2630,6 +2777,7 @@ Initiates a switchover on a specified server within a cluster.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -2685,6 +2833,7 @@ Toggles the InnoDB monitor on a specified server within a cluster.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -2740,6 +2889,7 @@ Toggles the metadata locks on a specified server within a cluster.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -2795,6 +2945,7 @@ Toggles the PFS slow query capture on a specified server within a cluster.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -2850,6 +3001,7 @@ Toggles the query response time on a specified server within a cluster.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -2905,6 +3057,7 @@ Toggles the read-only mode on a specified server within a cluster.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -2960,6 +3113,7 @@ Toggles the SQL error log on a specified server within a cluster.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -3015,6 +3169,7 @@ Toggles the slow query on a specified server within a cluster.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -3070,6 +3225,7 @@ Toggles the slow query capture on a specified server within a cluster.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -3125,6 +3281,7 @@ Toggles the slow query table mode on a specified server within a cluster.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -3180,6 +3337,7 @@ Unprovisions a specified server within a cluster.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -3235,6 +3393,7 @@ Waits for InnoDB purge on a specified server within a cluster.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -3290,6 +3449,7 @@ Retrieves the status of all slaves of a specified server within a cluster.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -3345,6 +3505,7 @@ Retrieves the PFS statements of a specified server within a cluster.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -3400,6 +3561,7 @@ Retrieves the PFS statements from the slow log of a specified server within a cl
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -3455,6 +3617,7 @@ Retrieves the error log of a specified server within a cluster.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -3488,6 +3651,51 @@ Status: Forbidden
 Status: Internal Server Error
 
 ###### <span id="get-api-clusters-cluster-name-servers-server-name-errorlog-500-schema"></span> Schema
+   
+  
+
+
+
+### <span id="get-api-clusters-cluster-name-servers-server-name-is-failed"></span> Check if a server is failed (*GetAPIClustersClusterNameServersServerNameIsFailed*)
+
+```
+GET /api/clusters/{clusterName}/servers/{serverName}/is-failed
+```
+
+Checks if a specified server within a cluster is in a failed state.
+
+#### Produces
+  * text/plain
+
+#### Parameters
+
+| Name | Source | Type | Go type | Separator | Required | Default | Description |
+|------|--------|------|---------|-----------| :------: |---------|-------------|
+| clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+
+#### All responses
+| Code | Status | Description | Has headers | Schema |
+|------|--------|-------------|:-----------:|--------|
+| [200](#get-api-clusters-cluster-name-servers-server-name-is-failed-200) | OK | 200 -Server is failed! |  | [schema](#get-api-clusters-cluster-name-servers-server-name-is-failed-200-schema) |
+| [500](#get-api-clusters-cluster-name-servers-server-name-is-failed-500) | Internal Server Error | 500 -Server is not Failed!" or "500 -No valid server!" or "500 -No cluster! |  | [schema](#get-api-clusters-cluster-name-servers-server-name-is-failed-500-schema) |
+
+#### Responses
+
+
+##### <span id="get-api-clusters-cluster-name-servers-server-name-is-failed-200"></span> 200 - 200 -Server is failed!
+Status: OK
+
+###### <span id="get-api-clusters-cluster-name-servers-server-name-is-failed-200-schema"></span> Schema
+   
+  
+
+
+
+##### <span id="get-api-clusters-cluster-name-servers-server-name-is-failed-500"></span> 500 - 500 -Server is not Failed!" or "500 -No valid server!" or "500 -No cluster!
+Status: Internal Server Error
+
+###### <span id="get-api-clusters-cluster-name-servers-server-name-is-failed-500-schema"></span> Schema
    
   
 
@@ -3603,6 +3811,96 @@ Status: Service Unavailable
 
 
 
+### <span id="get-api-clusters-cluster-name-servers-server-name-is-slave-error"></span> Check if a server is in slave error state (*GetAPIClustersClusterNameServersServerNameIsSlaveError*)
+
+```
+GET /api/clusters/{clusterName}/servers/{serverName}/is-slave-error
+```
+
+Checks if a specified server within a cluster is in a slave error state.
+
+#### Produces
+  * text/plain
+
+#### Parameters
+
+| Name | Source | Type | Go type | Separator | Required | Default | Description |
+|------|--------|------|---------|-----------| :------: |---------|-------------|
+| clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+
+#### All responses
+| Code | Status | Description | Has headers | Schema |
+|------|--------|-------------|:-----------:|--------|
+| [200](#get-api-clusters-cluster-name-servers-server-name-is-slave-error-200) | OK | 200 -Server is in Slave Error state! |  | [schema](#get-api-clusters-cluster-name-servers-server-name-is-slave-error-200-schema) |
+| [500](#get-api-clusters-cluster-name-servers-server-name-is-slave-error-500) | Internal Server Error | 500 -Server is not in Slave Error state!" or "500 -No valid server!" or "500 -No cluster! |  | [schema](#get-api-clusters-cluster-name-servers-server-name-is-slave-error-500-schema) |
+
+#### Responses
+
+
+##### <span id="get-api-clusters-cluster-name-servers-server-name-is-slave-error-200"></span> 200 - 200 -Server is in Slave Error state!
+Status: OK
+
+###### <span id="get-api-clusters-cluster-name-servers-server-name-is-slave-error-200-schema"></span> Schema
+   
+  
+
+
+
+##### <span id="get-api-clusters-cluster-name-servers-server-name-is-slave-error-500"></span> 500 - 500 -Server is not in Slave Error state!" or "500 -No valid server!" or "500 -No cluster!
+Status: Internal Server Error
+
+###### <span id="get-api-clusters-cluster-name-servers-server-name-is-slave-error-500-schema"></span> Schema
+   
+  
+
+
+
+### <span id="get-api-clusters-cluster-name-servers-server-name-is-standalone"></span> Check if a server is in standalone state (*GetAPIClustersClusterNameServersServerNameIsStandalone*)
+
+```
+GET /api/clusters/{clusterName}/servers/{serverName}/is-standalone
+```
+
+Checks if a specified server within a cluster is in a standalone state.
+
+#### Produces
+  * text/plain
+
+#### Parameters
+
+| Name | Source | Type | Go type | Separator | Required | Default | Description |
+|------|--------|------|---------|-----------| :------: |---------|-------------|
+| clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+
+#### All responses
+| Code | Status | Description | Has headers | Schema |
+|------|--------|-------------|:-----------:|--------|
+| [200](#get-api-clusters-cluster-name-servers-server-name-is-standalone-200) | OK | 200 -Server is in Standalone state! |  | [schema](#get-api-clusters-cluster-name-servers-server-name-is-standalone-200-schema) |
+| [500](#get-api-clusters-cluster-name-servers-server-name-is-standalone-500) | Internal Server Error | 500 -Server is not in Standalone state!" or "500 -No valid server!" or "500 -No cluster! |  | [schema](#get-api-clusters-cluster-name-servers-server-name-is-standalone-500-schema) |
+
+#### Responses
+
+
+##### <span id="get-api-clusters-cluster-name-servers-server-name-is-standalone-200"></span> 200 - 200 -Server is in Standalone state!
+Status: OK
+
+###### <span id="get-api-clusters-cluster-name-servers-server-name-is-standalone-200-schema"></span> Schema
+   
+  
+
+
+
+##### <span id="get-api-clusters-cluster-name-servers-server-name-is-standalone-500"></span> 500 - 500 -Server is not in Standalone state!" or "500 -No valid server!" or "500 -No cluster!
+Status: Internal Server Error
+
+###### <span id="get-api-clusters-cluster-name-servers-server-name-is-standalone-500-schema"></span> Schema
+   
+  
+
+
+
 ### <span id="get-api-clusters-cluster-name-servers-server-name-master-status"></span> Get master status of a server (*GetAPIClustersClusterNameServersServerNameMasterStatus*)
 
 ```
@@ -3620,6 +3918,7 @@ Retrieves the master status of a specified server within a cluster.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -3675,6 +3974,7 @@ Retrieves the metadata locks of a specified server within a cluster.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -3730,6 +4030,7 @@ Retrieves the process list of a specified server within a cluster.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -3786,6 +4087,7 @@ Analyzes a query identified by its digest on a specified server within a cluster
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | queryDigest | `path` | string | `string` |  | ✓ |  | Query Digest |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -3842,6 +4144,7 @@ Analyzes a query identified by its digest on a specified server within a cluster
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | queryDigest | `path` | string | `string` |  | ✓ |  | Query Digest |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -3898,6 +4201,7 @@ Explains a query identified by its digest on a specified server within a cluster
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | queryDigest | `path` | string | `string` |  | ✓ |  | Query Digest |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -3954,6 +4258,7 @@ Explains a query identified by its digest on a specified server within a cluster
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | queryDigest | `path` | string | `string` |  | ✓ |  | Query Digest |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -4010,6 +4315,7 @@ Kills a query identified by its digest on a specified server within a cluster.
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | queryDigest | `path` | string | `string` |  | ✓ |  | Query Digest |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -4066,6 +4372,7 @@ Kills a thread identified by its digest on a specified server within a cluster.
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | queryDigest | `path` | string | `string` |  | ✓ |  | Query Digest |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -4121,6 +4428,7 @@ Retrieves the query response time of a specified server within a cluster.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -4176,6 +4484,7 @@ Retrieves the schemas of a specified server within a cluster.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -4232,6 +4541,7 @@ Initiates a physical backup on a specified server port within a cluster.
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
 | serverPort | `path` | string | `string` |  | ✓ |  | Server Port |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -4331,6 +4641,52 @@ Status: Not Found
 Status: Internal Server Error
 
 ###### <span id="get-api-clusters-cluster-name-servers-server-name-server-port-config-500-schema"></span> Schema
+   
+  
+
+
+
+### <span id="get-api-clusters-cluster-name-servers-server-name-server-port-is-failed"></span> Check if a server is failed (*GetAPIClustersClusterNameServersServerNameServerPortIsFailed*)
+
+```
+GET /api/clusters/{clusterName}/servers/{serverName}/{serverPort}/is-failed
+```
+
+Checks if a specified server within a cluster is in a failed state.
+
+#### Produces
+  * text/plain
+
+#### Parameters
+
+| Name | Source | Type | Go type | Separator | Required | Default | Description |
+|------|--------|------|---------|-----------| :------: |---------|-------------|
+| clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| serverPort | `path` | string | `string` |  |  |  | Server Port |
+
+#### All responses
+| Code | Status | Description | Has headers | Schema |
+|------|--------|-------------|:-----------:|--------|
+| [200](#get-api-clusters-cluster-name-servers-server-name-server-port-is-failed-200) | OK | 200 -Server is failed! |  | [schema](#get-api-clusters-cluster-name-servers-server-name-server-port-is-failed-200-schema) |
+| [500](#get-api-clusters-cluster-name-servers-server-name-server-port-is-failed-500) | Internal Server Error | 500 -Server is not Failed!" or "500 -No valid server!" or "500 -No cluster! |  | [schema](#get-api-clusters-cluster-name-servers-server-name-server-port-is-failed-500-schema) |
+
+#### Responses
+
+
+##### <span id="get-api-clusters-cluster-name-servers-server-name-server-port-is-failed-200"></span> 200 - 200 -Server is failed!
+Status: OK
+
+###### <span id="get-api-clusters-cluster-name-servers-server-name-server-port-is-failed-200-schema"></span> Schema
+   
+  
+
+
+
+##### <span id="get-api-clusters-cluster-name-servers-server-name-server-port-is-failed-500"></span> 500 - 500 -Server is not Failed!" or "500 -No valid server!" or "500 -No cluster!
+Status: Internal Server Error
+
+###### <span id="get-api-clusters-cluster-name-servers-server-name-server-port-is-failed-500-schema"></span> Schema
    
   
 
@@ -4443,6 +4799,98 @@ Status: Internal Server Error
 Status: Service Unavailable
 
 ###### <span id="get-api-clusters-cluster-name-servers-server-name-server-port-is-slave-503-schema"></span> Schema
+   
+  
+
+
+
+### <span id="get-api-clusters-cluster-name-servers-server-name-server-port-is-slave-error"></span> Check if a server is in slave error state (*GetAPIClustersClusterNameServersServerNameServerPortIsSlaveError*)
+
+```
+GET /api/clusters/{clusterName}/servers/{serverName}/{serverPort}/is-slave-error
+```
+
+Checks if a specified server within a cluster is in a slave error state.
+
+#### Produces
+  * text/plain
+
+#### Parameters
+
+| Name | Source | Type | Go type | Separator | Required | Default | Description |
+|------|--------|------|---------|-----------| :------: |---------|-------------|
+| clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| serverPort | `path` | string | `string` |  |  |  | Server Port |
+
+#### All responses
+| Code | Status | Description | Has headers | Schema |
+|------|--------|-------------|:-----------:|--------|
+| [200](#get-api-clusters-cluster-name-servers-server-name-server-port-is-slave-error-200) | OK | 200 -Server is in Slave Error state! |  | [schema](#get-api-clusters-cluster-name-servers-server-name-server-port-is-slave-error-200-schema) |
+| [500](#get-api-clusters-cluster-name-servers-server-name-server-port-is-slave-error-500) | Internal Server Error | 500 -Server is not in Slave Error state!" or "500 -No valid server!" or "500 -No cluster! |  | [schema](#get-api-clusters-cluster-name-servers-server-name-server-port-is-slave-error-500-schema) |
+
+#### Responses
+
+
+##### <span id="get-api-clusters-cluster-name-servers-server-name-server-port-is-slave-error-200"></span> 200 - 200 -Server is in Slave Error state!
+Status: OK
+
+###### <span id="get-api-clusters-cluster-name-servers-server-name-server-port-is-slave-error-200-schema"></span> Schema
+   
+  
+
+
+
+##### <span id="get-api-clusters-cluster-name-servers-server-name-server-port-is-slave-error-500"></span> 500 - 500 -Server is not in Slave Error state!" or "500 -No valid server!" or "500 -No cluster!
+Status: Internal Server Error
+
+###### <span id="get-api-clusters-cluster-name-servers-server-name-server-port-is-slave-error-500-schema"></span> Schema
+   
+  
+
+
+
+### <span id="get-api-clusters-cluster-name-servers-server-name-server-port-is-standalone"></span> Check if a server is in standalone state (*GetAPIClustersClusterNameServersServerNameServerPortIsStandalone*)
+
+```
+GET /api/clusters/{clusterName}/servers/{serverName}/{serverPort}/is-standalone
+```
+
+Checks if a specified server within a cluster is in a standalone state.
+
+#### Produces
+  * text/plain
+
+#### Parameters
+
+| Name | Source | Type | Go type | Separator | Required | Default | Description |
+|------|--------|------|---------|-----------| :------: |---------|-------------|
+| clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| serverPort | `path` | string | `string` |  |  |  | Server Port |
+
+#### All responses
+| Code | Status | Description | Has headers | Schema |
+|------|--------|-------------|:-----------:|--------|
+| [200](#get-api-clusters-cluster-name-servers-server-name-server-port-is-standalone-200) | OK | 200 -Server is in Standalone state! |  | [schema](#get-api-clusters-cluster-name-servers-server-name-server-port-is-standalone-200-schema) |
+| [500](#get-api-clusters-cluster-name-servers-server-name-server-port-is-standalone-500) | Internal Server Error | 500 -Server is not in Standalone state!" or "500 -No valid server!" or "500 -No cluster! |  | [schema](#get-api-clusters-cluster-name-servers-server-name-server-port-is-standalone-500-schema) |
+
+#### Responses
+
+
+##### <span id="get-api-clusters-cluster-name-servers-server-name-server-port-is-standalone-200"></span> 200 - 200 -Server is in Standalone state!
+Status: OK
+
+###### <span id="get-api-clusters-cluster-name-servers-server-name-server-port-is-standalone-200-schema"></span> Schema
+   
+  
+
+
+
+##### <span id="get-api-clusters-cluster-name-servers-server-name-server-port-is-standalone-500"></span> 500 - 500 -Server is not in Standalone state!" or "500 -No valid server!" or "500 -No cluster!
+Status: Internal Server Error
+
+###### <span id="get-api-clusters-cluster-name-servers-server-name-server-port-is-standalone-500-schema"></span> Schema
    
   
 
@@ -4827,6 +5275,7 @@ Retrieves the database service configuration of a specified server within a clus
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -4882,6 +5331,7 @@ Retrieves the slow log of a specified server within a cluster.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -4937,6 +5387,7 @@ Retrieves the status of a specified server within a cluster.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -4992,6 +5443,7 @@ Retrieves the status delta of a specified server within a cluster.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -5047,6 +5499,7 @@ Retrieves the InnoDB status of a specified server within a cluster.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -5102,6 +5555,7 @@ Retrieves the tables of a specified server within a cluster.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -5157,6 +5611,7 @@ Retrieves the variables of a specified server within a cluster.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -5212,6 +5667,7 @@ Retrieves the virtual tables of a specified server within a cluster.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -5266,6 +5722,7 @@ This endpoint retrieves the settings for the specified cluster.
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -5320,6 +5777,7 @@ This endpoint retrieves the shard clusters for the specified cluster.
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -5377,6 +5835,7 @@ Get the Sphinx indexes for a given cluster
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -5485,6 +5944,7 @@ This endpoint retrieves the tags for the specified cluster.
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -5529,6 +5989,7 @@ This endpoint retrieves the top metrics for the specified cluster.
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 | serverName | `query` | string | `string` |  |  |  | Server Name |
 
 #### All responses
@@ -5581,6 +6042,7 @@ Shows the alerts for that specific named cluster
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -5625,6 +6087,7 @@ This endpoint retrieves the crashes for the specified cluster.
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -5669,6 +6132,7 @@ This endpoint retrieves the logs for the specified cluster.
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -5713,6 +6177,7 @@ This endpoint retrieves the master of a specified cluster and returns it in JSON
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -5754,6 +6219,7 @@ Shows the proxies for that specific named cluster
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -5798,6 +6264,7 @@ This endpoint retrieves the servers for the specified cluster.
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -5839,6 +6306,7 @@ Shows the slaves for that specific named cluster
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -5882,7 +6350,7 @@ This endpoint returns a list of peer clusters that are available for sale, exclu
 
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
-| Authorization | `header` | string | `string` |  | ✓ |  | JWT token |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -5936,7 +6404,7 @@ This endpoint retrieves the peer clusters that a user has access to.
 
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
-| Authorization | `header` | string | `string` |  | ✓ |  | Bearer token |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -6067,6 +6535,12 @@ This endpoint processes the replication manager requests, validates cluster ACLs
 
 #### Produces
   * application/json
+
+#### Parameters
+
+| Name | Source | Type | Go type | Separator | Required | Default | Description |
+|------|--------|------|---------|-----------| :------: |---------|-------------|
+| Authorization | `header` | string | `string` |  |  | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -6255,6 +6729,52 @@ Status: OK
 
 map of string
 
+### <span id="get-replication-cluster-name-server-name-slave-late-status"></span> Check if server is in Slave Late state (*GetReplicationClusterNameServerNameSlaveLateStatus*)
+
+```
+GET /replication/{clusterName}/{serverName}/slave-late-status
+```
+
+Checks if the specified server within the cluster is in a "Slave Late" state.
+
+#### Produces
+  * text/plain
+
+#### Parameters
+
+| Name | Source | Type | Go type | Separator | Required | Default | Description |
+|------|--------|------|---------|-----------| :------: |---------|-------------|
+| clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| serverPort | `path` | string | `string` |  |  |  | Server Port |
+
+#### All responses
+| Code | Status | Description | Has headers | Schema |
+|------|--------|-------------|:-----------:|--------|
+| [200](#get-replication-cluster-name-server-name-slave-late-status-200) | OK | 200 -Server is in Slave Late state! |  | [schema](#get-replication-cluster-name-server-name-slave-late-status-200-schema) |
+| [500](#get-replication-cluster-name-server-name-slave-late-status-500) | Internal Server Error | 500 -No valid server!" "500 -Server is not in Slave Late state!" "500 -No cluster! |  | [schema](#get-replication-cluster-name-server-name-slave-late-status-500-schema) |
+
+#### Responses
+
+
+##### <span id="get-replication-cluster-name-server-name-slave-late-status-200"></span> 200 - 200 -Server is in Slave Late state!
+Status: OK
+
+###### <span id="get-replication-cluster-name-server-name-slave-late-status-200-schema"></span> Schema
+   
+  
+
+
+
+##### <span id="get-replication-cluster-name-server-name-slave-late-status-500"></span> 500 - 500 -No valid server!" "500 -Server is not in Slave Late state!" "500 -No cluster!
+Status: Internal Server Error
+
+###### <span id="get-replication-cluster-name-server-name-slave-late-status-500-schema"></span> Schema
+   
+  
+
+
+
 ### <span id="post-api-clusters-actions-add-cluster-name"></span> Add a new cluster (*PostAPIClustersActionsAddClusterName*)
 
 ```
@@ -6274,6 +6794,7 @@ Adds a new cluster to the replication manager. If the cluster already exists, it
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 | cluster | `body` | [ClusterClusterForm](#cluster-cluster-form) | `models.ClusterClusterForm` | | ✓ | | Cluster Form |
 
 #### All responses
@@ -6333,6 +6854,7 @@ This endpoint adds a sharding cluster to an existing cluster and triggers a roll
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | clusterShardingName | `path` | string | `string` |  | ✓ |  | Cluster Sharding Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -6392,6 +6914,7 @@ This endpoint adds a server to the specified cluster.
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | host | `path` | string | `string` |  | ✓ |  | Host |
 | port | `path` | string | `string` |  | ✓ |  | Port |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -6462,6 +6985,7 @@ This endpoint adds a server to the specified cluster.
 | host | `path` | string | `string` |  | ✓ |  | Host |
 | port | `path` | string | `string` |  | ✓ |  | Port |
 | type | `path` | string | `string` |  |  |  | Type |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -6529,6 +7053,7 @@ This endpoint cancels the rolling reprovision for the specified cluster.
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -6586,6 +7111,7 @@ This endpoint cancels the rolling restart for the specified cluster.
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -6637,6 +7163,7 @@ Rotate the keys for the specified cluster
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -6694,6 +7221,7 @@ This endpoint triggers the checksum calculation for all tables in the specified 
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -6751,6 +7279,7 @@ This endpoint triggers a master failover for the specified cluster.
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -6865,6 +7394,7 @@ This endpoint triggers the optimization process for the specified cluster.
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -6923,6 +7453,7 @@ This endpoint triggers the bootstrap replication process for the specified clust
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | topology | `path` | string | `string` |  | ✓ |  | Topology |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -6980,6 +7511,7 @@ This endpoint triggers the cleanup process for replication bootstrap for the spe
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -7037,6 +7569,7 @@ This endpoint resets the failover control for the specified cluster.
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -7088,6 +7621,7 @@ Reset the SLA for the specified cluster
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -7145,6 +7679,7 @@ This endpoint triggers a rolling restart for the specified cluster.
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -7202,6 +7737,7 @@ This endpoint rotates the passwords for the specified cluster.
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -7259,6 +7795,7 @@ This endpoint starts traffic for the specified cluster.
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -7316,6 +7853,7 @@ This endpoint stops traffic for the specified cluster.
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -7373,6 +7911,7 @@ This endpoint triggers a master switchover for the specified cluster.
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 | prefmaster | `formData` | string | `string` |  |  |  | Preferred Master |
 
 #### All responses
@@ -7441,6 +7980,7 @@ This endpoint runs sysbench for the specified cluster.
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 | threads | `query` | string | `string` |  |  |  | Number of threads |
 
 #### All responses
@@ -7499,6 +8039,7 @@ This endpoint waits for the databases to be ready for the specified cluster.
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -7557,6 +8098,7 @@ Provision the proxy service for a given cluster and proxy
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | proxyName | `path` | string | `string` |  | ✓ |  | Proxy Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -7615,6 +8157,7 @@ Start the proxy service for a given cluster and proxy
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | proxyName | `path` | string | `string` |  | ✓ |  | Proxy Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -7673,6 +8216,7 @@ Stop the proxy service for a given cluster and proxy
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | proxyName | `path` | string | `string` |  | ✓ |  | Proxy Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -7731,6 +8275,7 @@ Unprovision the proxy service for a given cluster and proxy
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | proxyName | `path` | string | `string` |  | ✓ |  | Proxy Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -7788,6 +8333,7 @@ This endpoint accepts a subscription for the specified cluster.
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 | body | `body` | [ClusterUserForm](#cluster-user-form) | `models.ClusterUserForm` | | ✓ | | User Form |
 
 #### All responses
@@ -7846,6 +8392,7 @@ This endpoint removes a sponsor from the specified cluster.
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 | body | `body` | [ClusterUserForm](#cluster-user-form) | `models.ClusterUserForm` | | ✓ | | User Form |
 
 #### All responses
@@ -7904,6 +8451,7 @@ This endpoint rejects a subscription for the specified cluster.
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 | body | `body` | [ClusterUserForm](#cluster-user-form) | `models.ClusterUserForm` | | ✓ | | User Form |
 
 #### All responses
@@ -7964,6 +8512,7 @@ This endpoint triggers the checksum calculation for a specific table in the spec
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | schemaName | `path` | string | `string` |  | ✓ |  | Schema Name |
 | tableName | `path` | string | `string` |  | ✓ |  | Table Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -8024,6 +8573,7 @@ This endpoint moves a table to a different shard cluster for the specified clust
 | clusterShard | `path` | string | `string` |  | ✓ |  | Cluster Shard |
 | schemaName | `path` | string | `string` |  | ✓ |  | Schema Name |
 | tableName | `path` | string | `string` |  | ✓ |  | Table Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -8083,6 +8633,7 @@ This endpoint triggers the resharding of a table for the specified cluster.
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | schemaName | `path` | string | `string` |  | ✓ |  | Schema Name |
 | tableName | `path` | string | `string` |  | ✓ |  | Table Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -8143,6 +8694,7 @@ This endpoint triggers the resharding of a table for the specified cluster.
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | schemaName | `path` | string | `string` |  | ✓ |  | Schema Name |
 | tableName | `path` | string | `string` |  | ✓ |  | Table Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -8202,6 +8754,7 @@ This endpoint sets a universal table for the specified cluster.
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | schemaName | `path` | string | `string` |  | ✓ |  | Schema Name |
 | tableName | `path` | string | `string` |  | ✓ |  | Table Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -8259,6 +8812,7 @@ This endpoint sends the Vault token to the specified cluster via email.
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -8314,6 +8868,7 @@ Initiates a point-in-time recovery on a specified server within a cluster.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | serverName | `path` | string | `string` |  | ✓ |  | Server Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -8429,6 +8984,7 @@ This endpoint provisions services for the specified cluster.
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -8486,6 +9042,7 @@ This endpoint unprovisions services for the specified cluster.
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -8544,6 +9101,7 @@ This endpoint adds a tag to the specified cluster.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | tagValue | `path` | string | `string` |  | ✓ |  | Tag Value |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -8602,6 +9160,7 @@ This endpoint adds a proxy tag to the specified cluster.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | tagValue | `path` | string | `string` |  | ✓ |  | Tag Value |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -8659,6 +9218,7 @@ This endpoint applies dynamic configuration for the specified cluster.
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -8716,6 +9276,7 @@ This endpoint reloads the client certificates for the specified cluster.
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -8773,6 +9334,7 @@ This endpoint triggers the discovery of settings for the specified cluster.
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -8831,6 +9393,7 @@ This endpoint removes a tag from the specified cluster.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | tagValue | `path` | string | `string` |  | ✓ |  | Tag Value |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -8889,6 +9452,7 @@ This endpoint removes a proxy tag from the specified cluster.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | tagValue | `path` | string | `string` |  | ✓ |  | Tag Value |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -8946,6 +9510,7 @@ This endpoint reloads the settings for the specified cluster.
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -8993,6 +9558,7 @@ This endpoint reloads the Graphite filter list for the specified cluster.
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -9051,6 +9617,7 @@ This endpoint resets the Graphite filter list for the specified cluster.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | template | `path` | string | `string` |  | ✓ |  | Template |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -9110,6 +9677,7 @@ This endpoint sets the cron jobs for the specified cluster.
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | settingName | `path` | string | `string` |  | ✓ |  | Setting Name |
 | settingValue | `path` | string | `string` |  | ✓ |  | Setting Value |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -9168,6 +9736,7 @@ This endpoint sets the Graphite filter list for the specified cluster.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | filterType | `path` | string | `string` |  | ✓ |  | Filter Type |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 | body | `body` | [ClusterGraphiteFilterList](#cluster-graphite-filter-list) | `models.ClusterGraphiteFilterList` | | ✓ | | Graphite Filter List |
 
 #### All responses
@@ -9228,6 +9797,7 @@ This endpoint sets the settings for the specified cluster.
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | settingName | `path` | string | `string` |  | ✓ |  | Setting Name |
 | settingValue | `path` | string | `string` |  | ✓ |  | Setting Value |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -9286,6 +9856,7 @@ This endpoint switches the settings for the specified cluster.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | settingName | `path` | string | `string` |  | ✓ |  | Setting Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -9343,6 +9914,7 @@ This endpoint allows a user to subscribe to a specified cluster.
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 | userform | `body` | [ClusterUserForm](#cluster-user-form) | `models.ClusterUserForm` | | ✓ | | User Form |
 
 #### All responses
@@ -9431,6 +10003,7 @@ This endpoint runs all tests for the specified cluster.
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -9489,6 +10062,7 @@ This endpoint runs a specific test for the specified cluster.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | testName | `path` | string | `string` |  | ✓ |  | Test Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 | provision | `formData` | string | `string` |  |  |  | Provision the cluster before running the test |
 | unprovision | `formData` | string | `string` |  |  |  | Unprovision the cluster after running the test |
 
@@ -9548,6 +10122,7 @@ Adds a new user to the specified cluster if the request is valid and the user ha
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 | userform | `body` | [ClusterUserForm](#cluster-user-form) | `models.ClusterUserForm` | | ✓ | | User Form |
 
 #### All responses
@@ -9616,6 +10191,7 @@ Drops a user from the specified cluster.
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 | userform | `body` | [ClusterUserForm](#cluster-user-form) | `models.ClusterUserForm` | | ✓ | | User Form |
 
 #### All responses
@@ -9684,6 +10260,7 @@ This endpoint sends the credentials to the specified user via email.
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 | body | `body` | [ServerCredentialMailForm](#server-credential-mail-form) | `models.ServerCredentialMailForm` | | ✓ | | Credential Mail Form |
 
 #### All responses
@@ -9742,6 +10319,7 @@ Updates the user information for a specified cluster.
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 | userform | `body` | [ClusterUserForm](#cluster-user-form) | `models.ClusterUserForm` | | ✓ | | User Form |
 
 #### All responses
@@ -9857,6 +10435,7 @@ This endpoint sets the global settings for the server.
 | clusterName | `path` | string | `string` |  |  |  | Cluster Name |
 | settingName | `path` | string | `string` |  | ✓ |  | Setting Name |
 | settingValue | `path` | string | `string` |  | ✓ |  | Setting Value |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -9915,6 +10494,7 @@ This endpoint switches the global settings for the server.
 |------|--------|------|---------|-----------| :------: |---------|-------------|
 | clusterName | `path` | string | `string` |  |  |  | Cluster Name |
 | settingName | `path` | string | `string` |  | ✓ |  | Setting Name |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -10051,6 +10631,7 @@ This endpoint allows dropping a server monitor or proxy monitor from a specified
 | clusterName | `path` | string | `string` |  | ✓ |  | Cluster Name |
 | host | `path` | string | `string` |  | ✓ |  | Host |
 | port | `path` | string | `string` |  | ✓ |  | Port |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -10111,6 +10692,7 @@ This endpoint allows dropping a server monitor or proxy monitor from a specified
 | host | `path` | string | `string` |  | ✓ |  | Host |
 | port | `path` | string | `string` |  | ✓ |  | Port |
 | type | `path` | string | `string` |  |  |  | Monitor Type (proxy or database) |
+| Authorization | `header` | string | `string` |  | ✓ | `"Bearer \u003cAdd access token here\u003e"` | Insert your access token |
 
 #### All responses
 | Code | Status | Description | Has headers | Schema |
@@ -10205,6 +10787,31 @@ Status: Internal Server Error
 |------|------|---------|:--------:| ------- |-------------|---------|
 | errors | [][StateStateHTTP](#state-state-http)| `[]*StateStateHTTP` |  | |  |  |
 | warnings | [][StateStateHTTP](#state-state-http)| `[]*StateStateHTTP` |  | |  |  |
+
+
+
+### <span id="cluster-backend"></span> cluster.Backend
+
+
+  
+
+
+
+**Properties**
+
+| Name | Type | Go type | Required | Default | Description | Example |
+|------|------|---------|:--------:| ------- |-------------|---------|
+| host | string| `string` |  | |  |  |
+| port | string| `string` |  | |  |  |
+| prxByteIn | string| `string` |  | |  |  |
+| prxByteOut | string| `string` |  | |  |  |
+| prxConnections | string| `string` |  | |  |  |
+| prxHostgroup | string| `string` |  | |  |  |
+| prxLatency | string| `string` |  | |  |  |
+| prxMaintenance | boolean| `bool` |  | |  |  |
+| prxName | string| `string` |  | |  |  |
+| prxStatus | string| `string` |  | |  |  |
+| status | string| `string` |  | |  |  |
 
 
 
@@ -10409,6 +11016,51 @@ Status: Internal Server Error
 |------|------|---------|:--------:| ------- |-------------|---------|
 | blacklist | string| `string` |  | |  |  |
 | whitelist | string| `string` |  | |  |  |
+
+
+
+### <span id="cluster-proxy"></span> cluster.Proxy
+
+
+  
+
+
+
+**Properties**
+
+| Name | Type | Go type | Required | Default | Description | Example |
+|------|------|---------|:--------:| ------- |-------------|---------|
+| DatabaseProxy | [interface{}](#interface)| `interface{}` |  | |  |  |
+| agent | string| `string` |  | |  |  |
+| backendsRead | [][ClusterBackend](#cluster-backend)| `[]*ClusterBackend` |  | |  |  |
+| backendsWrite | [][ClusterBackend](#cluster-backend)| `[]*ClusterBackend` |  | |  |  |
+| datadir | string| `string` |  | |  |  |
+| failCount | integer| `int64` |  | |  |  |
+| host | string| `string` |  | |  |  |
+| hostIPV6 | string| `string` |  | |  |  |
+| id | string| `string` |  | |  |  |
+| internalProxy | [MyproxyServer](#myproxy-server)| `MyproxyServer` |  | |  |  |
+| lock | [SyncMutex](#sync-mutex)| `SyncMutex` |  | |  |  |
+| name | string| `string` |  | |  |  |
+| port | string| `string` |  | |  |  |
+| prevState | string| `string` |  | |  |  |
+| process | [OsProcess](#os-process)| `OsProcess` |  | |  |  |
+| queryRules | [][ProxysqlQueryRule](#proxysql-query-rule)| `[]*ProxysqlQueryRule` |  | |  |  |
+| readPort | integer| `int64` |  | |  |  |
+| readWritePort | integer| `int64` |  | |  |  |
+| readerHostGroup | integer| `int64` |  | |  |  |
+| serviceName | string| `string` |  | |  |  |
+| shardProxy | [ClusterServerMonitor](#cluster-server-monitor)| `ClusterServerMonitor` |  | |  |  |
+| slaposDatadir | string| `string` |  | |  |  |
+| state | string| `string` |  | |  |  |
+| tunnel | boolean| `bool` |  | |  |  |
+| tunnelPort | integer| `int64` |  | |  |  |
+| tunnelWritePort | integer| `int64` |  | |  |  |
+| type | string| `string` |  | |  |  |
+| version | string| `string` |  | |  |  |
+| weight | string| `string` |  | |  |  |
+| writePort | integer| `int64` |  | |  |  |
+| writerHostGroup | integer| `int64` |  | |  |  |
 
 
 
@@ -11837,6 +12489,13 @@ Status: Internal Server Error
 
 
 
+### <span id="myproxy-server"></span> myproxy.Server
+
+
+  
+
+[interface{}](#interface)
+
 ### <span id="opensvc-addr"></span> opensvc.Addr
 
 
@@ -11914,6 +12573,31 @@ Status: Internal Server Error
 | Name | Type | Go type | Required | Default | Description | Example |
 |------|------|---------|:--------:| ------- |-------------|---------|
 | pid | integer| `int64` |  | |  |  |
+
+
+
+### <span id="proxysql-query-rule"></span> proxysql.QueryRule
+
+
+  
+
+
+
+**Properties**
+
+| Name | Type | Go type | Required | Default | Description | Example |
+|------|------|---------|:--------:| ------- |-------------|---------|
+| active | integer| `int64` |  | |  |  |
+| apply | integer| `int64` |  | |  |  |
+| destinationHostgroup | [SQLNullInt64](#sql-null-int64)| `SQLNullInt64` |  | |  |  |
+| digest | [SQLNullString](#sql-null-string)| `SQLNullString` |  | |  |  |
+| matchDigest | [SQLNullString](#sql-null-string)| `SQLNullString` |  | |  |  |
+| matchPattern | [SQLNullString](#sql-null-string)| `SQLNullString` |  | |  |  |
+| mirrorHostgroup | [SQLNullInt64](#sql-null-int64)| `SQLNullInt64` |  | |  |  |
+| multiplex | [SQLNullInt64](#sql-null-int64)| `SQLNullInt64` |  | |  |  |
+| ruleId | integer| `int64` |  | |  |  |
+| schemaName | [SQLNullString](#sql-null-string)| `SQLNullString` |  | |  |  |
+| userName | [SQLNullString](#sql-null-string)| `SQLNullString` |  | |  |  |
 
 
 
@@ -12231,6 +12915,13 @@ Status: Internal Server Error
 | inSchemaMonitor | boolean| `bool` |  | |  |  |
 
 
+
+### <span id="sync-mutex"></span> sync.Mutex
+
+
+  
+
+[interface{}](#interface)
 
 ### <span id="user-user"></span> user.User
 

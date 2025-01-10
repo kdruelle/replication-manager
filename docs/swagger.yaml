@@ -46,6 +46,31 @@ definitions:
           $ref: '#/definitions/state.StateHttp'
         type: array
     type: object
+  cluster.Backend:
+    properties:
+      host:
+        type: string
+      port:
+        type: string
+      prxByteIn:
+        type: string
+      prxByteOut:
+        type: string
+      prxConnections:
+        type: string
+      prxHostgroup:
+        type: string
+      prxLatency:
+        type: string
+      prxMaintenance:
+        type: boolean
+      prxName:
+        type: string
+      prxStatus:
+        type: string
+      status:
+        type: string
+    type: object
   cluster.Cluster:
     properties:
       activePassiveStatus:
@@ -329,6 +354,76 @@ definitions:
         type: string
       whitelist:
         type: string
+    type: object
+  cluster.Proxy:
+    properties:
+      DatabaseProxy: {}
+      agent:
+        type: string
+      backendsRead:
+        items:
+          $ref: '#/definitions/cluster.Backend'
+        type: array
+      backendsWrite:
+        items:
+          $ref: '#/definitions/cluster.Backend'
+        type: array
+      datadir:
+        type: string
+      failCount:
+        type: integer
+      host:
+        type: string
+      hostIPV6:
+        type: string
+      id:
+        type: string
+      internalProxy:
+        $ref: '#/definitions/myproxy.Server'
+      lock:
+        $ref: '#/definitions/sync.Mutex'
+      name:
+        type: string
+      port:
+        type: string
+      prevState:
+        type: string
+      process:
+        $ref: '#/definitions/os.Process'
+      queryRules:
+        items:
+          $ref: '#/definitions/proxysql.QueryRule'
+        type: array
+      readPort:
+        type: integer
+      readWritePort:
+        type: integer
+      readerHostGroup:
+        type: integer
+      serviceName:
+        type: string
+      shardProxy:
+        $ref: '#/definitions/cluster.ServerMonitor'
+      slaposDatadir:
+        type: string
+      state:
+        type: string
+      tunnel:
+        type: boolean
+      tunnelPort:
+        type: integer
+      tunnelWritePort:
+        type: integer
+      type:
+        type: string
+      version:
+        type: string
+      weight:
+        type: string
+      writePort:
+        type: integer
+      writerHostGroup:
+        type: integer
     type: object
   cluster.ServerBackupMeta:
     properties:
@@ -2522,6 +2617,8 @@ definitions:
       serverId:
         type: integer
     type: object
+  myproxy.Server:
+    type: object
   opensvc.Addr:
     properties:
       addr:
@@ -2585,6 +2682,31 @@ definitions:
     properties:
       pid:
         type: integer
+    type: object
+  proxysql.QueryRule:
+    properties:
+      active:
+        type: integer
+      apply:
+        type: integer
+      destinationHostgroup:
+        $ref: '#/definitions/sql.NullInt64'
+      digest:
+        $ref: '#/definitions/sql.NullString'
+      matchDigest:
+        $ref: '#/definitions/sql.NullString'
+      matchPattern:
+        $ref: '#/definitions/sql.NullString'
+      mirrorHostgroup:
+        $ref: '#/definitions/sql.NullInt64'
+      multiplex:
+        $ref: '#/definitions/sql.NullInt64'
+      ruleId:
+        type: integer
+      schemaName:
+        $ref: '#/definitions/sql.NullString'
+      userName:
+        $ref: '#/definitions/sql.NullString'
     type: object
   regexp.Regexp:
     type: object
@@ -2849,6 +2971,8 @@ definitions:
         type: boolean
       inSchemaMonitor:
         type: boolean
+    type: object
+  sync.Mutex:
     type: object
   user.User:
     properties:
@@ -3970,6 +4094,33 @@ paths:
       summary: Check if a cluster needs a rolling restart
       tags:
       - Database
+  /api/clusters/{clusterName}/proxies/{proxyName}:
+    get:
+      description: Shows the proxies for that specific named cluster
+      parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Cluster Name
+        in: path
+        name: clusterName
+        required: true
+        type: string
+      responses:
+        "200":
+          description: Server details retrieved successfully
+          schema:
+            $ref: '#/definitions/cluster.Proxy'
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Shows the proxies for that specific named cluster
+      tags:
+      - Proxies
   /api/clusters/{clusterName}/proxies/{proxyName}/actions/need-reprov:
     get:
       consumes:
@@ -4688,6 +4839,40 @@ paths:
       summary: Send Vault token to a specific cluster
       tags:
       - ClusterVault
+  /api/clusters/{clusterName}/servers/{serverName}:
+    get:
+      description: Retrieves the details of a specified server within a cluster.
+      parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Cluster Name
+        in: path
+        name: clusterName
+        required: true
+        type: string
+      - description: Server Name
+        in: path
+        name: serverName
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Server details retrieved successfully
+          schema:
+            $ref: '#/definitions/cluster.ServerMonitor'
+        "500":
+          description: No cluster" or "Server Not Found" or "Encoding error
+          schema:
+            type: string
+      summary: Get server details
+      tags:
+      - Database
   /api/clusters/{clusterName}/servers/{serverName}/{serverPort}/backup:
     get:
       description: Initiates a physical backup on a specified server port within a
@@ -4774,6 +4959,39 @@ paths:
       summary: Get server port configuration
       tags:
       - Database
+  /api/clusters/{clusterName}/servers/{serverName}/{serverPort}/is-failed:
+    get:
+      description: Checks if a specified server within a cluster is in a failed state.
+      parameters:
+      - description: Cluster Name
+        in: path
+        name: clusterName
+        required: true
+        type: string
+      - description: Server Name
+        in: path
+        name: serverName
+        required: true
+        type: string
+      - description: Server Port
+        in: path
+        name: serverPort
+        type: string
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: 200 -Server is failed!
+          schema:
+            type: string
+        "500":
+          description: 500 -Server is not Failed!" or "500 -No valid server!" or "500
+            -No cluster!
+          schema:
+            type: string
+      summary: Check if a server is failed
+      tags:
+      - Database
   /api/clusters/{clusterName}/servers/{serverName}/{serverPort}/is-master:
     get:
       description: Checks if a specified server port within a cluster is a master.
@@ -4846,6 +5064,74 @@ paths:
           schema:
             type: string
       summary: Check if a server port is a slave
+      tags:
+      - Database
+  /api/clusters/{clusterName}/servers/{serverName}/{serverPort}/is-slave-error:
+    get:
+      description: Checks if a specified server within a cluster is in a slave error
+        state.
+      parameters:
+      - description: Cluster Name
+        in: path
+        name: clusterName
+        required: true
+        type: string
+      - description: Server Name
+        in: path
+        name: serverName
+        required: true
+        type: string
+      - description: Server Port
+        in: path
+        name: serverPort
+        type: string
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: 200 -Server is in Slave Error state!
+          schema:
+            type: string
+        "500":
+          description: 500 -Server is not in Slave Error state!" or "500 -No valid
+            server!" or "500 -No cluster!
+          schema:
+            type: string
+      summary: Check if a server is in slave error state
+      tags:
+      - Database
+  /api/clusters/{clusterName}/servers/{serverName}/{serverPort}/is-standalone:
+    get:
+      description: Checks if a specified server within a cluster is in a standalone
+        state.
+      parameters:
+      - description: Cluster Name
+        in: path
+        name: clusterName
+        required: true
+        type: string
+      - description: Server Name
+        in: path
+        name: serverName
+        required: true
+        type: string
+      - description: Server Port
+        in: path
+        name: serverPort
+        type: string
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: 200 -Server is in Standalone state!
+          schema:
+            type: string
+        "500":
+          description: 500 -Server is not in Standalone state!" or "500 -No valid
+            server!" or "500 -No cluster!
+          schema:
+            type: string
+      summary: Check if a server is in standalone state
       tags:
       - Database
   /api/clusters/{clusterName}/servers/{serverName}/{serverPort}/need-config-change:
@@ -6823,6 +7109,35 @@ paths:
       summary: Get error log of a server
       tags:
       - DatabaseLogs
+  /api/clusters/{clusterName}/servers/{serverName}/is-failed:
+    get:
+      description: Checks if a specified server within a cluster is in a failed state.
+      parameters:
+      - description: Cluster Name
+        in: path
+        name: clusterName
+        required: true
+        type: string
+      - description: Server Name
+        in: path
+        name: serverName
+        required: true
+        type: string
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: 200 -Server is failed!
+          schema:
+            type: string
+        "500":
+          description: 500 -Server is not Failed!" or "500 -No valid server!" or "500
+            -No cluster!
+          schema:
+            type: string
+      summary: Check if a server is failed
+      tags:
+      - Database
   /api/clusters/{clusterName}/servers/{serverName}/is-master:
     get:
       description: Checks if a specified server within a cluster is a master.
@@ -6885,6 +7200,66 @@ paths:
           schema:
             type: string
       summary: Check if a server is a slave
+      tags:
+      - Database
+  /api/clusters/{clusterName}/servers/{serverName}/is-slave-error:
+    get:
+      description: Checks if a specified server within a cluster is in a slave error
+        state.
+      parameters:
+      - description: Cluster Name
+        in: path
+        name: clusterName
+        required: true
+        type: string
+      - description: Server Name
+        in: path
+        name: serverName
+        required: true
+        type: string
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: 200 -Server is in Slave Error state!
+          schema:
+            type: string
+        "500":
+          description: 500 -Server is not in Slave Error state!" or "500 -No valid
+            server!" or "500 -No cluster!
+          schema:
+            type: string
+      summary: Check if a server is in slave error state
+      tags:
+      - Database
+  /api/clusters/{clusterName}/servers/{serverName}/is-standalone:
+    get:
+      description: Checks if a specified server within a cluster is in a standalone
+        state.
+      parameters:
+      - description: Cluster Name
+        in: path
+        name: clusterName
+        required: true
+        type: string
+      - description: Server Name
+        in: path
+        name: serverName
+        required: true
+        type: string
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: 200 -Server is in Standalone state!
+          schema:
+            type: string
+        "500":
+          description: 500 -Server is not in Standalone state!" or "500 -No valid
+            server!" or "500 -No cluster!
+          schema:
+            type: string
+      summary: Check if a server is in standalone state
       tags:
       - Database
   /api/clusters/{clusterName}/servers/{serverName}/master-status:
@@ -9533,4 +9908,38 @@ paths:
       summary: Drop a server monitor from a cluster
       tags:
       - ClusterMonitor
+  /replication/{clusterName}/{serverName}/slave-late-status:
+    get:
+      description: Checks if the specified server within the cluster is in a "Slave
+        Late" state.
+      parameters:
+      - description: Cluster Name
+        in: path
+        name: clusterName
+        required: true
+        type: string
+      - description: Server Name
+        in: path
+        name: serverName
+        required: true
+        type: string
+      - description: Server Port
+        in: path
+        name: serverPort
+        type: string
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: 200 -Server is in Slave Late state!
+          schema:
+            type: string
+        "500":
+          description: 500 -No valid server!" "500 -Server is not in Slave Late state!"
+            "500 -No cluster!
+          schema:
+            type: string
+      summary: Check if server is in Slave Late state
+      tags:
+      - replication
 swagger: "2.0"

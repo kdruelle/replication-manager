@@ -1932,6 +1932,46 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/clusters/{clusterName}/proxies/{proxyName}": {
+            "get": {
+                "description": "Shows the proxies for that specific named cluster",
+                "tags": [
+                    "Proxies"
+                ],
+                "summary": "Shows the proxies for that specific named cluster",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer \u003cAdd access token here\u003e",
+                        "description": "Insert your access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Cluster Name",
+                        "name": "clusterName",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Server details retrieved successfully",
+                        "schema": {
+                            "$ref": "#/definitions/cluster.Proxy"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/clusters/{clusterName}/proxies/{proxyName}/actions/need-reprov": {
             "get": {
                 "description": "Check if the proxy service for a given cluster and proxy needs reprovisioning",
@@ -2972,6 +3012,56 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "No cluster",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/clusters/{clusterName}/servers/{serverName}": {
+            "get": {
+                "description": "Retrieves the details of a specified server within a cluster.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Database"
+                ],
+                "summary": "Get server details",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer \u003cAdd access token here\u003e",
+                        "description": "Insert your access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Cluster Name",
+                        "name": "clusterName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Server Name",
+                        "name": "serverName",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Server details retrieved successfully",
+                        "schema": {
+                            "$ref": "#/definitions/cluster.ServerMonitor"
+                        }
+                    },
+                    "500": {
+                        "description": "No cluster\" or \"Server Not Found\" or \"Encoding error",
                         "schema": {
                             "type": "string"
                         }
@@ -5419,6 +5509,48 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/clusters/{clusterName}/servers/{serverName}/is-failed": {
+            "get": {
+                "description": "Checks if a specified server within a cluster is in a failed state.",
+                "produces": [
+                    "text/plain"
+                ],
+                "tags": [
+                    "Database"
+                ],
+                "summary": "Check if a server is failed",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Cluster Name",
+                        "name": "clusterName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Server Name",
+                        "name": "serverName",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "200 -Server is failed!",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "500 -Server is not Failed!\" or \"500 -No valid server!\" or \"500 -No cluster!",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/clusters/{clusterName}/servers/{serverName}/is-master": {
             "get": {
                 "description": "Checks if a specified server within a cluster is a master.",
@@ -5508,6 +5640,90 @@ const docTemplate = `{
                     },
                     "503": {
                         "description": "503 -Not a Valid Slave!",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/clusters/{clusterName}/servers/{serverName}/is-slave-error": {
+            "get": {
+                "description": "Checks if a specified server within a cluster is in a slave error state.",
+                "produces": [
+                    "text/plain"
+                ],
+                "tags": [
+                    "Database"
+                ],
+                "summary": "Check if a server is in slave error state",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Cluster Name",
+                        "name": "clusterName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Server Name",
+                        "name": "serverName",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "200 -Server is in Slave Error state!",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "500 -Server is not in Slave Error state!\" or \"500 -No valid server!\" or \"500 -No cluster!",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/clusters/{clusterName}/servers/{serverName}/is-standalone": {
+            "get": {
+                "description": "Checks if a specified server within a cluster is in a standalone state.",
+                "produces": [
+                    "text/plain"
+                ],
+                "tags": [
+                    "Database"
+                ],
+                "summary": "Check if a server is in standalone state",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Cluster Name",
+                        "name": "clusterName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Server Name",
+                        "name": "serverName",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "200 -Server is in Standalone state!",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "500 -Server is not in Standalone state!\" or \"500 -No valid server!\" or \"500 -No cluster!",
                         "schema": {
                             "type": "string"
                         }
@@ -6759,6 +6975,54 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/clusters/{clusterName}/servers/{serverName}/{serverPort}/is-failed": {
+            "get": {
+                "description": "Checks if a specified server within a cluster is in a failed state.",
+                "produces": [
+                    "text/plain"
+                ],
+                "tags": [
+                    "Database"
+                ],
+                "summary": "Check if a server is failed",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Cluster Name",
+                        "name": "clusterName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Server Name",
+                        "name": "serverName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Server Port",
+                        "name": "serverPort",
+                        "in": "path"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "200 -Server is failed!",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "500 -Server is not Failed!\" or \"500 -No valid server!\" or \"500 -No cluster!",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/clusters/{clusterName}/servers/{serverName}/{serverPort}/is-master": {
             "get": {
                 "description": "Checks if a specified server port within a cluster is a master.",
@@ -6862,6 +7126,102 @@ const docTemplate = `{
                     },
                     "503": {
                         "description": "503 -Not a Valid Slave!",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/clusters/{clusterName}/servers/{serverName}/{serverPort}/is-slave-error": {
+            "get": {
+                "description": "Checks if a specified server within a cluster is in a slave error state.",
+                "produces": [
+                    "text/plain"
+                ],
+                "tags": [
+                    "Database"
+                ],
+                "summary": "Check if a server is in slave error state",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Cluster Name",
+                        "name": "clusterName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Server Name",
+                        "name": "serverName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Server Port",
+                        "name": "serverPort",
+                        "in": "path"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "200 -Server is in Slave Error state!",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "500 -Server is not in Slave Error state!\" or \"500 -No valid server!\" or \"500 -No cluster!",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/clusters/{clusterName}/servers/{serverName}/{serverPort}/is-standalone": {
+            "get": {
+                "description": "Checks if a specified server within a cluster is in a standalone state.",
+                "produces": [
+                    "text/plain"
+                ],
+                "tags": [
+                    "Database"
+                ],
+                "summary": "Check if a server is in standalone state",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Cluster Name",
+                        "name": "clusterName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Server Name",
+                        "name": "serverName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Server Port",
+                        "name": "serverPort",
+                        "in": "path"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "200 -Server is in Standalone state!",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "500 -Server is not in Standalone state!\" or \"500 -No valid server!\" or \"500 -No cluster!",
                         "schema": {
                             "type": "string"
                         }
@@ -9708,6 +10068,54 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/replication/{clusterName}/{serverName}/slave-late-status": {
+            "get": {
+                "description": "Checks if the specified server within the cluster is in a \"Slave Late\" state.",
+                "produces": [
+                    "text/plain"
+                ],
+                "tags": [
+                    "replication"
+                ],
+                "summary": "Check if server is in Slave Late state",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Cluster Name",
+                        "name": "clusterName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Server Name",
+                        "name": "serverName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Server Port",
+                        "name": "serverPort",
+                        "in": "path"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "200 -Server is in Slave Late state!",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "500 -No valid server!\" \"500 -Server is not in Slave Late state!\" \"500 -No cluster!",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -9780,6 +10188,44 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/state.StateHttp"
                     }
+                }
+            }
+        },
+        "cluster.Backend": {
+            "type": "object",
+            "properties": {
+                "host": {
+                    "type": "string"
+                },
+                "port": {
+                    "type": "string"
+                },
+                "prxByteIn": {
+                    "type": "string"
+                },
+                "prxByteOut": {
+                    "type": "string"
+                },
+                "prxConnections": {
+                    "type": "string"
+                },
+                "prxHostgroup": {
+                    "type": "string"
+                },
+                "prxLatency": {
+                    "type": "string"
+                },
+                "prxMaintenance": {
+                    "type": "boolean"
+                },
+                "prxName": {
+                    "type": "string"
+                },
+                "prxStatus": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
                 }
             }
         },
@@ -10196,6 +10642,111 @@ const docTemplate = `{
                 },
                 "whitelist": {
                     "type": "string"
+                }
+            }
+        },
+        "cluster.Proxy": {
+            "type": "object",
+            "properties": {
+                "DatabaseProxy": {},
+                "agent": {
+                    "type": "string"
+                },
+                "backendsRead": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/cluster.Backend"
+                    }
+                },
+                "backendsWrite": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/cluster.Backend"
+                    }
+                },
+                "datadir": {
+                    "type": "string"
+                },
+                "failCount": {
+                    "type": "integer"
+                },
+                "host": {
+                    "type": "string"
+                },
+                "hostIPV6": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "internalProxy": {
+                    "$ref": "#/definitions/myproxy.Server"
+                },
+                "lock": {
+                    "$ref": "#/definitions/sync.Mutex"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "port": {
+                    "type": "string"
+                },
+                "prevState": {
+                    "type": "string"
+                },
+                "process": {
+                    "$ref": "#/definitions/os.Process"
+                },
+                "queryRules": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/proxysql.QueryRule"
+                    }
+                },
+                "readPort": {
+                    "type": "integer"
+                },
+                "readWritePort": {
+                    "type": "integer"
+                },
+                "readerHostGroup": {
+                    "type": "integer"
+                },
+                "serviceName": {
+                    "type": "string"
+                },
+                "shardProxy": {
+                    "$ref": "#/definitions/cluster.ServerMonitor"
+                },
+                "slaposDatadir": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "string"
+                },
+                "tunnel": {
+                    "type": "boolean"
+                },
+                "tunnelPort": {
+                    "type": "integer"
+                },
+                "tunnelWritePort": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "string"
+                },
+                "weight": {
+                    "type": "string"
+                },
+                "writePort": {
+                    "type": "integer"
+                },
+                "writerHostGroup": {
+                    "type": "integer"
                 }
             }
         },
@@ -13476,6 +14027,9 @@ const docTemplate = `{
                 }
             }
         },
+        "myproxy.Server": {
+            "type": "object"
+        },
         "opensvc.Addr": {
             "type": "object",
             "properties": {
@@ -13571,6 +14125,44 @@ const docTemplate = `{
             "properties": {
                 "pid": {
                     "type": "integer"
+                }
+            }
+        },
+        "proxysql.QueryRule": {
+            "type": "object",
+            "properties": {
+                "active": {
+                    "type": "integer"
+                },
+                "apply": {
+                    "type": "integer"
+                },
+                "destinationHostgroup": {
+                    "$ref": "#/definitions/sql.NullInt64"
+                },
+                "digest": {
+                    "$ref": "#/definitions/sql.NullString"
+                },
+                "matchDigest": {
+                    "$ref": "#/definitions/sql.NullString"
+                },
+                "matchPattern": {
+                    "$ref": "#/definitions/sql.NullString"
+                },
+                "mirrorHostgroup": {
+                    "$ref": "#/definitions/sql.NullInt64"
+                },
+                "multiplex": {
+                    "$ref": "#/definitions/sql.NullInt64"
+                },
+                "ruleId": {
+                    "type": "integer"
+                },
+                "schemaName": {
+                    "$ref": "#/definitions/sql.NullString"
+                },
+                "userName": {
+                    "$ref": "#/definitions/sql.NullString"
                 }
             }
         },
@@ -13976,6 +14568,9 @@ const docTemplate = `{
                     "type": "boolean"
                 }
             }
+        },
+        "sync.Mutex": {
+            "type": "object"
         },
         "user.User": {
             "type": "object",

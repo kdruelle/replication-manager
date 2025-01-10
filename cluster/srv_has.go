@@ -735,3 +735,15 @@ func (server *ServerMonitor) HasReseedingState(tool string) bool {
 func (server *ServerMonitor) HasAnyReseedingState() bool {
 	return server.IsReseeding != ""
 }
+
+func (server *ServerMonitor) IsSlaveError() bool {
+	return server.State == stateSlaveErr
+}
+
+func (server *ServerMonitor) IsSlaveLate() bool {
+	return server.State == stateSlaveLate
+}
+
+func (server *ServerMonitor) IsStandAlone() bool {
+	return server.State == stateUnconn
+}

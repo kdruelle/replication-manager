@@ -13,8 +13,10 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/buger/jsonparser"
 	"github.com/codegangsta/negroni"
 	"github.com/gorilla/mux"
+	"github.com/signal18/replication-manager/cluster"
 	"github.com/signal18/replication-manager/config"
 	"github.com/signal18/replication-manager/utils/crypto"
 )
@@ -24,11 +26,38 @@ func (repman *ReplicationManager) apiDatabaseUnprotectedHandler(router *mux.Rout
 	router.Handle("/api/clusters/{clusterName}/servers/{serverName}/is-master", negroni.New(
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxServersIsMasterStatus)),
 	))
+	router.Handle("/api/clusters/{clusterName}/servers/{serverName}/{serverPort}/is-master", negroni.New(
+		negroni.Wrap(http.HandlerFunc(repman.handlerMuxServersPortIsMasterStatus)),
+	))
 	router.Handle("/api/clusters/{clusterName}/servers/{serverName}/is-slave", negroni.New(
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxServersIsSlaveStatus)),
 	))
-	router.Handle("/api/clusters/{clusterName}/servers/{serverName}/{serverPort}/is-master", negroni.New(
-		negroni.Wrap(http.HandlerFunc(repman.handlerMuxServersPortIsMasterStatus)),
+	router.Handle("/api/clusters/{clusterName}/servers/{serverName}/{serverPort}/is-slave", negroni.New(
+		negroni.Wrap(http.HandlerFunc(repman.handlerMuxServersPortIsSlaveStatus)),
+	))
+	router.Handle("/api/clusters/{clusterName}/servers/{serverName}/is-failed", negroni.New(
+		negroni.Wrap(http.HandlerFunc(repman.handlerMuxServerIsFailedStatus)),
+	))
+	router.Handle("/api/clusters/{clusterName}/servers/{serverName}/{serverPort}/is-failed", negroni.New(
+		negroni.Wrap(http.HandlerFunc(repman.handlerMuxServerIsFailedStatus)),
+	))
+	router.Handle("/api/clusters/{clusterName}/servers/{serverName}/is-slave-error", negroni.New(
+		negroni.Wrap(http.HandlerFunc(repman.handlerMuxServerIsSlaveErrorStatus)),
+	))
+	router.Handle("/api/clusters/{clusterName}/servers/{serverName}/{serverPort}/is-slave-error", negroni.New(
+		negroni.Wrap(http.HandlerFunc(repman.handlerMuxServerIsSlaveErrorStatus)),
+	))
+	router.Handle("/api/clusters/{clusterName}/servers/{serverName}/is-slave-late", negroni.New(
+		negroni.Wrap(http.HandlerFunc(repman.handlerMuxServerIsSlaveLateStatus)),
+	))
+	router.Handle("/api/clusters/{clusterName}/servers/{serverName}/{serverPort}/is-slave-late", negroni.New(
+		negroni.Wrap(http.HandlerFunc(repman.handlerMuxServerIsSlaveLateStatus)),
+	))
+	router.Handle("/api/clusters/{clusterName}/servers/{serverName}/is-standalone", negroni.New(
+		negroni.Wrap(http.HandlerFunc(repman.handlerMuxServerIsStandAloneStatus)),
+	))
+	router.Handle("/api/clusters/{clusterName}/servers/{serverName}/{serverPort}/is-standalone", negroni.New(
+		negroni.Wrap(http.HandlerFunc(repman.handlerMuxServerIsStandAloneStatus)),
 	))
 	router.Handle("/api/clusters/{clusterName}/servers/{serverName}/{serverPort}/need-restart", negroni.New(
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxServerNeedRestart)),
@@ -59,20 +88,21 @@ func (repman *ReplicationManager) apiDatabaseUnprotectedHandler(router *mux.Rout
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxServerNeedRollingRestart)),
 	))
 
-	router.Handle("/api/clusters/{clusterName}/servers/{serverName}/{serverPort}/is-slave", negroni.New(
-		negroni.Wrap(http.HandlerFunc(repman.handlerMuxServersPortIsSlaveStatus)),
-	))
-
 	router.Handle("/api/clusters/{clusterName}/servers/{serverName}/{serverPort}/config", negroni.New(
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxServersPortConfig)),
 	))
 	router.Handle("/api/clusters/{clusterName}/servers/{serverName}/{serverPort}/write-log/{task}", negroni.New(
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxServersWriteLog)),
 	))
+
 }
 
 func (repman *ReplicationManager) apiDatabaseProtectedHandler(router *mux.Router) {
 	//PROTECTED ENDPOINTS FOR SERVERS
+	router.Handle("/api/clusters/{clusterName}/servers/{serverName}", negroni.New(
+		negroni.HandlerFunc(repman.validateTokenMiddleware),
+		negroni.Wrap(http.HandlerFunc(repman.handlerMuxServer)),
+	))
 	router.Handle("/api/clusters/{clusterName}/servers/{serverName}/{serverPort}/backup", negroni.New(
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxServersPortBackup)),
 	))
@@ -356,6 +386,237 @@ func (repman *ReplicationManager) apiDatabaseProtectedHandler(router *mux.Router
 	router.Handle("/api/clusters/{clusterName}/servers/{serverName}/{serverPort}/write-log/{task}", negroni.New(
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxServersWriteLog)),
 	))
+}
+
+// handlerMuxServer handles the HTTP request to get the server details within a cluster.
+// @Summary Get server details
+// @Description Retrieves the details of a specified server within a cluster.
+// @Tags Database
+// @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Success 200 {object} cluster.ServerMonitor "Server details retrieved successfully"
+// @Failure 500 {string} string "No cluster" or "Server Not Found" or "Encoding error"
+// @Router /api/clusters/{clusterName}/servers/{serverName} [get]
+func (repman *ReplicationManager) handlerMuxServer(w http.ResponseWriter, r *http.Request) {
+	//marshal unmarchal for ofuscation deep copy of struc
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	vars := mux.Vars(r)
+	var err error
+
+	mycluster := repman.getClusterByName(vars["clusterName"])
+	if mycluster != nil {
+		uname := repman.GetUserFromRequest(r)
+		if _, ok := mycluster.APIUsers[uname]; !ok {
+			http.Error(w, "No Valid ACL", 500)
+			return
+		}
+
+		var node *cluster.ServerMonitor
+		if v, ok := vars["serverPort"]; ok && v != "" {
+			node = mycluster.GetServerFromURL(vars["serverName"] + ":" + vars["serverPort"])
+		} else {
+			node = mycluster.GetServerFromName(vars["serverName"])
+		}
+		if node == nil {
+			http.Error(w, "Server Not Found", 500)
+			return
+		}
+
+		var cont map[string]interface{}
+		data, _ := json.Marshal(node)
+		list, _ := json.Marshal(node.BinaryLogFiles.ToNewMap())
+		data, err = jsonparser.Set(data, list, "binaryLogFiles")
+		if err != nil {
+			http.Error(w, "Encoding error: "+err.Error(), 500)
+			return
+		}
+		err = json.Unmarshal(data, &cont)
+		if err != nil {
+			http.Error(w, "Encoding error: "+err.Error(), 500)
+			return
+		}
+
+		e := json.NewEncoder(w)
+		e.SetIndent("", "\t")
+		err = e.Encode(cont)
+		if err != nil {
+			mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlErr, "API Error encoding JSON: ", err)
+			http.Error(w, "Encoding error", 500)
+			return
+		}
+	} else {
+		http.Error(w, "No cluster", 500)
+		return
+	}
+}
+
+// handlerMuxServerIsFailedStatus handles the HTTP request to check if a server is failed within a cluster.
+// @Summary Check if a server is failed
+// @Description Checks if a specified server within a cluster is in a failed state.
+// @Tags Database
+// @Produce text/plain
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Param serverPort path string false "Server Port"
+// @Success 200 {string} string "200 -Server is failed!"
+// @Failure 500 {string} string "500 -Server is not Failed!" or "500 -No valid server!" or "500 -No cluster!"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/is-failed [get]
+// @Router /api/clusters/{clusterName}/servers/{serverName}/{serverPort}/is-failed [get]
+func (repman *ReplicationManager) handlerMuxServerIsFailedStatus(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	vars := mux.Vars(r)
+	mycluster := repman.getClusterByName(vars["clusterName"])
+	if mycluster != nil {
+		var node *cluster.ServerMonitor
+		if v, ok := vars["serverPort"]; ok && v != "" {
+			node = mycluster.GetServerFromURL(vars["serverName"] + ":" + vars["serverPort"])
+		} else {
+			node = mycluster.GetServerFromName(vars["serverName"])
+		}
+		if node == nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("500 -No valid server!"))
+			return
+		}
+
+		if node.IsFailed() {
+			w.Write([]byte("200 -Server is failed!"))
+		} else {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("500 -Server is not Failed!"))
+		}
+	} else {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("500 -No cluster!"))
+		return
+	}
+}
+
+// handlerMuxServerIsSlaveErrorStatus handles the HTTP request to check if a server is in slave error state within a cluster.
+// @Summary Check if a server is in slave error state
+// @Description Checks if a specified server within a cluster is in a slave error state.
+// @Tags Database
+// @Produce text/plain
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Param serverPort path string false "Server Port"
+// @Success 200 {string} string "200 -Server is in Slave Error state!"
+// @Failure 500 {string} string "500 -Server is not in Slave Error state!" or "500 -No valid server!" or "500 -No cluster!"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/is-slave-error [get]
+// @Router /api/clusters/{clusterName}/servers/{serverName}/{serverPort}/is-slave-error [get]
+func (repman *ReplicationManager) handlerMuxServerIsSlaveErrorStatus(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	vars := mux.Vars(r)
+	mycluster := repman.getClusterByName(vars["clusterName"])
+	if mycluster != nil {
+		var node *cluster.ServerMonitor
+		if v, ok := vars["serverPort"]; ok && v != "" {
+			node = mycluster.GetServerFromURL(vars["serverName"] + ":" + vars["serverPort"])
+		} else {
+			node = mycluster.GetServerFromName(vars["serverName"])
+		}
+		if node == nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("500 -No valid server!"))
+			return
+		}
+
+		if node.IsSlaveError() {
+			w.Write([]byte("200 -Server is in Slave Error state!"))
+		} else {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("500 -Server is not in Slave Error state!"))
+		}
+	} else {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("500 -No cluster!"))
+		return
+	}
+}
+
+// handlerMuxServerIsSlaveLateStatus handles the HTTP request to check if a server is in slave late state within a cluster.
+// @Summary Check if server is in Slave Late state
+// @Description Checks if the specified server within the cluster is in a "Slave Late" state.
+// @Tags replication
+// @Produce plain
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Param serverPort path string false "Server Port"
+// @Success 200 {string} string "200 -Server is in Slave Late state!"
+// @Failure 500 {string} string "500 -No valid server!" "500 -Server is not in Slave Late state!" "500 -No cluster!"
+// @Router /replication/{clusterName}/{serverName}/slave-late-status [get]
+func (repman *ReplicationManager) handlerMuxServerIsSlaveLateStatus(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	vars := mux.Vars(r)
+	mycluster := repman.getClusterByName(vars["clusterName"])
+	if mycluster != nil {
+		var node *cluster.ServerMonitor
+		if v, ok := vars["serverPort"]; ok && v != "" {
+			node = mycluster.GetServerFromURL(vars["serverName"] + ":" + vars["serverPort"])
+		} else {
+			node = mycluster.GetServerFromName(vars["serverName"])
+		}
+		if node == nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("500 -No valid server!"))
+			return
+		}
+
+		if node.IsSlaveLate() {
+			w.Write([]byte("200 -Server is in Slave Late state!"))
+		} else {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("500 -Server is not in Slave Late state!"))
+		}
+	} else {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("500 -No cluster!"))
+		return
+	}
+}
+
+// handlerMuxServerIsStandAloneStatus handles the HTTP request to check if a server is in standalone state within a cluster.
+// @Summary Check if a server is in standalone state
+// @Description Checks if a specified server within a cluster is in a standalone state.
+// @Tags Database
+// @Produce text/plain
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Param serverPort path string false "Server Port"
+// @Success 200 {string} string "200 -Server is in Standalone state!"
+// @Failure 500 {string} string "500 -Server is not in Standalone state!" or "500 -No valid server!" or "500 -No cluster!"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/is-standalone [get]
+// @Router /api/clusters/{clusterName}/servers/{serverName}/{serverPort}/is-standalone [get]
+func (repman *ReplicationManager) handlerMuxServerIsStandAloneStatus(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	vars := mux.Vars(r)
+	mycluster := repman.getClusterByName(vars["clusterName"])
+	if mycluster != nil {
+		var node *cluster.ServerMonitor
+		if v, ok := vars["serverPort"]; ok && v != "" {
+			node = mycluster.GetServerFromURL(vars["serverName"] + ":" + vars["serverPort"])
+		} else {
+			node = mycluster.GetServerFromName(vars["serverName"])
+		}
+		if node == nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("500 -No valid server!"))
+			return
+		}
+
+		if node.IsStandAlone() {
+			w.Write([]byte("200 -Server is in Standalone state!"))
+		} else {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("500 -Server is not in Standalone state!"))
+		}
+	} else {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("500 -No cluster!"))
+		return
+	}
 }
 
 // handlerMuxQueryKillQuery handles the HTTP request to kill a query on a specific server within a cluster.

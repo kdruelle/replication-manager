@@ -7,16 +7,22 @@
 package server
 
 import (
+	"encoding/json"
 	"net/http"
 	"os"
 
 	"github.com/codegangsta/negroni"
 	"github.com/gorilla/mux"
+	"github.com/signal18/replication-manager/cluster"
+	"github.com/signal18/replication-manager/config"
 )
 
 func (repman *ReplicationManager) apiProxyProtectedHandler(router *mux.Router) {
 	//PROTECTED ENDPOINTS FOR PROXIES
-
+	router.Handle("/api/clusters/{clusterName}/proxies/{proxyName}", negroni.New(
+		negroni.HandlerFunc(repman.validateTokenMiddleware),
+		negroni.Wrap(http.HandlerFunc(repman.handlerMuxProxy)),
+	))
 	router.Handle("/api/clusters/{clusterName}/proxies/{proxyName}/actions/unprovision", negroni.New(
 		negroni.HandlerFunc(repman.validateTokenMiddleware),
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxProxyUnprovision)),
@@ -41,6 +47,54 @@ func (repman *ReplicationManager) apiProxyProtectedHandler(router *mux.Router) {
 		negroni.HandlerFunc(repman.validateTokenMiddleware),
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxProxyNeedReprov)),
 	))
+}
+
+// @Summary Shows the proxies for that specific named cluster
+// @Description Shows the proxies for that specific named cluster
+// @Tags Proxies
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
+// @Param clusterName path string true "Cluster Name"
+// @Success 200 {object} cluster.Proxy "Server details retrieved successfully"
+// @Failure 500 {string} string "Internal Server Error"
+// @Router /api/clusters/{clusterName}/proxies/{proxyName} [get]
+func (repman *ReplicationManager) handlerMuxProxy(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	//marshal unmarchal for ofuscation deep copy of struc
+	vars := mux.Vars(r)
+	mycluster := repman.getClusterByName(vars["clusterName"])
+	if mycluster != nil {
+		uname := repman.GetUserFromRequest(r)
+		if _, ok := mycluster.APIUsers[uname]; !ok {
+			http.Error(w, "No Valid ACL", 500)
+			return
+		}
+
+		node := mycluster.GetProxyFromName(vars["proxyName"])
+		if node != nil {
+			data, _ := json.Marshal(node)
+			var prx cluster.Proxy
+			err := json.Unmarshal(data, &prx)
+			if err != nil {
+				mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlErr, "API Error encoding JSON: ", err)
+				http.Error(w, "Encoding error", 500)
+				return
+			}
+			e := json.NewEncoder(w)
+			e.SetIndent("", "\t")
+			err = e.Encode(prx)
+			if err != nil {
+				mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlErr, "API Error encoding JSON: ", err)
+				http.Error(w, "Encoding error", 500)
+				return
+			}
+		} else {
+			http.Error(w, "Server Not Found", 500)
+			return
+		}
+	} else {
+		http.Error(w, "No cluster", 500)
+		return
+	}
 }
 
 // @Summary Start Proxy Service
