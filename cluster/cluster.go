@@ -698,26 +698,6 @@ func (cluster *Cluster) Run() {
 				// CheckFailed trigger failover code if passing all false positiv and constraints
 				cluster.CheckFailed()
 
-				if !cluster.IsMasterDown && cluster.GetMaster() != nil && !cluster.IsInFailover() {
-					if cluster.HasWaitDBACredCookie() {
-						if cluster.GetDbaUser() != "" && cluster.GetDbaPass() != "" {
-							cluster.SetDBAUserCredentials()
-						} else {
-							cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlInfo, "Removing wait dba credentials cookie due to empty credential", err)
-							cluster.DelWaitDBACredCookie()
-						}
-					}
-
-					if cluster.HasWaitSponsorCredCookie() {
-						if cluster.GetSponsorUser() != "" && cluster.GetSponsorPass() != "" {
-							cluster.SetSponsorUserCredentials()
-						} else {
-							cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlInfo, "Removing wait sponsor credentials cookie due to empty credential", err)
-							cluster.DelWaitSponsorCredCookie()
-						}
-					}
-				}
-
 				cluster.SetStatus()
 				cluster.StateProcessing()
 				go cluster.GetSlowLogTable() // prevent blocking cycle
