@@ -16,7 +16,6 @@ import (
 	vault "github.com/hashicorp/vault/api"
 	"github.com/jordan-wright/email"
 	"github.com/signal18/replication-manager/config"
-	"github.com/signal18/replication-manager/utils/alert"
 	"github.com/signal18/replication-manager/utils/dbhelper"
 	"github.com/signal18/replication-manager/utils/misc"
 	"github.com/sirupsen/logrus"
@@ -199,9 +198,9 @@ func (cluster *Cluster) RotatePasswords() error {
 			if cluster.Conf.MailTo != "" {
 				msg := "A password rotation has been made\nCheck the new password on " + cluster.Conf.VaultServerAddr + " website on path " + cluster.Conf.VaultMount + cluster.Conf.User + " and " + cluster.Conf.VaultMount + cluster.Conf.RplUser + "."
 				subj := "Password Rotation Replication-Manager"
-				alert := alert.Alert{}
+				alert := Alert{}
 				alert.Cluster = cluster.Name
-				go alert.EmailMessage(msg, subj, cluster.Conf)
+				go cluster.SendMail(msg, subj, true, true, true)
 			}
 
 		}
@@ -312,9 +311,9 @@ func (cluster *Cluster) RotatePasswords() error {
 			if cluster.Conf.MailTo != "" {
 				msg := "A password rotation has been made\nCheck the new password on " + cluster.Conf.VaultServerAddr + " website on path " + cluster.Conf.VaultMount + cluster.Conf.User + " and " + cluster.Conf.VaultMount + cluster.Conf.RplUser + "."
 				subj := "Password Rotation Replication-Manager"
-				alert := alert.Alert{}
+				alert := Alert{}
 				alert.Cluster = cluster.Name
-				go alert.EmailMessage(msg, subj, cluster.Conf)
+				go cluster.SendMail(msg, subj, true, true, true)
 			}
 
 			cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModVault, config.LvlInfo, "Password rotation is done.")

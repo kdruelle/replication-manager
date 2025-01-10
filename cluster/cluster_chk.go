@@ -20,7 +20,6 @@ import (
 
 	"github.com/signal18/replication-manager/config"
 	"github.com/signal18/replication-manager/router/maxscale"
-	"github.com/signal18/replication-manager/utils/alert"
 	"github.com/signal18/replication-manager/utils/dbhelper"
 	"github.com/signal18/replication-manager/utils/state"
 )
@@ -515,7 +514,7 @@ func (cluster *Cluster) CheckAlert(state state.State, resolved bool) {
 	}
 
 	if strings.Contains(cluster.Conf.MonitoringAlertTrigger, state.ErrKey) {
-		a := alert.Alert{
+		a := Alert{
 			State:    state.ErrDesc,
 			Cluster:  cluster.Name,
 			Resolved: resolved,
@@ -529,13 +528,13 @@ func (cluster *Cluster) CheckAlert(state state.State, resolved bool) {
 	}
 }
 
-func (cluster *Cluster) SendAlert(alert alert.Alert) error {
+func (cluster *Cluster) SendAlert(alert Alert) error {
 	if cluster.IsAlertDisable {
 		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlInfo, "Cancel alert caused by alert disabled from scheduler")
 		return nil
 	}
 	if cluster.Conf.MailTo != "" {
-		go alert.EmailMessage("", "", cluster.Conf)
+		go cluster.SendMailFromAlert(alert, true, true)
 	}
 	cluster.BashScriptAlert(alert)
 
