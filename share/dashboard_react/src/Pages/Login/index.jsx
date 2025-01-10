@@ -76,7 +76,7 @@ function Login(props) {
             <Stack spacing='6'>
               <Stack spacing='5'>
                 <FormControl isInvalid={usernameError}>
-                  <FormLabel htmlFor='username'>Username</FormLabel>
+                  <FormLabel htmlFor='username'>Username or Email</FormLabel>
                   <Input id='username' type='text' value={username} onChange={(e) => setUsername(e.target.value)} />
                   <FormErrorMessage sx={styles.errorMessage}>{usernameError}</FormErrorMessage>
                 </FormControl>
