@@ -23,6 +23,10 @@ type Alert struct {
 	Resolved    bool
 }
 
+// PrepareMail prepares the mail message
+// if the cloud18 flag is set to true
+//   - if sendDbOps is true and the external dbops is set, the mail will be sent to the external dbops
+//   - if sendSysOps is true and the external sysops is set, the mail will be sent to the external sysops
 func (cluster *Cluster) PrepareMail(sendDbOps, sendSysOps bool) (string, string, []string) {
 	address := cluster.Conf.MonitorAddress
 	from := cluster.Conf.MailFrom
@@ -43,6 +47,12 @@ func (cluster *Cluster) PrepareMail(sendDbOps, sendSysOps bool) (string, string,
 	return address, from, to
 }
 
+// SendMailFromAlert sends an email from an alert
+// if the cloud18 flag is set to true
+//   - if sendDbOps is true and the external dbops is set, the mail will be sent to the external dbops
+//   - if sendSysOps is true and the external sysops is set, the mail will be sent to the external sysops
+//
+// the subject will be "Replication-Manager@<monitor_address> Alert - Cluster <cluster_name> state change detected"
 func (cluster *Cluster) SendMailFromAlert(a Alert, sendDbOps, sendSysOps bool) error {
 	address, from, to := cluster.PrepareMail(sendDbOps, sendSysOps)
 	host := ""
@@ -69,6 +79,12 @@ func (cluster *Cluster) SendMailFromAlert(a Alert, sendDbOps, sendSysOps bool) e
 	return nil
 }
 
+// SendMail sends an email
+// if the cloud18 flag is set to true
+//   - if sendDbOps is true and the external dbops is set, the mail will be sent to the external dbops
+//   - if sendSysOps is true and the external sysops is set, the mail will be sent to the external sysops
+//
+// if isAlert is true, the message will be prepended with "Alert: "
 func (cluster *Cluster) SendMail(msg, subj string, isAlert, sendDbOps, sendSysOps bool) error {
 	address, from, to := cluster.PrepareMail(sendDbOps, sendSysOps)
 
