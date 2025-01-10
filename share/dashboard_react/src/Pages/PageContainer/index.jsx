@@ -1,22 +1,24 @@
 import React, { useEffect, useState, lazy } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { setUserData } from '../../redux/authSlice'
-import { Box, useBreakpointValue, Text } from '@chakra-ui/react'
+import { Box, useBreakpointValue, Text, HStack, Link } from '@chakra-ui/react'
 import { isAuthorized } from '../../utility/common'
 import { setIsMobile, setIsTablet, setIsDesktop } from '../../redux/commonSlice'
 import Navbar from '../../components/Navbar'
 import styles from './styles.module.scss'
+import { getMonitoredData } from '../../redux/globalClustersSlice'
 
 function PageContainer({ children }) {
   const dispatch = useDispatch()
+  const location = useLocation()
   const navigate = useNavigate()
   const [fullVersion, setFullVersion] = useState('')
 
   const {
     common: { isDesktop },
     auth: { isLogged, user },
-    globalClusters: { clusters }
+    globalClusters: { monitor }
   } = useSelector((state) => state)
 
   const currentBreakpoint = useBreakpointValue({
@@ -27,10 +29,14 @@ function PageContainer({ children }) {
   })
 
   useEffect(() => {
-    if (clusters?.length > 0) {
-      setFullVersion(clusters[0].config?.fullVersion)
+    if (monitor === null) {
+      dispatch(getMonitoredData({}))
+    } 
+
+    if (monitor?.fullVersion) {
+      setFullVersion(monitor?.fullVersion)
     }
-  }, [clusters])
+  }, [monitor])
 
   useEffect(() => {
     if (isAuthorized() && user === null) {
@@ -64,11 +70,9 @@ function PageContainer({ children }) {
     <Box className={styles.container}>
       <Navbar username={user?.username} />
       <Box className={styles.pageContent}>{children}</Box>
-      {fullVersion && (
-        <Box as='footer' className={styles.footer}>
-          <Text>{`Replication-Manager ${fullVersion} © 2017-${new Date().getFullYear()} SIGNAL18 CLOUD SAS`}</Text>
+        <Box as='footer' className={styles.footer} textAlign={location.pathname === '/login' ? 'right' : 'left'}>
+          { location.pathname === '/login' ? monitor?.config.apiSwaggerEnabled && (<Link href='/api-docs/index.html' target='_blank' rel='noreferrer'>API Swagger</Link>) : (<Text>{`Replication-Manager ${fullVersion} © 2017-${new Date().getFullYear()} SIGNAL18 CLOUD SAS`}</Text>)}
         </Box>
-      )}
     </Box>
   )
 }
