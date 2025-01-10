@@ -17,7 +17,6 @@ import (
 
 	"github.com/signal18/replication-manager/config"
 	"github.com/signal18/replication-manager/graphite"
-	"github.com/signal18/replication-manager/utils/alert"
 )
 
 func (server *ServerMonitor) GetDatabaseMetrics() []graphite.Metric {
@@ -115,7 +114,7 @@ func (server *ServerMonitor) SendAlert() error {
 		return nil
 	}
 
-	a := alert.Alert{
+	a := Alert{
 		State:     server.State,
 		PrevState: server.PrevState,
 		Host:      server.URL,

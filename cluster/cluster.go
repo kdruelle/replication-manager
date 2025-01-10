@@ -34,7 +34,6 @@ import (
 	"github.com/signal18/replication-manager/config"
 	v3 "github.com/signal18/replication-manager/repmanv3"
 	"github.com/signal18/replication-manager/router/maxscale"
-	"github.com/signal18/replication-manager/utils/alert"
 	"github.com/signal18/replication-manager/utils/cron"
 	"github.com/signal18/replication-manager/utils/dbhelper"
 	"github.com/signal18/replication-manager/utils/logrus/hooks/pushover"
@@ -451,9 +450,7 @@ func (cluster *Cluster) InitFromConf() {
 	if cluster.Conf.MailTo != "" {
 		msg := "Replication-Manager started\nVersion: " + cluster.Conf.Version
 		subj := "Replication-Manager started"
-		alert := alert.Alert{}
-		alert.Cluster = cluster.Name
-		go alert.EmailMessage(msg, subj, cluster.Conf)
+		go cluster.SendMail(msg, subj, true, true, true)
 	}
 
 	hookerr, err := s18log.NewRotateFileHook(s18log.RotateFileConfig{
