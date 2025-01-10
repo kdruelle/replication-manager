@@ -23,7 +23,7 @@ type Alert struct {
 	Resolved    bool
 }
 
-func (cluster *Cluster) SendMailFromAlert(a Alert, sendDbOps, sendSysOps bool) error {
+func (cluster *Cluster) PrepareMail(sendDbOps, sendSysOps bool) (string, string, []string) {
 	address := cluster.Conf.MonitorAddress
 	from := cluster.Conf.MailFrom
 	to := strings.Split(cluster.Conf.MailTo, ",")
@@ -40,6 +40,11 @@ func (cluster *Cluster) SendMailFromAlert(a Alert, sendDbOps, sendSysOps bool) e
 		}
 	}
 
+	return address, from, to
+}
+
+func (cluster *Cluster) SendMailFromAlert(a Alert, sendDbOps, sendSysOps bool) error {
+	address, from, to := cluster.PrepareMail(sendDbOps, sendSysOps)
 	host := ""
 	if a.Host != "" {
 		host = "Host: " + a.Host + "\n"
@@ -65,21 +70,7 @@ func (cluster *Cluster) SendMailFromAlert(a Alert, sendDbOps, sendSysOps bool) e
 }
 
 func (cluster *Cluster) SendMail(msg, subj string, isAlert, sendDbOps, sendSysOps bool) error {
-	address := cluster.Conf.MonitorAddress
-	from := cluster.Conf.MailFrom
-	to := strings.Split(cluster.Conf.MailTo, ",")
-	if cluster.Conf.Cloud18 {
-		address = fmt.Sprintf("%s (%s)", cluster.Conf.APIPublicURL, address)
-		if cluster.Conf.Cloud18GitUser != "" && !slices.Contains(to, cluster.Conf.Cloud18GitUser) {
-			to = append(to, cluster.Conf.Cloud18GitUser)
-		}
-		if sendDbOps && cluster.Conf.Cloud18ExternalDbOps != "" && !slices.Contains(to, cluster.Conf.Cloud18ExternalDbOps) {
-			to = append(to, cluster.Conf.Cloud18ExternalDbOps)
-		}
-		if sendSysOps && cluster.Conf.Cloud18ExternalSysOps != "" && !slices.Contains(to, cluster.Conf.Cloud18ExternalSysOps) {
-			to = append(to, cluster.Conf.Cloud18ExternalSysOps)
-		}
-	}
+	address, from, to := cluster.PrepareMail(sendDbOps, sendSysOps)
 
 	if isAlert {
 		msg = fmt.Sprintf("Alert: %s\nMonitor: %s\nCluster: %s\n", msg, address, cluster.Name)
