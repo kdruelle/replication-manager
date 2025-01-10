@@ -135,17 +135,17 @@ function Users({ selectedCluster, user }) {
         <HStack align={"center"} justifyContent={"center"}>
           { row?.roles?.["pending"] ? (
             <>
-              <RMIconButton icon={TbUserStar} onClick={(e) => { e.stopPropagation(); setAction({ type: "accept-sub", title: "Are you sure to accept subscription?", payload: row.user }); openConfirmModal() }} />
-              <RMIconButton icon={TbUserCancel} onClick={(e) => { e.stopPropagation(); setAction({ type: "reject-sub", title: "Are you sure to reject subscription?", payload: row.user }); openConfirmModal() }} />
+              <RMIconButton tooltip={"accept subscription"} icon={TbUserStar} onClick={(e) => { e.stopPropagation(); setAction({ type: "accept-sub", title: "Are you sure to accept subscription?", payload: row.user }); openConfirmModal() }} />
+              <RMIconButton tooltip={"reject subscription"} icon={TbUserCancel} onClick={(e) => { e.stopPropagation(); setAction({ type: "reject-sub", title: "Are you sure to reject subscription?", payload: row.user }); openConfirmModal() }} />
             </>
           ) : (
             <>
-              { row?.roles?.["sponsor"] && <RMIconButton icon={TbUserCancel} onClick={(e) => { e.stopPropagation(); setAction({ type: "end-sub", title: "Are you sure to end subscription?", payload: row.user }); openConfirmModal() }} />}
-              { user?.user != row?.user && <RMIconButton icon={HiUserGroup} onClick={(e) => { e.stopPropagation(); setSelectedUser(row); openUserGrantModal() }} />}
+              { row?.roles?.["sponsor"] && <RMIconButton tooltip={"unsubscribe sponsorship"} icon={TbUserCancel} onClick={(e) => { e.stopPropagation(); setAction({ type: "end-sub", title: "Are you sure to end subscription?", payload: row.user }); openConfirmModal() }} />}
+              { user?.user != row?.user && <RMIconButton tooltip={"user privileges"} icon={HiUserGroup} onClick={(e) => { e.stopPropagation(); setSelectedUser(row); openUserGrantModal() }} />}
               { row?.roles?.["sponsor"] && <RMIconButton tooltip={"send sponsor credentials"} icon={TbMailStar} onClick={(e) => { e.stopPropagation(); setAction({ type: "send-cred-sponsor", title: "Are you sure to send sponsor credentials to "+row.user+"?", payload: row.user }); openConfirmModal() }} />}
               { isShowSendDB(user, row) && <RMIconButton tooltip={"send dba credentials"} icon={TbMail} onClick={(e) => { e.stopPropagation(); setAction({ type: "send-cred-db", title: "Are you sure to send dba credentials to "+row.user+"?", payload: row.user }); openConfirmModal() }} />}
               { isShowSendSys(user,row) && <RMIconButton tooltip={"send sysadmin credentials"} icon={TbMailCog} onClick={(e) => { e.stopPropagation(); setAction({ type: "send-cred-sys", title: "Are you sure to send sys admin credentials to "+row.user+"?", payload: row.user }); openConfirmModal() }} />}
-              { isShowDropUser(user,row) && <RMIconButton icon={TbTrash} onClick={(e) => { e.stopPropagation(); setAction({ type: "drop-user", title: "Are you sure to drop user "+row.user+"?", payload: row.user }); openConfirmModal() }} /> }
+              { isShowDropUser(user,row) && <RMIconButton tooltip={"drop user"} icon={TbTrash} onClick={(e) => { e.stopPropagation(); setAction({ type: "drop-user", title: "Are you sure to drop user "+row.user+"?", payload: row.user }); openConfirmModal() }} /> }
             </>
           )}
         </HStack>
