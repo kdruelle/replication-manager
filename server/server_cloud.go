@@ -3,7 +3,6 @@ package server
 import (
 	"fmt"
 	"os/exec"
-	"slices"
 	"strings"
 
 	"github.com/signal18/replication-manager/cluster"
@@ -217,16 +216,21 @@ func (repman *ReplicationManager) BashScriptSalesUnsubscribe(mycluster *cluster.
 	return nil
 }
 
-func (repman *ReplicationManager) GetPartnerFromDomain(domain string) config.Partner {
-	tmpPartner := config.Partner{}
+func (repman *ReplicationManager) SetCloudPartner() {
+	selectedPartner := config.Partner{
+		Name:        "Signal18",
+		IsDbops:     1,
+		IsSysops:    1,
+		DbopsEmail:  "dbops-cloud18@signal18.io",
+		SysopsEmail: "sysops-cloud18@signal18.io",
+	}
+
 	for _, partner := range repman.Partners {
-		domains := strings.Split(partner.Domains, ",")
-		if slices.Contains(domains, domain) {
-			return partner
-		} else if slices.Contains(domains, "cloud18") {
-			tmpPartner = partner
+		if repman.Conf.Cloud18GitUser == partner.SysopsEmail {
+			selectedPartner = partner
+			break
 		}
 	}
 
-	return tmpPartner
+	repman.Partner = selectedPartner
 }

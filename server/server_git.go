@@ -91,6 +91,8 @@ func (repman *ReplicationManager) InitGitConfig(conf *config.Config) error {
 			return err
 		}
 
+		repman.SetCloudPartner()
+
 		uid, err := githelper.GetGitLabUserId(acces_tok, conf.IsEligibleForPrinting(config.ConstLogModGit, config.LvlDbg))
 		if err != nil {
 			if conf.Verbose || conf.IsEligibleForPrinting(config.ConstLogModGit, config.LvlErr) {
@@ -149,7 +151,6 @@ func (repman *ReplicationManager) InitGitConfig(conf *config.Config) error {
 				conf.CloneConfigFromGit(conf.GitUrl, conf.GitUsername, conf.GitAccesToken, conf.WorkingDir)
 				conf.CloneConfigFromGit(conf.GitUrlPull, conf.GitUsername, conf.GitAccesToken, conf.WorkingDir+"/.pull")
 			}
-			//conf.GitAddReadMe(conf.GitUrl, conf.GitAccesToken, conf.GitUsername, conf.WorkingDir)
 
 		} else if conf.IsEligibleForPrinting(config.ConstLogModGit, config.LvlInfo) {
 			err := fmt.Errorf("Could not get personal access token from gitlab")
@@ -412,7 +413,7 @@ func (repman *ReplicationManager) LoadPartnersJson() error {
 	// Update state
 	repman.Partners = PartnerList
 	repman.CheckSumConfig["partners"] = newHash
-
+	repman.SetCloudPartner()
 	return nil
 
 }

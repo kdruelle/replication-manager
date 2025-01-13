@@ -1097,6 +1097,7 @@ func (repman *ReplicationManager) InitConfig(conf config.Config, init_git bool) 
 	repman.VersionConfs = make(map[string]*config.ConfVersion)
 	repman.ImmuableFlagMaps = make(map[string]map[string]interface{})
 	repman.DynamicFlagMaps = make(map[string]map[string]interface{})
+	repman.Partners = make([]config.Partner, 0)
 	ImmuableMap := make(map[string]interface{})
 	DynamicMap := make(map[string]interface{})
 	// repman.UserAuthTry = make(map[string]authTry)
@@ -1783,6 +1784,9 @@ func (repman *ReplicationManager) Run() error {
 	repman.CheckSumConfig = make(map[string]hash.Hash)
 	repman.PeerBooked = make(map[string]string)
 
+	repman.LoadPeerJson()
+	repman.LoadPartnersJson()
+
 	repman.InitMailer()
 
 	repman.clog.SetLevel(config.ToLogrusLevel(repman.Conf.LogGraphiteLevel))
@@ -1980,8 +1984,6 @@ func (repman *ReplicationManager) Run() error {
 	}
 
 	repman.globalScheduler.Start()
-	repman.LoadPeerJson()
-	repman.LoadPartnersJson()
 
 	repman.LimitPrivileges()
 
