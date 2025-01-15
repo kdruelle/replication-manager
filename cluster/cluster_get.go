@@ -249,6 +249,14 @@ func (cluster *Cluster) GetSlaves() serverList {
 	return cluster.slaves
 }
 
+func (cluster *Cluster) GetSlaveByIndex(idx int) *ServerMonitor {
+	if len(cluster.slaves) > idx {
+		return cluster.slaves[idx]
+	}
+
+	return nil
+}
+
 func (cluster *Cluster) GetProxies() proxyList {
 	return cluster.Proxies
 }

@@ -12,6 +12,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/buger/jsonparser"
 	"github.com/codegangsta/negroni"
@@ -102,6 +103,10 @@ func (repman *ReplicationManager) apiDatabaseProtectedHandler(router *mux.Router
 	router.Handle("/api/clusters/{clusterName}/servers/{serverName}", negroni.New(
 		negroni.HandlerFunc(repman.validateTokenMiddleware),
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxServer)),
+	))
+	router.Handle("/api/clusters/{clusterName}/servers/{serverName}/attr/{attrName}", negroni.New(
+		negroni.HandlerFunc(repman.validateTokenMiddleware),
+		negroni.Wrap(http.HandlerFunc(repman.handlerMuxServerAttribute)),
 	))
 	router.Handle("/api/clusters/{clusterName}/servers/{serverName}/{serverPort}/backup", negroni.New(
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxServersPortBackup)),
@@ -446,6 +451,73 @@ func (repman *ReplicationManager) handlerMuxServer(w http.ResponseWriter, r *htt
 			http.Error(w, "Encoding error", 500)
 			return
 		}
+	} else {
+		http.Error(w, "No cluster", 500)
+		return
+	}
+}
+
+// handlerMuxServer handles the HTTP request to get the server details within a cluster.
+// @Summary Get server details
+// @Description Retrieves the details of a specified server within a cluster.
+// @Tags Database
+// @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Param attrName path string true "Attribute Name (using json path notation split by dot)"
+// @Success 200 {object} cluster.ServerMonitor "Server Attribute (partial based on attrName)"
+// @Failure 500 {string} string "No cluster" or "Server Not Found" or "Attribute not found"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/attr/{attrName} [get]
+func (repman *ReplicationManager) handlerMuxServerAttribute(w http.ResponseWriter, r *http.Request) {
+	//marshal unmarchal for ofuscation deep copy of struc
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	vars := mux.Vars(r)
+
+	mycluster := repman.getClusterByName(vars["clusterName"])
+	if mycluster != nil {
+		uname := repman.GetUserFromRequest(r)
+		if _, ok := mycluster.APIUsers[uname]; !ok {
+			http.Error(w, "No Valid ACL", 500)
+			return
+		}
+
+		var node *cluster.ServerMonitor
+		if v, ok := vars["serverPort"]; ok && v != "" {
+			node = mycluster.GetServerFromURL(vars["serverName"] + ":" + vars["serverPort"])
+		} else {
+			node = mycluster.GetServerFromName(vars["serverName"])
+		}
+		if node == nil {
+			http.Error(w, "Server Not Found", 500)
+			return
+		}
+
+		var data, value []byte
+		var valtype jsonparser.ValueType
+		// get the value from the json path
+		// if the attribute is binaryLogFiles, we need to convert the map to json
+		// if the attribute is binaryLogFiles.*, we need to convert the map to json and get the value from the json path
+		// otherwise, we just get the value from the json path
+		if vars["attrName"] == "binaryLogFiles" {
+			value, _ = json.Marshal(node.BinaryLogFiles.ToNewMap())
+		} else if strings.HasPrefix(vars["attrName"], "binaryLogFiles.") {
+			data, _ = json.Marshal(node.BinaryLogFiles.ToNewMap())
+			value, valtype, _, _ = jsonparser.Get(data, strings.Split(vars["attrName"], ".")[1:]...)
+		} else {
+			data, _ = json.Marshal(node)
+			value, valtype, _, _ = jsonparser.Get(data, strings.Split(vars["attrName"], ".")...)
+		}
+
+		// if the value is not found, return an error
+		if valtype == jsonparser.NotExist {
+			http.Error(w, "Attribute not found", 500)
+			return
+		}
+
+		// Write the value to the response
+		w.WriteHeader(http.StatusOK)
+		w.Write(value)
 	} else {
 		http.Error(w, "No cluster", 500)
 		return
