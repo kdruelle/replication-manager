@@ -1522,10 +1522,10 @@ func (server *ServerMonitor) ReloadSaveInfosVariables() error {
 		cluster.LogModulePrintf(cluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlErr, "File error: %v\n", err)
 		return err
 	}
-	if server.Variables == nil {
-		server.Variables = new(config.StringsMap)
+	if server.SensitiveVariables == nil {
+		server.SensitiveVariables = new(config.StringsMap)
 	}
-	server.Variables = config.FromNormalStringMap(server.Variables, clsave.Variables)
+	server.SensitiveVariables = config.FromNormalStringMap(server.SensitiveVariables, clsave.Variables)
 	server.MaxSlowQueryTimestamp = clsave.MaxSlowQueryTimestamp
 	return nil
 }
