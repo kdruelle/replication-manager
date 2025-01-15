@@ -114,7 +114,7 @@ function DBServers({ selectedCluster, user }) {
         }
       ),
 
-      columnHelper.accessor((row) => <ServerStatus state={row?.state} isBlinking={true} />, {
+      columnHelper.accessor((row) => <ServerStatus state={row?.state} isVirtualMaster={row?.isVirtualMaster} isBlinking={true} />, {
         cell: (info) => info.getValue(),
         header: 'Status',
         id: 'status'
