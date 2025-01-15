@@ -48,6 +48,12 @@ func (repman *ReplicationManager) apiDatabaseUnprotectedHandler(router *mux.Rout
 	router.Handle("/api/clusters/{clusterName}/servers/{serverName}/{serverPort}/is-slave-error", negroni.New(
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxServerIsSlaveErrorStatus)),
 	))
+	router.Handle("/api/clusters/{clusterName}/servers/{serverName}/is-slave-stopped", negroni.New(
+		negroni.Wrap(http.HandlerFunc(repman.handlerMuxServerIsSlaveStopStatus)),
+	))
+	router.Handle("/api/clusters/{clusterName}/servers/{serverName}/{serverPort}/is-slave-stopped", negroni.New(
+		negroni.Wrap(http.HandlerFunc(repman.handlerMuxServerIsSlaveStopStatus)),
+	))
 	router.Handle("/api/clusters/{clusterName}/servers/{serverName}/is-slave-late", negroni.New(
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxServerIsSlaveLateStatus)),
 	))
@@ -600,6 +606,54 @@ func (repman *ReplicationManager) handlerMuxServerIsSlaveErrorStatus(w http.Resp
 		} else {
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Write([]byte("500 -Server is not in Slave Error state!"))
+		}
+	} else {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("500 -No cluster!"))
+		return
+	}
+}
+
+// handlerMuxServerIsSlaveStopStatus handles the HTTP request to check if a server replication is in OFF state for both IO and SQL thread within a cluster.
+// @Summary Check if a server is in slave Stop state
+// @Description Checks if a specified server within a cluster is in a slave Stop state.
+// @Tags Database
+// @Produce text/plain
+// @Param clusterName path string true "Cluster Name"
+// @Param serverName path string true "Server Name"
+// @Param serverPort path string false "Server Port"
+// @Success 200 {string} string "200 -Server is in Slave Stop state!"
+// @Failure 500 {string} string "500 -Server is not in Slave Stop state!" or "500 -No valid server!" or "500 -No cluster!"
+// @Router /api/clusters/{clusterName}/servers/{serverName}/is-slave-Stop [get]
+// @Router /api/clusters/{clusterName}/servers/{serverName}/{serverPort}/is-slave-Stop [get]
+func (repman *ReplicationManager) handlerMuxServerIsSlaveStopStatus(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	vars := mux.Vars(r)
+	mycluster := repman.getClusterByName(vars["clusterName"])
+	if mycluster != nil {
+		var node *cluster.ServerMonitor
+		if v, ok := vars["serverPort"]; ok && v != "" {
+			node = mycluster.GetServerFromURL(vars["serverName"] + ":" + vars["serverPort"])
+		} else {
+			node = mycluster.GetServerFromName(vars["serverName"])
+		}
+		if node == nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("500 -No valid server!"))
+			return
+		}
+
+		if _, err := node.GetSlaveStatus(node.ReplicationSourceName); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("500 -Replication not found!"))
+			return
+		}
+
+		if !node.IsSQLThreadRunning() && !node.IsIOThreadRunning() {
+			w.Write([]byte("200 -Server IO and SQL Threads are stopped!"))
+		} else {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("500 -Server replication still has thread running!"))
 		}
 	} else {
 		w.WriteHeader(http.StatusInternalServerError)

@@ -5080,6 +5080,40 @@ paths:
       summary: Check if a server port is a slave
       tags:
       - Database
+  /api/clusters/{clusterName}/servers/{serverName}/{serverPort}/is-slave-Stop:
+    get:
+      description: Checks if a specified server within a cluster is in a slave Stop
+        state.
+      parameters:
+      - description: Cluster Name
+        in: path
+        name: clusterName
+        required: true
+        type: string
+      - description: Server Name
+        in: path
+        name: serverName
+        required: true
+        type: string
+      - description: Server Port
+        in: path
+        name: serverPort
+        type: string
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: 200 -Server is in Slave Stop state!
+          schema:
+            type: string
+        "500":
+          description: 500 -Server is not in Slave Stop state!" or "500 -No valid
+            server!" or "500 -No cluster!
+          schema:
+            type: string
+      summary: Check if a server is in slave Stop state
+      tags:
+      - Database
   /api/clusters/{clusterName}/servers/{serverName}/{serverPort}/is-slave-error:
     get:
       description: Checks if a specified server within a cluster is in a slave error
@@ -7255,6 +7289,36 @@ paths:
       summary: Check if a server is a slave
       tags:
       - Database
+  /api/clusters/{clusterName}/servers/{serverName}/is-slave-Stop:
+    get:
+      description: Checks if a specified server within a cluster is in a slave Stop
+        state.
+      parameters:
+      - description: Cluster Name
+        in: path
+        name: clusterName
+        required: true
+        type: string
+      - description: Server Name
+        in: path
+        name: serverName
+        required: true
+        type: string
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: 200 -Server is in Slave Stop state!
+          schema:
+            type: string
+        "500":
+          description: 500 -Server is not in Slave Stop state!" or "500 -No valid
+            server!" or "500 -No cluster!
+          schema:
+            type: string
+      summary: Check if a server is in slave Stop state
+      tags:
+      - Database
   /api/clusters/{clusterName}/servers/{serverName}/is-slave-error:
     get:
       description: Checks if a specified server within a cluster is in a slave error
@@ -9358,6 +9422,110 @@ paths:
           schema:
             type: string
       summary: Shows the slaves for that specific named cluster
+      tags:
+      - ClusterTopology
+  /api/clusters/{clusterName}/topology/standalones:
+    get:
+      description: This endpoint retrieves the servers for the specified cluster.
+      parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Cluster Name
+        in: path
+        name: clusterName
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Standalone Server
+          schema:
+            items:
+              $ref: '#/definitions/cluster.ServerMonitor'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Retrieve all standalone server for a specific cluster
+      tags:
+      - ClusterTopology
+  /api/clusters/{clusterName}/topology/standalones/index/{index}:
+    get:
+      description: This endpoint retrieves the servers for the specified cluster.
+      parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Cluster Name
+        in: path
+        name: clusterName
+        required: true
+        type: string
+      - description: Index
+        in: path
+        name: index
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Standalone Server
+          schema:
+            $ref: '#/definitions/cluster.ServerMonitor'
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Retrieve first standalone server for a specific cluster
+      tags:
+      - ClusterTopology
+  /api/clusters/{clusterName}/topology/standalones/index/{index}/attr/{attrName}:
+    get:
+      description: This endpoint retrieves the servers for the specified cluster.
+      parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Cluster Name
+        in: path
+        name: clusterName
+        required: true
+        type: string
+      - description: Index
+        in: path
+        name: index
+        required: true
+        type: string
+      - description: Attribute Name with dot notation
+        in: path
+        name: attrName
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Standalone Server (partial based on attrName)
+          schema:
+            $ref: '#/definitions/cluster.ServerMonitor'
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Retrieve first standalone server for a specific cluster
       tags:
       - ClusterTopology
   /api/clusters/{clusterName}/users/add:

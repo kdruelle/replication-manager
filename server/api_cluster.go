@@ -340,6 +340,18 @@ func (repman *ReplicationManager) apiClusterProtectedHandler(router *mux.Router)
 		negroni.HandlerFunc(repman.validateTokenMiddleware),
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxSlaveAttributeByIndex)),
 	))
+	router.Handle("/api/clusters/{clusterName}/topology/standalones", negroni.New(
+		negroni.HandlerFunc(repman.validateTokenMiddleware),
+		negroni.Wrap(http.HandlerFunc(repman.handlerMuxGetStandaloneServers)),
+	))
+	router.Handle("/api/clusters/{clusterName}/topology/standalones/index/{index}", negroni.New(
+		negroni.HandlerFunc(repman.validateTokenMiddleware),
+		negroni.Wrap(http.HandlerFunc(repman.handlerMuxGetStandaloneServerByIndex)),
+	))
+	router.Handle("/api/clusters/{clusterName}/topology/standalones/index/{index}/attr/{attrName}", negroni.New(
+		negroni.HandlerFunc(repman.validateTokenMiddleware),
+		negroni.Wrap(http.HandlerFunc(repman.handlerMuxGetStandaloneAttributeByIndex)),
+	))
 	router.Handle("/api/clusters/{clusterName}/topology/logs", negroni.New(
 		negroni.HandlerFunc(repman.validateTokenMiddleware),
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxLog)),
@@ -471,6 +483,165 @@ func (repman *ReplicationManager) handlerMuxServers(w http.ResponseWriter, r *ht
 		}
 	} else {
 
+		http.Error(w, "No cluster", 500)
+		return
+	}
+}
+
+// @Summary Retrieve all standalone server for a specific cluster
+// @Description This endpoint retrieves the servers for the specified cluster.
+// @Tags ClusterTopology
+// @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
+// @Param clusterName path string true "Cluster Name"
+// @Success 200 {array} cluster.ServerMonitor "Standalone Server"
+// @Failure 500 {string} string "Internal Server Error"
+// @Router /api/clusters/{clusterName}/topology/standalones [get]
+func (repman *ReplicationManager) handlerMuxGetStandaloneServers(w http.ResponseWriter, r *http.Request) {
+	//marshal unmarchal for ofuscation deep copy of struc
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	vars := mux.Vars(r)
+	var err error
+
+	mycluster := repman.getClusterByName(vars["clusterName"])
+
+	if mycluster != nil {
+		type ServersContainer struct {
+			servers []map[string]interface{}
+		}
+
+		res := ServersContainer{
+			servers: make([]map[string]interface{}, 0),
+		}
+		for _, srv := range mycluster.GetStandaloneServers() {
+			var cont map[string]interface{}
+			data, _ := json.Marshal(srv)
+			list, _ := json.Marshal(srv.BinaryLogFiles.ToNewMap())
+			data, err = jsonparser.Set(data, list, "binaryLogFiles")
+			if err != nil {
+				http.Error(w, "Encoding error: "+err.Error(), 500)
+				return
+			}
+			err = json.Unmarshal(data, &cont)
+			if err != nil {
+				http.Error(w, "Encoding error: "+err.Error(), 500)
+				return
+			}
+			res.servers = append(res.servers, cont)
+		}
+
+		e := json.NewEncoder(w)
+		e.SetIndent("", "\t")
+		err = e.Encode(res.servers)
+		if err != nil {
+			mycluster.LogModulePrintf(mycluster.Conf.Verbose, config.ConstLogModGeneral, config.LvlErr, "API Error encoding JSON: ", err)
+			http.Error(w, "Encoding error", 500)
+			return
+		}
+	} else {
+
+		http.Error(w, "No cluster", 500)
+		return
+	}
+}
+
+// @Summary Retrieve first standalone server for a specific cluster
+// @Description This endpoint retrieves the servers for the specified cluster.
+// @Tags ClusterTopology
+// @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
+// @Param clusterName path string true "Cluster Name"
+// @Param index path string true "Index"
+// @Success 200 {object} cluster.ServerMonitor "Standalone Server"
+// @Failure 500 {string} string "Internal Server Error"
+// @Router /api/clusters/{clusterName}/topology/standalones/index/{index} [get]
+func (repman *ReplicationManager) handlerMuxGetStandaloneServerByIndex(w http.ResponseWriter, r *http.Request) {
+	//marshal unmarchal for ofuscation deep copy of struc
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	vars := mux.Vars(r)
+
+	mycluster := repman.getClusterByName(vars["clusterName"])
+
+	if mycluster != nil {
+		index, err := strconv.Atoi(vars["index"])
+		if err != nil {
+			http.Error(w, "Invalid index", 500)
+			return
+		}
+
+		srv, err := mycluster.GetStandaloneServerByIndex(index)
+		if srv == nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
+
+		data, _ := json.Marshal(srv)
+		list, _ := json.Marshal(srv.BinaryLogFiles.ToNewMap())
+		data, err = jsonparser.Set(data, list, "binaryLogFiles")
+		if err != nil {
+			http.Error(w, "Encoding error: "+err.Error(), 500)
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+		w.Write(data)
+	} else {
+		http.Error(w, "No cluster", 500)
+		return
+	}
+}
+
+// @Summary Retrieve first standalone server for a specific cluster
+// @Description This endpoint retrieves the servers for the specified cluster.
+// @Tags ClusterTopology
+// @Produce json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
+// @Param clusterName path string true "Cluster Name"
+// @Param index path string true "Index"
+// @Param attrName path string true "Attribute Name with dot notation"
+// @Success 200 {object} cluster.ServerMonitor "Standalone Server (partial based on attrName)"
+// @Failure 500 {string} string "Internal Server Error"
+// @Router /api/clusters/{clusterName}/topology/standalones/index/{index}/attr/{attrName} [get]
+func (repman *ReplicationManager) handlerMuxGetStandaloneAttributeByIndex(w http.ResponseWriter, r *http.Request) {
+	//marshal unmarchal for ofuscation deep copy of struc
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	vars := mux.Vars(r)
+
+	mycluster := repman.getClusterByName(vars["clusterName"])
+
+	if mycluster != nil {
+		index, err := strconv.Atoi(vars["index"])
+		if err != nil {
+			http.Error(w, "Invalid index", 500)
+			return
+		}
+
+		srv, err := mycluster.GetStandaloneServerByIndex(index)
+		if srv == nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
+
+		var value []byte
+		var valtype jsonparser.ValueType
+		if vars["attrName"] == "binaryLogFiles" {
+			value, _ = json.Marshal(srv.BinaryLogFiles.ToNewMap())
+		} else if strings.HasPrefix(vars["attrName"], "binaryLogFiles.") {
+			data, _ := json.Marshal(srv.BinaryLogFiles.ToNewMap())
+			value, valtype, _, _ = jsonparser.Get(data, strings.Split(vars["attrName"], ".")[1:]...)
+		} else {
+			data, _ := json.Marshal(srv)
+			value, valtype, _, _ = jsonparser.Get(data, strings.Split(vars["attrName"], ".")...)
+		}
+
+		if valtype == jsonparser.NotExist {
+			http.Error(w, "Attribute not found", 500)
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+		w.Write(value)
+	} else {
 		http.Error(w, "No cluster", 500)
 		return
 	}
