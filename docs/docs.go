@@ -9497,6 +9497,46 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/clusters/{clusterName}/topology/servers/count": {
+            "get": {
+                "description": "Return number of servers for that specific named cluster",
+                "tags": [
+                    "ClusterTopology"
+                ],
+                "summary": "Return number of servers for that specific named cluster",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer \u003cAdd access token here\u003e",
+                        "description": "Insert your access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Cluster Name",
+                        "name": "clusterName",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Number of servers",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/clusters/{clusterName}/topology/slaves": {
             "get": {
                 "description": "Shows the slaves for that specific named cluster",
@@ -9717,6 +9757,46 @@ const docTemplate = `{
                             "items": {
                                 "$ref": "#/definitions/cluster.ServerMonitor"
                             }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/clusters/{clusterName}/topology/standalones/count": {
+            "get": {
+                "description": "Return number of servers for that specific named cluster",
+                "tags": [
+                    "ClusterTopology"
+                ],
+                "summary": "Return number of servers for that specific named cluster",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer \u003cAdd access token here\u003e",
+                        "description": "Insert your access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Cluster Name",
+                        "name": "clusterName",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Number of servers",
+                        "schema": {
+                            "type": "string"
                         }
                     },
                     "500": {

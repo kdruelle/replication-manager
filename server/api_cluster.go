@@ -320,6 +320,10 @@ func (repman *ReplicationManager) apiClusterProtectedHandler(router *mux.Router)
 		negroni.HandlerFunc(repman.validateTokenMiddleware),
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxServers)),
 	))
+	router.Handle("/api/clusters/{clusterName}/topology/servers/count", negroni.New(
+		negroni.HandlerFunc(repman.validateTokenMiddleware),
+		negroni.Wrap(http.HandlerFunc(repman.handlerMuxServersCount)),
+	))
 	router.Handle("/api/clusters/{clusterName}/topology/master", negroni.New(
 		negroni.HandlerFunc(repman.validateTokenMiddleware),
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxMaster)),
@@ -343,6 +347,10 @@ func (repman *ReplicationManager) apiClusterProtectedHandler(router *mux.Router)
 	router.Handle("/api/clusters/{clusterName}/topology/standalones", negroni.New(
 		negroni.HandlerFunc(repman.validateTokenMiddleware),
 		negroni.Wrap(http.HandlerFunc(repman.handlerMuxGetStandaloneServers)),
+	))
+	router.Handle("/api/clusters/{clusterName}/topology/standalones/count", negroni.New(
+		negroni.HandlerFunc(repman.validateTokenMiddleware),
+		negroni.Wrap(http.HandlerFunc(repman.handlerMuxGetStandaloneServersCount)),
 	))
 	router.Handle("/api/clusters/{clusterName}/topology/standalones/index/{index}", negroni.New(
 		negroni.HandlerFunc(repman.validateTokenMiddleware),
@@ -488,6 +496,28 @@ func (repman *ReplicationManager) handlerMuxServers(w http.ResponseWriter, r *ht
 	}
 }
 
+// @Summary Return number of servers for that specific named cluster
+// @Description Return number of servers for that specific named cluster
+// @Tags ClusterTopology
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
+// @Param clusterName path string true "Cluster Name"
+// @Success 200 {string} string "Number of servers"
+// @Failure 500 {string} string "Internal Server Error"
+// @Router /api/clusters/{clusterName}/topology/servers/count [get]
+func (repman *ReplicationManager) handlerMuxServersCount(w http.ResponseWriter, r *http.Request) {
+	//marshal unmarchal for ofuscation deep copy of struc
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	vars := mux.Vars(r)
+	mycluster := repman.getClusterByName(vars["clusterName"])
+	if mycluster != nil {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(strconv.Itoa(len(mycluster.Servers))))
+	} else {
+		http.Error(w, "No cluster", 500)
+		return
+	}
+}
+
 // @Summary Retrieve all standalone server for a specific cluster
 // @Description This endpoint retrieves the servers for the specified cluster.
 // @Tags ClusterTopology
@@ -540,6 +570,34 @@ func (repman *ReplicationManager) handlerMuxGetStandaloneServers(w http.Response
 		}
 	} else {
 
+		http.Error(w, "No cluster", 500)
+		return
+	}
+}
+
+// @Summary Return number of servers for that specific named cluster
+// @Description Return number of servers for that specific named cluster
+// @Tags ClusterTopology
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
+// @Param clusterName path string true "Cluster Name"
+// @Success 200 {string} string "Number of servers"
+// @Failure 500 {string} string "Internal Server Error"
+// @Router /api/clusters/{clusterName}/topology/standalones/count [get]
+func (repman *ReplicationManager) handlerMuxGetStandaloneServersCount(w http.ResponseWriter, r *http.Request) {
+	//marshal unmarchal for ofuscation deep copy of struc
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	vars := mux.Vars(r)
+	mycluster := repman.getClusterByName(vars["clusterName"])
+	if mycluster != nil {
+		counter := 0
+		for _, srv := range mycluster.Servers {
+			if srv.IsStandAlone() {
+				counter++
+			}
+		}
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(strconv.Itoa(counter)))
+	} else {
 		http.Error(w, "No cluster", 500)
 		return
 	}

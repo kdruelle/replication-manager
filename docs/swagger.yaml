@@ -9298,6 +9298,33 @@ paths:
       summary: Retrieve servers for a specific cluster
       tags:
       - ClusterTopology
+  /api/clusters/{clusterName}/topology/servers/count:
+    get:
+      description: Return number of servers for that specific named cluster
+      parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Cluster Name
+        in: path
+        name: clusterName
+        required: true
+        type: string
+      responses:
+        "200":
+          description: Number of servers
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Return number of servers for that specific named cluster
+      tags:
+      - ClusterTopology
   /api/clusters/{clusterName}/topology/slaves:
     get:
       description: Shows the slaves for that specific named cluster
@@ -9453,6 +9480,33 @@ paths:
           schema:
             type: string
       summary: Retrieve all standalone server for a specific cluster
+      tags:
+      - ClusterTopology
+  /api/clusters/{clusterName}/topology/standalones/count:
+    get:
+      description: Return number of servers for that specific named cluster
+      parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Cluster Name
+        in: path
+        name: clusterName
+        required: true
+        type: string
+      responses:
+        "200":
+          description: Number of servers
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Return number of servers for that specific named cluster
       tags:
       - ClusterTopology
   /api/clusters/{clusterName}/topology/standalones/index/{index}:
