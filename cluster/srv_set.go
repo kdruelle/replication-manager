@@ -484,3 +484,7 @@ func (server *ServerMonitor) SetNeedRefreshJobs(value bool) {
 func (server *ServerMonitor) SetPointInTimeMeta(value config.PointInTimeMeta) {
 	server.PointInTimeMeta = value
 }
+
+func (server *ServerMonitor) SetSuspect() {
+	server.SetState(stateSuspect)
+}

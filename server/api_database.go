@@ -1852,6 +1852,7 @@ func (repman *ReplicationManager) handlerMuxServerResetSlaveAll(w http.ResponseW
 		if node != nil {
 			node.StopSlave()
 			node.ResetSlave()
+			node.SetSuspect() // For refreshing state
 		} else {
 			http.Error(w, "Server Not Found", 500)
 			return
