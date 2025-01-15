@@ -1488,7 +1488,7 @@ func (server *ServerMonitor) SaveInfos() error {
 		MaxSlowQueryTimestamp int64                  `json:"maxSlowQueryTimestamp"`
 	}
 	var clsave Save
-	server.Variables.ToNormalMap(clsave.Variables)
+	clsave.Variables = server.SensitiveVariables.ToNewMap()
 	clsave.Status = server.Status.ToNewMap()
 	clsave.ProcessList = server.FullProcessList
 	clsave.SlaveStatus = server.LastSeenReplications
